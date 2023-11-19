@@ -21,7 +21,11 @@ async fn setup_pool() -> anyhow::Result<Pool<Postgres>> {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // Create connection pool
-    Arc::new(setup_pool().await?);
+    let pool = Arc::new(setup_pool().await?);
+    let _row: (i64,) = sqlx::query_as("SELECT $1")
+        .bind(150_i64)
+        .fetch_one(pool.as_ref())
+        .await?;
     // sqlx::migrate!("./migrations").run(&*pool).await?;
     Ok(())
 }
