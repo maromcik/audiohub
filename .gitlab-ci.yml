@@ -3,8 +3,10 @@ workflow:
     - when: always
 
 default:
-  image: rust:alpine3.18
+  image: rust:1.73-bullseye
   before_script:
+    - apt-get update
+    - apt-get install postgresql-client --yes
     - apk add --no-cache alpine-sdk
     - rustc --version
     - cargo --version
@@ -19,6 +21,8 @@ stages:
 
 build:
   stage: build
+  services:
+    - postgres:16.0-alpine
   script:
     - cargo build --verbose
 
