@@ -1,0 +1,44 @@
+workflow:
+  rules:
+    - when: always
+
+default:
+  image: rust:alpine3.18
+  before_script:
+    - apk add --no-cache alpine-sdk
+    - rustc --version
+    - cargo --version
+
+  tags:
+    - shared-fi
+
+stages:
+  - build
+  - preflight
+  - tests
+
+build:
+  stage: build
+  script:
+    - cargo build --verbose
+
+# dependencies_unchanged:
+#   stage: preflight
+
+# tests_unchanged:
+#   stage: preflight
+
+lint:
+  stage: preflight
+  script:
+    - rustup component add rustfmt
+    - cargo fmt -- --check
+    - rustup component add clippy
+    - cargo clippy -- -D warnings
+
+tests:
+  stage: tests
+  allow_failure: true
+  script:
+    - cargo test
+
