@@ -22,6 +22,6 @@ async fn setup_pool() -> anyhow::Result<Pool<Postgres>> {
 async fn main() -> anyhow::Result<()> {
     // Create connection pool
     let pool = Arc::new(setup_pool().await?);
-    sqlx::migrate!("./migrations").run(&*pool).await?;
+    // sqlx::migrate!("./migrations").run(&*pool).await?;
     Ok(())
 }
