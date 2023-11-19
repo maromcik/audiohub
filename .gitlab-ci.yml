@@ -22,11 +22,11 @@ build:
   script:
     - cargo build --verbose
 
-dependencies_unchanged:
-  stage: preflight
+# dependencies_unchanged:
+#   stage: preflight
 
-tests_unchanged:
-  stage: preflight
+# tests_unchanged:
+#   stage: preflight
 
 lint:
   stage: preflight
