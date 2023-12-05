@@ -5,6 +5,6 @@ use crate::database::models::Id;
 pub struct AudiobookUser {
     pub user_id: Id,
     pub audiobook_id: Id,
-    pub playback_chapter_id: Id,
+    pub playback_chapter_id: Option<Id>,
     pub playback_position_in_chapter: Option<Duration>,
 }
