@@ -1,10 +1,10 @@
 use chrono::{DateTime, Duration, Utc};
-use uuid::Uuid;
+use crate::database::models::Id;
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]
 pub struct Chapter {
-    pub id: Uuid,
-    pub audiobook_id: Uuid,
+    pub id: Id,
+    pub audiobook_id: Id,
     pub name: String,
     pub length: Duration,
     pub sequential_number: i32,

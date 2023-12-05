@@ -1,10 +1,10 @@
 use chrono::Duration;
-use uuid::Uuid;
+use crate::database::models::Id;
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]
 pub struct AudiobookUser {
-    pub user_id: Uuid,
-    pub audiobook_id: Uuid,
-    pub playback_chapter_id: Uuid,
+    pub user_id: Id,
+    pub audiobook_id: Id,
+    pub playback_chapter_id: Id,
     pub playback_position_in_chapter: Option<Duration>,
 }

@@ -1,12 +1,12 @@
 use chrono::{DateTime, Utc};
-use uuid::Uuid;
+use crate::database::models::Id;
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]
 pub struct Rating {
-    pub id: Uuid,
-    pub audiobook_id: Uuid,
-    pub user_id: Uuid,
-    pub rating: u8,
+    pub id: Id,
+    pub audiobook_id: Id,
+    pub user_id: Id,
+    pub rating: u16,
     pub review: String,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,

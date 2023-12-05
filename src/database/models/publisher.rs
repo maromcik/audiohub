@@ -1,9 +1,9 @@
 use chrono::{DateTime, Utc};
-use uuid::Uuid;
+use crate::database::models::Id;
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]
 pub struct Publisher {
-    pub id: Uuid,
+    pub id: Id,
     pub name: String,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,

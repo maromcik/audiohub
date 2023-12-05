@@ -1,7 +1,7 @@
-use uuid::Uuid;
+use crate::database::models::Id;
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]
 pub struct AudiobookUser {
-    pub user_id: Uuid,
-    pub audiobook_id: Uuid,
+    pub user_id: Id,
+    pub audiobook_id: Id,
 }

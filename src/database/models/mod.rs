@@ -9,3 +9,4 @@ mod user;
 mod bookmark;
 mod chapter;
 
+pub type Id = u64;

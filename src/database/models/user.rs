@@ -1,9 +1,9 @@
 use chrono::{DateTime, Utc};
-use uuid::Uuid;
+use crate::database::models::Id;
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
 pub struct User {
-    pub id: Uuid,
+    pub id: Id,
     // --------------
     pub username: String,
     pub email: String,
