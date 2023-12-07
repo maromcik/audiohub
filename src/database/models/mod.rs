@@ -5,7 +5,7 @@ mod author;
 mod genre;
 mod publisher;
 mod rating;
-mod user;
+pub(crate) mod user;
 mod bookmark;
 mod chapter;
 
