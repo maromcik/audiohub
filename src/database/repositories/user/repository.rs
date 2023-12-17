@@ -208,7 +208,7 @@ impl DbUpdate<UserUpdate, User> for UserRepository {
     }
 }
 
-#[async_trait]
+
 impl DbDelete<UserDelete, User> for UserRepository {
     /// Delete the user if we know their id (we're logged in as that user)
     async fn delete(&mut self, params: &UserDelete) -> DbResultMultiple<User> {

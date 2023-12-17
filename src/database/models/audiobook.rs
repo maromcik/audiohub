@@ -19,3 +19,7 @@ pub struct Audiobook {
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
 }
+
+pub struct AudioBookGetById {
+    pub id: Id
+}

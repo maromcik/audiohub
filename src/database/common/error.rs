@@ -18,6 +18,11 @@ pub enum BusinessLogicErrorKind {
     PostDeleted,
     UserNotCreatorOfPost,
 
+    // Rating errors
+    RatingDoesNotExist,
+    RatingDeleted,
+    RatingUpdateEmpty,
+
     // --------------------------
     // Comment errors
     CommentDoesNotExist,
