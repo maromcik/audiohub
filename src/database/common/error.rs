@@ -1,9 +1,10 @@
 use std::fmt::{Debug, Display, Formatter};
 
 use BusinessLogicErrorKind::{
-    CommentDeleted, CommentDoesNotExist, PostDeleted, PostDoesNotExist, UserDeleted,
-    UserDoesNotExist, UserNotCreatorOfComment, UserNotCreatorOfPost, UserPasswordDoesNotMatch,
-    UserUpdateParametersEmpty,
+    AudiobookDeleted, AudiobookDoesNotExist, AudiobookUpdateParametersEmpty, CommentDeleted,
+    CommentDoesNotExist, PostDeleted, PostDoesNotExist, PublisherDeleted, PublisherDoesNotExist,
+    PublisherUpdateParametersEmpty, UserDeleted, UserDoesNotExist, UserNotCreatorOfComment,
+    UserNotCreatorOfPost, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
 };
 
 #[derive(Debug)]
@@ -12,6 +13,16 @@ pub enum BusinessLogicErrorKind {
     UserDoesNotExist,
     UserDeleted,
     UserPasswordDoesNotMatch,
+
+    // --------------------------
+    // Publisher errors
+    PublisherDoesNotExist,
+    PublisherDeleted,
+
+    // Audiobook errors
+    AudiobookDoesNotExist,
+    AudiobookDeleted,
+
     // --------------------------
     // Post errors
     PostDoesNotExist,
@@ -27,6 +38,8 @@ pub enum BusinessLogicErrorKind {
     // --------------------------
     // Generic errors
     UserUpdateParametersEmpty,
+    PublisherUpdateParametersEmpty,
+    AudiobookUpdateParametersEmpty,
 }
 
 impl Display for BusinessLogicErrorKind {
@@ -41,6 +54,28 @@ impl Display for BusinessLogicErrorKind {
                 write!(
                     f,
                     "The provided email and password combination is incorrect."
+                )
+            }
+            PublisherDoesNotExist => f.write_str(does_not_exist("publisher").as_str()),
+            PublisherDeleted => f.write_str(deleted("publisher").as_str()),
+            PublisherUpdateParametersEmpty => {
+                write!(
+                    f,
+                    concat!(
+                        "The provided parameters for Publisher update query are incorrect",
+                        " (no Publisher field would be changed)."
+                    )
+                )
+            }
+            AudiobookDoesNotExist => f.write_str(does_not_exist("audiobook").as_str()),
+            AudiobookDeleted => f.write_str(deleted("audiobook").as_str()),
+            AudiobookUpdateParametersEmpty => {
+                write!(
+                    f,
+                    concat!(
+                        "The provided parameters for Audiobook update query are incorrect",
+                        " (no Audiobook field would be changed)."
+                    )
                 )
             }
             PostDoesNotExist => f.write_str(does_not_exist("post").as_str()),
@@ -63,8 +98,8 @@ impl Display for BusinessLogicErrorKind {
                 write!(
                     f,
                     concat!(
-                    "The provided parameters for User update query are incorrect",
-                    " (no User field would be changed)."
+                        "The provided parameters for User update query are incorrect",
+                        " (no User field would be changed)."
                     )
                 )
             }
