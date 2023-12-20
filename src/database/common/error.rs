@@ -5,6 +5,7 @@ use BusinessLogicErrorKind::{
     CommentDoesNotExist, PostDeleted, PostDoesNotExist, PublisherDeleted, PublisherDoesNotExist,
     PublisherUpdateParametersEmpty, UserDeleted, UserDoesNotExist, UserNotCreatorOfComment,
     UserNotCreatorOfPost, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
+    RatingDeleted, RatingDoesNotExist, RatingUpdateEmpty
 };
 
 #[derive(Debug)]
@@ -18,16 +19,23 @@ pub enum BusinessLogicErrorKind {
     // Publisher errors
     PublisherDoesNotExist,
     PublisherDeleted,
+    PublisherUpdateParametersEmpty,
 
     // Audiobook errors
     AudiobookDoesNotExist,
     AudiobookDeleted,
+    AudiobookUpdateParametersEmpty,
 
     // --------------------------
     // Post errors
     PostDoesNotExist,
     PostDeleted,
     UserNotCreatorOfPost,
+
+    // Rating errors
+    RatingDoesNotExist,
+    RatingDeleted,
+    RatingUpdateEmpty,
 
     // --------------------------
     // Comment errors
@@ -38,8 +46,6 @@ pub enum BusinessLogicErrorKind {
     // --------------------------
     // Generic errors
     UserUpdateParametersEmpty,
-    PublisherUpdateParametersEmpty,
-    AudiobookUpdateParametersEmpty,
 }
 
 impl Display for BusinessLogicErrorKind {
@@ -54,6 +60,17 @@ impl Display for BusinessLogicErrorKind {
                 write!(
                     f,
                     "The provided email and password combination is incorrect."
+                )
+            }
+            RatingDoesNotExist => f.write_str(does_not_exist("rating").as_str()),
+            RatingDeleted => f.write_str(deleted("rating").as_str()),
+            RatingUpdateEmpty => {
+                write!(
+                    f,
+                    concat!(
+                    "The provided parameters for Rating update query are incorrect",
+                    " (no Rating field would be changed)."
+                    )
                 )
             }
             PublisherDoesNotExist => f.write_str(does_not_exist("publisher").as_str()),

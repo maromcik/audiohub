@@ -6,7 +6,7 @@ mod bookmark;
 mod chapter;
 mod genre;
 pub(crate) mod publisher;
-mod rating;
+pub(crate) mod rating;
 pub(crate) mod user;
 
 pub type Id = i64;
