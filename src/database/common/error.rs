@@ -5,7 +5,8 @@ use BusinessLogicErrorKind::{
     CommentDoesNotExist, PostDeleted, PostDoesNotExist, PublisherDeleted, PublisherDoesNotExist,
     PublisherUpdateParametersEmpty, UserDeleted, UserDoesNotExist, UserNotCreatorOfComment,
     UserNotCreatorOfPost, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
-    RatingDeleted, RatingDoesNotExist, RatingUpdateEmpty
+    RatingDeleted, RatingDoesNotExist, RatingUpdateEmpty,
+    ChapterUpdateEmpty, ChapterDeleted, ChapterDoesNotExist
 };
 
 #[derive(Debug)]
@@ -32,10 +33,17 @@ pub enum BusinessLogicErrorKind {
     PostDeleted,
     UserNotCreatorOfPost,
 
+    // --------------------------
     // Rating errors
     RatingDoesNotExist,
     RatingDeleted,
     RatingUpdateEmpty,
+
+    // --------------------------
+    // Chapter errors
+    ChapterDoesNotExist,
+    ChapterDeleted,
+    ChapterUpdateEmpty,
 
     // --------------------------
     // Comment errors
@@ -70,6 +78,17 @@ impl Display for BusinessLogicErrorKind {
                     concat!(
                     "The provided parameters for Rating update query are incorrect",
                     " (no Rating field would be changed)."
+                    )
+                )
+            }
+            ChapterDoesNotExist => f.write_str(does_not_exist("chapter").as_str()),
+            ChapterDeleted => f.write_str(deleted("chapter").as_str()),
+            ChapterUpdateEmpty => {
+                write!(
+                    f,
+                    concat!(
+                    "The provided parameters for Chapter update query are incorrect",
+                    " (no Chapter field would be changed)."
                     )
                 )
             }
