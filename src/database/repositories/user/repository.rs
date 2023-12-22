@@ -2,16 +2,19 @@ use async_trait::async_trait;
 use chrono::Utc;
 use sqlx::{Acquire, Postgres, QueryBuilder, Transaction};
 
-use crate::database::common::error::{DbResultMultiple, DbResultSingle};
-use crate::database::common::{
-    DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler,
-};
 use crate::database::common::error::BusinessLogicErrorKind::{
     UserDeleted, UserDoesNotExist, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
 };
 use crate::database::common::error::{BusinessLogicError, DbError};
+use crate::database::common::error::{DbResultMultiple, DbResultSingle};
+use crate::database::common::{
+    DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler,
+};
 use crate::database::models::active_audiobook::ActiveAudiobook;
-use crate::database::models::user::{User, UserLogin, UserCreate, UserDelete, UserGetById, UserUpdate, AddActiveAudiobook, RemoveActiveAudiobook, UpdateActiveAudiobook};
+use crate::database::models::user::{
+    AddActiveAudiobook, RemoveActiveAudiobook, UpdateActiveAudiobook, User, UserCreate, UserDelete,
+    UserGetById, UserLogin, UserUpdate,
+};
 
 pub struct UserRepository {
     pool_handler: PoolHandler,
@@ -33,7 +36,11 @@ impl UserRepository {
     ) -> DbResultSingle<Option<User>> {
         let mut tx = transaction_handle.begin().await?;
 
-        let query = sqlx::query_as::<_, User>(r#"SELECT * FROM "User" WHERE id = $1"#)
+        let query = sqlx::query_as::<_, User>(
+            r#"
+            SELECT * FROM "User"
+            WHERE id = $1
+            "#)
             .bind(params.id)
             .fetch_optional(&mut *tx)
             .await?;
@@ -132,26 +139,21 @@ impl DbRepository for UserRepository {
 impl DbCreate<UserCreate, User> for UserRepository {
     /// Create a new user with the specified data
     async fn create(&mut self, data: &UserCreate) -> DbResultSingle<User> {
-        let time_of_creation = Utc::now();
         let user = sqlx::query_as::<_, User>(
-            r#"INSERT INTO
-            "User" (username, email, name, surname, bio, profile_picture,
-            password_hash, password_salt, created_at, edited_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            r#"INSERT INTO "User" (username, email, name, surname, bio, profile_picture, password_hash, password_salt)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING *"#,
         )
-            .bind(&data.username)
-            .bind(&data.email)
-            .bind(&data.name)
-            .bind(&data.surname)
-            .bind(&data.bio)
-            .bind(&data.profile_picture)
-            .bind(&data.password_hash)
-            .bind(&data.password_salt)
-            .bind(time_of_creation)
-            .bind(time_of_creation)
-            .fetch_one(&*self.pool_handler.pool)
-            .await?;
+        .bind(&data.username)
+        .bind(&data.email)
+        .bind(&data.name)
+        .bind(&data.surname)
+        .bind(&data.bio)
+        .bind(&data.profile_picture)
+        .bind(&data.password_hash)
+        .bind(&data.password_salt)
+        .fetch_one(&*self.pool_handler.pool)
+        .await?;
 
         Ok(user)
     }
@@ -162,7 +164,11 @@ impl DbReadOne<UserLogin, User> for UserRepository {
     /// Login the user with provided parameters, if the user does not exist, is deleted or the
     /// passwords don't match, return the error about combination of email/password not working
     async fn read_one(&mut self, params: &UserLogin) -> DbResultSingle<User> {
-        let user = sqlx::query_as::<_, User>(r#"SELECT * FROM "User" WHERE email = $1"#)
+        let user = sqlx::query_as::<_, User>(
+            r#"
+            SELECT * FROM "User"
+            WHERE email = $1
+            "#)
             .bind(&params.email)
             .fetch_optional(&*self.pool_handler.pool)
             .await?;
@@ -235,10 +241,10 @@ impl DbDelete<UserDelete, User> for UserRepository {
             RETURNING *
             "#,
         )
-            .bind(id)
-            .bind(time_of_delete)
-            .fetch_all(transaction.as_mut())
-            .await?;
+        .bind(id)
+        .bind(time_of_delete)
+        .fetch_all(transaction.as_mut())
+        .await?;
 
         let _ = sqlx::query(
             r#"
@@ -248,10 +254,10 @@ impl DbDelete<UserDelete, User> for UserRepository {
             WHERE commenter_id = $2
             "#,
         )
-            .bind(time_of_delete)
-            .bind(id)
-            .execute(transaction.as_mut())
-            .await?;
+        .bind(time_of_delete)
+        .bind(id)
+        .execute(transaction.as_mut())
+        .await?;
 
         transaction.commit().await?;
 
@@ -260,7 +266,10 @@ impl DbDelete<UserDelete, User> for UserRepository {
 }
 
 impl UserRepository {
-    async fn add_active_audiobook(&mut self, params: &AddActiveAudiobook) -> DbResultSingle<ActiveAudiobook> {
+    async fn add_active_audiobook(
+        &mut self,
+        params: &AddActiveAudiobook,
+    ) -> DbResultSingle<ActiveAudiobook> {
         let active_audiobook = sqlx::query_as!(
             ActiveAudiobook,
             r#"
@@ -279,7 +288,10 @@ impl UserRepository {
         Ok(active_audiobook)
     }
 
-    async fn remove_active_audiobook(&mut self, params: &RemoveActiveAudiobook) -> DbResultSingle<ActiveAudiobook> {
+    async fn remove_active_audiobook(
+        &mut self,
+        params: &RemoveActiveAudiobook,
+    ) -> DbResultSingle<ActiveAudiobook> {
         let removed_active_audiobook = sqlx::query_as!(
             ActiveAudiobook,
             r#"
@@ -291,13 +303,16 @@ impl UserRepository {
             params.audiobook_id,
             params.playback_chapter_id,
         )
-            .fetch_one(self.pool_handler.pool.as_ref())
-            .await?;
+        .fetch_one(self.pool_handler.pool.as_ref())
+        .await?;
 
         Ok(removed_active_audiobook)
     }
 
-    async fn update_chapter_of_active_audiobook(&mut self, params: &UpdateActiveAudiobook) -> DbResultSingle<ActiveAudiobook> {
+    async fn update_chapter_of_active_audiobook(
+        &mut self,
+        params: &UpdateActiveAudiobook,
+    ) -> DbResultSingle<ActiveAudiobook> {
         let updated_active_audiobook = sqlx::query_as!(
             ActiveAudiobook,
             r#"
@@ -311,10 +326,9 @@ impl UserRepository {
             params.playback_chapter_id,
             params.playback_position_in_chapter
         )
-            .fetch_one(self.pool_handler.pool.as_ref())
-            .await?;
+        .fetch_one(self.pool_handler.pool.as_ref())
+        .await?;
 
         Ok(updated_active_audiobook)
     }
-
 }

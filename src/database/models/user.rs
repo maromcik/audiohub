@@ -1,5 +1,5 @@
-use chrono::{DateTime, Duration, Utc};
 use crate::database::models::Id;
+use chrono::{DateTime, Duration, Utc};
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
 pub struct User {
@@ -171,7 +171,12 @@ pub struct AddActiveAudiobook {
 impl AddActiveAudiobook {
     #[must_use]
     #[inline]
-    pub const fn new(user_id: &Id, audiobook_id: &Id, playback_chapter_id: Id, playback_position_in_chapter: Option<Duration>) -> Self {
+    pub const fn new(
+        user_id: &Id,
+        audiobook_id: &Id,
+        playback_chapter_id: Id,
+        playback_position_in_chapter: Option<Duration>,
+    ) -> Self {
         Self {
             user_id: *user_id,
             audiobook_id: *audiobook_id,
@@ -185,7 +190,8 @@ impl AddActiveAudiobook {
 pub struct RemoveActiveAudiobook {
     pub user_id: Id,
     pub audiobook_id: Id,
-    pub playback_chapter_id: Id,}
+    pub playback_chapter_id: Id,
+}
 
 impl RemoveActiveAudiobook {
     #[must_use]
@@ -210,7 +216,12 @@ pub struct UpdateActiveAudiobook {
 impl UpdateActiveAudiobook {
     #[must_use]
     #[inline]
-    pub const fn new(user_id: &Id, audiobook_id: &Id, playback_chapter_id: Id, playback_position_in_chapter: Duration) -> Self {
+    pub const fn new(
+        user_id: &Id,
+        audiobook_id: &Id,
+        playback_chapter_id: Id,
+        playback_position_in_chapter: Duration,
+    ) -> Self {
         Self {
             user_id: *user_id,
             audiobook_id: *audiobook_id,

@@ -26,7 +26,11 @@ impl PublisherRepository {
     ) -> DbResultSingle<Option<Publisher>> {
         let mut tx = transaction.begin().await?;
 
-        let query = sqlx::query_as::<_, Publisher>(r#"SELECT * FROM "Publisher" WHERE id = $1"#)
+        let query = sqlx::query_as::<_, Publisher>(
+            r#"
+            SELECT * FROM "Publisher"
+            WHERE id = $1
+            "#)
             .bind(params.id)
             .fetch_optional(&mut *tx)
             .await?;
@@ -74,13 +78,13 @@ impl DbCreate<PublisherCreate, Publisher> for PublisherRepository {
     async fn create(&mut self, data: &PublisherCreate) -> DbResultSingle<Publisher> {
         let created_at = Utc::now();
         let publisher = sqlx::query_as::<_, Publisher>(
-            r#"INSERT INTO "Publisher" (name, created_at, edited_at)
+            r#"
+            INSERT INTO "Publisher" (name)
             VALUES ($1, $2, $3)
-            RETURNING *"#,
+            RETURNING *
+            "#,
         )
         .bind(&data.name)
-        .bind(created_at)
-        .bind(created_at)
         .fetch_one(&*self.pool_handler.pool)
         .await?;
 
@@ -106,11 +110,14 @@ impl DbUpdate<PublisherUpdate, Publisher> for PublisherRepository {
 
         let edited_at = Utc::now();
         let publishers = sqlx::query_as::<_, Publisher>(
-            r#"UPDATE "Publisher" Set
-                        name = $1
-                        edited_at = $2
-                   WHERE id = $3
-                   RETURNING *"#,
+            r#"
+            UPDATE "Publisher"
+            SET
+                name = $1
+                edited_at = $2
+            WHERE id = $3
+            RETURNING *
+            "#,
         )
         .bind(params.name.clone())
         .bind(edited_at)

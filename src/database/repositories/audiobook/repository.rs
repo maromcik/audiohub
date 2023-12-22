@@ -27,10 +27,15 @@ impl AudiobookRepository {
     ) -> DbResultSingle<Option<Audiobook>> {
         let mut tx = transaction_handle.begin().await?;
 
-        let query = sqlx::query_as::<_, Audiobook>(r#"SELECT * FROM "Audiobook" WHERE id = $1"#)
-            .bind(params.id)
-            .fetch_optional(&mut *tx)
-            .await?;
+        let query = sqlx::query_as::<_, Audiobook>(
+            r#"
+            SELECT * FROM "Audiobook"
+            WHERE id = $1
+            "#,
+        )
+        .bind(params.id)
+        .fetch_optional(&mut *tx)
+        .await?;
 
         if let Some(book) = query {
             tx.commit().await?;
@@ -49,23 +54,27 @@ impl AudiobookRepository {
             QueryBuilder::new(r#"UPDATE "Audiobook" SET "#);
 
         AudiobookRepository::add_string_to_query(&mut query_builder, &update_info.name, "name");
-        AudiobookRepository::add_id_to_query(
+        AudiobookRepository::add_num_to_query(
             &mut query_builder,
             &update_info.publisher_id,
             "publisher_id",
         );
-        AudiobookRepository::add_id_to_query(&mut query_builder, &update_info.genre_id, "genre_id");
-        AudiobookRepository::add_id_to_query(
+        AudiobookRepository::add_num_to_query(
+            &mut query_builder,
+            &update_info.genre_id,
+            "genre_id",
+        );
+        AudiobookRepository::add_num_to_query(
             &mut query_builder,
             &update_info.author_id,
             "author_id",
         );
-        AudiobookRepository::add_id_to_query(
+        AudiobookRepository::add_num_to_query(
             &mut query_builder,
             &update_info.price_dollars.map(|x| x as i64),
             "price_dollars",
         );
-        AudiobookRepository::add_id_to_query(
+        AudiobookRepository::add_num_to_query(
             &mut query_builder,
             &update_info.price_cents.map(|x| x as i64),
             "price_cents",
@@ -76,12 +85,12 @@ impl AudiobookRepository {
             &update_info.file_path,
             "file_path",
         );
-        AudiobookRepository::add_id_to_query(
+        AudiobookRepository::add_num_to_query(
             &mut query_builder,
             &update_info.stream_count,
             "stream_count",
         );
-        AudiobookRepository::add_id_to_query(
+        AudiobookRepository::add_num_to_query(
             &mut query_builder,
             &update_info.overall_rating.map(|x| x as i64),
             "overall_rating",
@@ -108,7 +117,7 @@ impl AudiobookRepository {
         }
     }
 
-    fn add_id_to_query(
+    fn add_num_to_query(
         query_builder: &mut QueryBuilder<Postgres>,
         id_value: &Option<Id>,
         name: &str,
@@ -159,9 +168,8 @@ impl DbCreate<AudiobookCreate, Audiobook> for AudiobookRepository {
     async fn create(&mut self, data: &AudiobookCreate) -> DbResultSingle<Audiobook> {
         let created_at = Utc::now();
         let book = sqlx::query_as::<_, Audiobook>(
-            r#"INSERT INTO "Audiobook" (name, author_id, publisher_id, genre_id,
-            price_dollars, price_cents, length, file_path, stream_count,
-            overall_rating, created_at, edited_at)
+            r#"
+            INSERT INTO "Audiobook" (name, author_id, publisher_id, genre_id, price_dollars, price_cents, length, file_path, stream_count, overall_rating, created_at, edited_at)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             RETURNING *"#,
         )
@@ -228,12 +236,12 @@ impl DbDelete<AudiobookDelete, Audiobook> for AudiobookRepository {
 
         let books = sqlx::query_as::<_, Audiobook>(
             r#"
-                UPDATE "Audiobook" SET
-                     name = $1,
-                     deleted_at = $2,
-                     edited_at = $2
-                WHERE id = $1
-                RETURNING *
+            UPDATE "Audiobook" SET
+                name = $1,
+                deleted_at = $2,
+                edited_at = $2
+            WHERE id = $1
+            RETURNING *
             "#,
         )
         .bind(id)

@@ -1,9 +1,7 @@
-pub mod user;
-pub mod genre;
-pub mod author;
-pub mod audiobook_user;
-pub mod bookmark;
-pub mod rating;
-pub mod chapter;
 pub mod audiobook;
+pub mod author;
+pub mod chapter;
+pub mod genre;
 pub mod publisher;
+pub mod rating;
+pub mod user;

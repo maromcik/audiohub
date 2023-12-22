@@ -1,5 +1,5 @@
-use sqlx::postgres::types::PgInterval;
 use crate::database::models::Id;
+use sqlx::postgres::types::PgInterval;
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]
 pub struct ActiveAudiobook {

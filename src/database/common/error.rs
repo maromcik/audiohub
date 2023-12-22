@@ -37,7 +37,7 @@ pub enum BusinessLogicErrorKind {
     // Author errors
     AuthorDoesNotExist,
     AuthorDeleted,
-    AuthorUpdateParametersEmpty
+    AuthorUpdateParametersEmpty,
 }
 
 impl Display for BusinessLogicErrorKind {
@@ -60,8 +60,8 @@ impl Display for BusinessLogicErrorKind {
                 write!(
                     f,
                     concat!(
-                    "The provided parameters for Rating update query are incorrect",
-                    " (no Rating field would be changed)."
+                        "The provided parameters for Rating update query are incorrect",
+                        " (no Rating field would be changed)."
                     )
                 )
             }
@@ -71,8 +71,8 @@ impl Display for BusinessLogicErrorKind {
                 write!(
                     f,
                     concat!(
-                    "The provided parameters for Chapter update query are incorrect",
-                    " (no Chapter field would be changed)."
+                        "The provided parameters for Chapter update query are incorrect",
+                        " (no Chapter field would be changed)."
                     )
                 )
             }
@@ -113,8 +113,8 @@ impl Display for BusinessLogicErrorKind {
                 write!(
                     f,
                     concat!(
-                    "The provided parameters for Author update query are incorrect",
-                    " (no Author field would be changed)."
+                        "The provided parameters for Author update query are incorrect",
+                        " (no Author field would be changed)."
                     )
                 )
             }

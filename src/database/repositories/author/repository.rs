@@ -1,5 +1,5 @@
 use crate::database::common::error::BusinessLogicErrorKind::{
-    AuthorDoesNotExist, AuthorDeleted, AuthorUpdateParametersEmpty
+    AuthorDeleted, AuthorDoesNotExist, AuthorUpdateParametersEmpty,
 };
 use crate::database::common::error::{
     BusinessLogicError, DbError, DbResultMultiple, DbResultSingle,
@@ -11,7 +11,9 @@ use async_trait::async_trait;
 use chrono::Utc;
 use sqlx::{Acquire, Postgres, Transaction};
 
-use crate::database::models::author::{Author, AuthorGetById, AuthorCreate, AuthorUpdate, AuthorDelete};
+use crate::database::models::author::{
+    Author, AuthorCreate, AuthorDelete, AuthorGetById, AuthorUpdate,
+};
 
 pub struct AuthorRepository {
     pool_handler: PoolHandler,
@@ -34,9 +36,7 @@ impl AuthorRepository {
             return Ok(Some(author));
         }
 
-        Err(DbError::from(BusinessLogicError::new(
-            AuthorDoesNotExist,
-        )))
+        Err(DbError::from(BusinessLogicError::new(AuthorDoesNotExist)))
     }
 
     pub fn author_is_correct(author: Option<Author>) -> DbResultSingle<Author> {
@@ -47,9 +47,7 @@ impl AuthorRepository {
             return Err(DbError::from(BusinessLogicError::new(AuthorDeleted)));
         }
 
-        Err(DbError::from(BusinessLogicError::new(
-            AuthorDoesNotExist,
-        )))
+        Err(DbError::from(BusinessLogicError::new(AuthorDoesNotExist)))
     }
 }
 
@@ -76,9 +74,9 @@ impl DbCreate<AuthorCreate, Author> for AuthorRepository {
             VALUES ($)
             RETURNING *"#,
         )
-            .bind(&params.name)
-            .fetch_one(&*self.pool_handler.pool)
-            .await?;
+        .bind(&params.name)
+        .fetch_one(&*self.pool_handler.pool)
+        .await?;
 
         Ok(author)
     }
@@ -96,8 +94,7 @@ impl DbUpdate<AuthorUpdate, Author> for AuthorRepository {
         let mut transaction = self.pool_handler.pool.begin().await?;
         let author_id = AuthorGetById::new(&params.id);
 
-        let query_author =
-            AuthorRepository::get_author(author_id, &mut transaction).await?;
+        let query_author = AuthorRepository::get_author(author_id, &mut transaction).await?;
         let _ = AuthorRepository::author_is_correct(query_author);
         let authors = sqlx::query_as!(
             Author,
@@ -112,9 +109,9 @@ impl DbUpdate<AuthorUpdate, Author> for AuthorRepository {
             params.name,
             Utc::now(),
             params.id
-            )
-            .fetch_all(transaction.as_mut())
-            .await?;
+        )
+        .fetch_all(transaction.as_mut())
+        .await?;
 
         transaction.commit().await?;
         Ok(authors)
@@ -127,11 +124,8 @@ impl DbDelete<AuthorDelete, Author> for AuthorRepository {
         let mut transaction = self.pool_handler.pool.begin().await?;
 
         // Check existence
-        let _ = AuthorRepository::get_author(
-            AuthorGetById { id: params.id },
-            &mut transaction,
-        )
-            .await?;
+        let _ =
+            AuthorRepository::get_author(AuthorGetById { id: params.id }, &mut transaction).await?;
 
         let id = params.id;
         let deleted_at = Utc::now();
@@ -144,10 +138,10 @@ impl DbDelete<AuthorDelete, Author> for AuthorRepository {
                 RETURNING *
                "#,
         )
-            .bind(id)
-            .bind(deleted_at)
-            .fetch_all(transaction.as_mut())
-            .await?;
+        .bind(id)
+        .bind(deleted_at)
+        .fetch_all(transaction.as_mut())
+        .await?;
 
         //Check audiobooks and delete them?
 

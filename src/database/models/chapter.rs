@@ -1,6 +1,6 @@
+use crate::database::models::Id;
 use chrono::{DateTime, Duration, Utc};
 use sqlx::postgres::types::PgInterval;
-use crate::database::models::Id;
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]
 pub struct Chapter {
@@ -30,5 +30,5 @@ pub struct ChapterUpdate {
 
 #[derive(Debug, Clone)]
 pub struct ChapterGetById {
-    pub id: Id
+    pub id: Id,
 }

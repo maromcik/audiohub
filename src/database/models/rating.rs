@@ -1,5 +1,5 @@
-use chrono::{DateTime, Utc};
 use crate::database::models::Id;
+use chrono::{DateTime, Utc};
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]
 pub struct Rating {
