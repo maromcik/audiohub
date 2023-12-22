@@ -108,6 +108,7 @@ CREATE TABLE IF NOT EXISTS "Bookmark"
     user_id         bigserial        NOT NULL,
     audiobook_id    bigserial        NOT NULL,
 
+    PRIMARY KEY (user_id, audiobook_id),
     FOREIGN KEY (user_id)       REFERENCES "User" (id),
     FOREIGN KEY (audiobook_id)  REFERENCES "Audiobook" (id)
 );
@@ -120,6 +121,7 @@ CREATE TABLE IF NOT EXISTS "Active_Audiobook"
     playback_chapter_id             bigserial,
     playback_position_in_chapter    interval,
 
+    PRIMARY KEY (user_id, audiobook_id, playback_chapter_id),
     FOREIGN KEY (user_id)       REFERENCES "User" (id),
     FOREIGN KEY (audiobook_id)  REFERENCES "Audiobook" (id),
     FOREIGN KEY (audiobook_id)  REFERENCES "Chapter" (id)
@@ -130,6 +132,7 @@ CREATE TABLE IF NOT EXISTS "Audiobook_Author"
     author_id           bigserial        NOT NULL,
     audiobook_id        bigserial        NOT NULL,
 
+    PRIMARY KEY (author_id, audiobook_id),
     FOREIGN KEY (author_id)       REFERENCES "Author" (id),
     FOREIGN KEY (audiobook_id)  REFERENCES "Audiobook" (id)
 );
