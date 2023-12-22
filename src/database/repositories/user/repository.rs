@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use chrono::Utc;
-use sqlx::{Acquire, Postgres, QueryBuilder, Transaction};
+use sqlx::{Acquire, Postgres, Transaction};
 
 use crate::database::common::error::BusinessLogicErrorKind::{
     UserDeleted, UserDoesNotExist, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
@@ -34,19 +34,18 @@ impl UserRepository {
         params: UserGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultSingle<Option<User>> {
-        let mut tx = transaction_handle.begin().await?;
-
-        let query = sqlx::query_as::<_, User>(
+        let query = sqlx::query_as!(
+            User,
             r#"
             SELECT * FROM "User"
             WHERE id = $1
-            "#)
-            .bind(params.id)
-            .fetch_optional(&mut *tx)
+            "#,
+            params.id
+        )
+            .fetch_optional(transaction_handle.as_mut())
             .await?;
 
         if let Some(user) = query {
-            tx.commit().await?;
             return Ok(Option::from(user));
         }
 
@@ -75,51 +74,6 @@ impl UserRepository {
     pub fn verify_password(given_password: &str, user_password: &str) -> bool {
         given_password == user_password
     }
-
-    pub fn build_query(update_info: &UserUpdate) -> QueryBuilder<Postgres> {
-        let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(r#"UPDATE "User" SET "#);
-
-        UserRepository::add_value_to_query(&mut query_builder, &update_info.name, "name");
-        UserRepository::add_value_to_query(&mut query_builder, &update_info.surname, "surname");
-        UserRepository::add_value_to_query(&mut query_builder, &update_info.username, "username");
-        UserRepository::add_value_to_query(&mut query_builder, &update_info.email, "email");
-        UserRepository::add_value_to_query(
-            &mut query_builder,
-            &update_info.password_salt,
-            "password_salt",
-        );
-        UserRepository::add_value_to_query(
-            &mut query_builder,
-            &update_info.password_hash,
-            "password_hash",
-        );
-        UserRepository::add_value_to_query(&mut query_builder, &update_info.bio, "bio");
-        UserRepository::add_value_to_query(
-            &mut query_builder,
-            &update_info.profile_picture,
-            "profile_picture",
-        );
-
-        let time_of_edit = Utc::now();
-        query_builder.push(format!("edited_at = '{}' ", time_of_edit));
-        query_builder.push(format!(
-            " WHERE id = '{}'\
-        RETURNING *",
-            update_info.id
-        ));
-
-        query_builder
-    }
-
-    pub fn add_value_to_query(
-        query_builder: &mut QueryBuilder<Postgres>,
-        user_value: &Option<String>,
-        name: &str,
-    ) {
-        if let Some(val) = &user_value {
-            query_builder.push(format!("{} = '{}', ", name, val));
-        }
-    }
 }
 
 #[async_trait]
@@ -138,20 +92,21 @@ impl DbRepository for UserRepository {
 #[async_trait]
 impl DbCreate<UserCreate, User> for UserRepository {
     /// Create a new user with the specified data
-    async fn create(&mut self, data: &UserCreate) -> DbResultSingle<User> {
-        let user = sqlx::query_as::<_, User>(
+    async fn create(&mut self, params: &UserCreate) -> DbResultSingle<User> {
+        let user = sqlx::query_as!(
+            User,
             r#"INSERT INTO "User" (username, email, name, surname, bio, profile_picture, password_hash, password_salt)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING *"#,
+            params.username,
+            params.email,
+            params.name,
+            params.surname,
+            params.bio,
+            params.profile_picture,
+            params.password_hash,
+            params.password_salt,
         )
-        .bind(&data.username)
-        .bind(&data.email)
-        .bind(&data.name)
-        .bind(&data.surname)
-        .bind(&data.bio)
-        .bind(&data.profile_picture)
-        .bind(&data.password_hash)
-        .bind(&data.password_salt)
         .fetch_one(&*self.pool_handler.pool)
         .await?;
 
@@ -164,12 +119,14 @@ impl DbReadOne<UserLogin, User> for UserRepository {
     /// Login the user with provided parameters, if the user does not exist, is deleted or the
     /// passwords don't match, return the error about combination of email/password not working
     async fn read_one(&mut self, params: &UserLogin) -> DbResultSingle<User> {
-        let user = sqlx::query_as::<_, User>(
+        let user = sqlx::query_as!(
+            User,
             r#"
             SELECT * FROM "User"
             WHERE email = $1
-            "#)
-            .bind(&params.email)
+            "#,
+            params.email
+        )
             .fetch_optional(&*self.pool_handler.pool)
             .await?;
 
@@ -197,21 +154,40 @@ impl DbUpdate<UserUpdate, User> for UserRepository {
             )));
         }
         let mut transaction = self.pool_handler.pool.begin().await?;
-
-        //finding the user
-        let user_query =
+        let user =
             UserRepository::get_user(UserGetById { id: params.id }, &mut transaction).await?;
-        let _ = UserRepository::user_is_correct(user_query.clone())?;
-
-        //updating existing user
-        let mut query_builder = UserRepository::build_query(params);
-        let users = query_builder
-            .build_query_as()
-            .fetch_all(&mut *transaction)
+        let validated_user = UserRepository::user_is_correct(user)?;
+        let updated_users = sqlx::query_as!(
+            User,
+            r#"
+            UPDATE "User"
+            SET
+                username = COALESCE($1, username),
+                email = COALESCE($2, email),
+                name = COALESCE($3, name),
+                surname = COALESCE($4, surname),
+                bio = COALESCE($5, bio),
+                profile_picture = COALESCE($6, profile_picture),
+                password_hash = COALESCE($7, password_hash),
+                password_salt = COALESCE($8, password_salt),
+                edited_at = current_timestamp
+            WHERE id = $9
+            RETURNING *
+            "#,
+            params.username,
+            params.email,
+            params.name,
+            params.surname,
+            params.bio,
+            params.profile_picture,
+            params.password_hash,
+            params.password_salt,
+            validated_user.id
+        )
+            .fetch_all(transaction.as_mut())
             .await?;
-
         transaction.commit().await?;
-        Ok(users)
+        Ok(updated_users)
     }
 }
 
@@ -227,10 +203,9 @@ impl DbDelete<UserDelete, User> for UserRepository {
         //user does not exist
         let _ = UserRepository::user_is_correct(user_query.clone())?;
 
-        let id = params.id;
-        let time_of_delete = Utc::now();
 
-        let users = sqlx::query_as::<_, User>(
+        let users = sqlx::query_as!(
+            User,
             r#"
             UPDATE "User" SET
                 username = $1,
@@ -240,23 +215,10 @@ impl DbDelete<UserDelete, User> for UserRepository {
             WHERE id = $1
             RETURNING *
             "#,
+            params.id,
+            Utc::now()
         )
-        .bind(id)
-        .bind(time_of_delete)
         .fetch_all(transaction.as_mut())
-        .await?;
-
-        let _ = sqlx::query(
-            r#"
-            UPDATE "Comment" SET
-                deleted_at = $1,
-                edited_at = $1
-            WHERE commenter_id = $2
-            "#,
-        )
-        .bind(time_of_delete)
-        .bind(id)
-        .execute(transaction.as_mut())
         .await?;
 
         transaction.commit().await?;
@@ -317,14 +279,15 @@ impl UserRepository {
             ActiveAudiobook,
             r#"
             UPDATE "Active_Audiobook"
-            SET playback_position_in_chapter = $1
+            SET
+                playback_position_in_chapter = COALESCE($1, playback_position_in_chapter)
             WHERE user_id = $2 AND audiobook_id = $3 AND playback_chapter_id = $4
             RETURNING *
             "#,
+            params.playback_position_in_chapter,
             params.user_id,
             params.audiobook_id,
-            params.playback_chapter_id,
-            params.playback_position_in_chapter
+            params.playback_chapter_id
         )
         .fetch_one(self.pool_handler.pool.as_ref())
         .await?;

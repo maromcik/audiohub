@@ -1,5 +1,5 @@
 use crate::database::models::Id;
-use chrono::{DateTime, PgInterval, Utc};
+use chrono::{DateTime, Utc};
 
 use sqlx::postgres::types::PgInterval;
 
@@ -59,7 +59,7 @@ impl AudiobookCreate {
             genre_id: *genre_id,
             price_dollars: *price_dollars,
             price_cents: *price_cents,
-            length: *length,
+            length: length.clone(),
             file_path: file_path.to_owned(),
             stream_count: *stream_count,
             overall_rating: *overall_rating,
@@ -106,7 +106,7 @@ impl AudiobookUpdate {
             genre_id: genre_id.copied(),
             price_dollars: price_dollars.copied(),
             price_cents: price_cents.copied(),
-            length: length.copied(),
+            length: length.cloned(),
             file_path: file_path.and_then(change_to_owned),
             stream_count: stream_count.copied(),
             overall_rating: overall_rating.copied(),

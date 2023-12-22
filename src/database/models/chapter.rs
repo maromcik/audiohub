@@ -1,5 +1,5 @@
 use crate::database::models::Id;
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
 use sqlx::postgres::types::PgInterval;
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]

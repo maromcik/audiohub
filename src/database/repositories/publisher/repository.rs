@@ -8,7 +8,6 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbRepository, DbUpdate, PoolHandler,
 };
 use async_trait::async_trait;
-use chrono::Utc;
 use sqlx::{Acquire, Postgres, Transaction};
 
 use crate::database::models::publisher::{
@@ -22,21 +21,20 @@ pub struct PublisherRepository {
 impl PublisherRepository {
     pub async fn get_publisher<'a>(
         params: PublisherGetById,
-        transaction: &mut Transaction<'a, Postgres>,
+        transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultSingle<Option<Publisher>> {
-        let mut tx = transaction.begin().await?;
-
-        let query = sqlx::query_as::<_, Publisher>(
+        let query = sqlx::query_as!(
+            Publisher,
             r#"
             SELECT * FROM "Publisher"
             WHERE id = $1
-            "#)
-            .bind(params.id)
-            .fetch_optional(&mut *tx)
+            "#,
+            params.id
+        )
+            .fetch_optional(transaction_handle.as_mut())
             .await?;
 
         if let Some(publisher) = query {
-            tx.commit().await?;
             return Ok(Some(publisher));
         }
 
@@ -75,16 +73,16 @@ impl DbRepository for PublisherRepository {
 #[async_trait]
 impl DbCreate<PublisherCreate, Publisher> for PublisherRepository {
     /// Create a new publisher with the given data
-    async fn create(&mut self, data: &PublisherCreate) -> DbResultSingle<Publisher> {
-        let created_at = Utc::now();
-        let publisher = sqlx::query_as::<_, Publisher>(
+    async fn create(&mut self, params: &PublisherCreate) -> DbResultSingle<Publisher> {
+        let publisher = sqlx::query_as!(
+            Publisher,
             r#"
             INSERT INTO "Publisher" (name)
-            VALUES ($1, $2, $3)
+            VALUES ($1)
             RETURNING *
             "#,
+            params.name
         )
-        .bind(&data.name)
         .fetch_one(&*self.pool_handler.pool)
         .await?;
 
@@ -108,20 +106,19 @@ impl DbUpdate<PublisherUpdate, Publisher> for PublisherRepository {
             PublisherRepository::get_publisher(publisher_id, &mut transaction).await?;
         let _ = PublisherRepository::publisher_is_correct(query_publisher);
 
-        let edited_at = Utc::now();
-        let publishers = sqlx::query_as::<_, Publisher>(
+        let publishers = sqlx::query_as!(
+            Publisher,
             r#"
             UPDATE "Publisher"
             SET
-                name = $1
-                edited_at = $2
-            WHERE id = $3
+                name = COALESCE($1, name),
+                edited_at = current_timestamp
+            WHERE id = $2
             RETURNING *
             "#,
+            params.name,
+            params.id
         )
-        .bind(params.name.clone())
-        .bind(edited_at)
-        .bind(params.id)
         .fetch_all(transaction.as_mut())
         .await?;
 
@@ -142,24 +139,21 @@ impl DbDelete<PublisherDelete, Publisher> for PublisherRepository {
         )
         .await?;
 
-        let id = params.id;
-        let deleted_at = Utc::now();
-        let publishers = sqlx::query_as::<_, Publisher>(
+        let publishers = sqlx::query_as!(
+            Publisher,
             r#"
                 UPDATE "Publisher" SET
                     name = $1,
-                    delete_at = $2
-                    edited_at = $2
+                    deleted_at = current_timestamp,
+                    edited_at = current_timestamp
                 WHERE id = $1
                 RETURNING *
                "#,
+            params.id
         )
-        .bind(id)
-        .bind(deleted_at)
         .fetch_all(transaction.as_mut())
         .await?;
 
-        //Check audiobooks and delete them?
 
         transaction.commit().await?;
 

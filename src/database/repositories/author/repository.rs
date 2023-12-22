@@ -8,7 +8,6 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbRepository, DbUpdate, PoolHandler,
 };
 use async_trait::async_trait;
-use chrono::Utc;
 use sqlx::{Acquire, Postgres, Transaction};
 
 use crate::database::models::author::{
@@ -26,8 +25,14 @@ impl AuthorRepository {
     ) -> DbResultSingle<Option<Author>> {
         let mut tx = transaction.begin().await?;
 
-        let query = sqlx::query_as::<_, Author>(r#"SELECT * FROM "Author" WHERE id = $1"#)
-            .bind(params.id)
+        let query = sqlx::query_as!(
+            Author,
+            r#"
+            SELECT * FROM "Author"
+            WHERE id = $1
+            "#,
+            params.id
+        )
             .fetch_optional(&mut *tx)
             .await?;
 
@@ -68,13 +73,15 @@ impl DbRepository for AuthorRepository {
 impl DbCreate<AuthorCreate, Author> for AuthorRepository {
     /// Create a new author with the given data
     async fn create(&mut self, params: &AuthorCreate) -> DbResultSingle<Author> {
-        let author = sqlx::query_as::<_, Author>(
+        let author = sqlx::query_as!(
+            Author,
             r#"
             INSERT INTO "Author" (name)
-            VALUES ($)
-            RETURNING *"#,
+            VALUES ($1)
+            RETURNING *
+            "#,
+            params.name
         )
-        .bind(&params.name)
         .fetch_one(&*self.pool_handler.pool)
         .await?;
 
@@ -102,12 +109,11 @@ impl DbUpdate<AuthorUpdate, Author> for AuthorRepository {
                 UPDATE "Author"
                 SET
                     name = COALESCE($1, name),
-                    edited_at = $2
-                    WHERE id = $3
+                    edited_at = current_timestamp
+                    WHERE id = $2
                 RETURNING *
             "#,
             params.name,
-            Utc::now(),
             params.id
         )
         .fetch_all(transaction.as_mut())
@@ -122,24 +128,19 @@ impl DbUpdate<AuthorUpdate, Author> for AuthorRepository {
 impl DbDelete<AuthorDelete, Author> for AuthorRepository {
     async fn delete(&mut self, params: &AuthorDelete) -> DbResultMultiple<Author> {
         let mut transaction = self.pool_handler.pool.begin().await?;
+        let _ = AuthorRepository::get_author(AuthorGetById { id: params.id }, &mut transaction).await?;
 
-        // Check existence
-        let _ =
-            AuthorRepository::get_author(AuthorGetById { id: params.id }, &mut transaction).await?;
-
-        let id = params.id;
-        let deleted_at = Utc::now();
-        let authors = sqlx::query_as::<_, Author>(
+        let authors = sqlx::query_as!(
+            Author,
             r#"
                 UPDATE "Author" SET
-                    delete_at = $2
-                    edited_at = $2
+                    deleted_at = current_timestamp,
+                    edited_at = current_timestamp
                 WHERE id = $1
                 RETURNING *
                "#,
+            params.id
         )
-        .bind(id)
-        .bind(deleted_at)
         .fetch_all(transaction.as_mut())
         .await?;
 

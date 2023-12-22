@@ -31,15 +31,16 @@ impl RatingRepository {
         params: &RatingGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultSingle<Option<Rating>> {
-        let conn: &mut PgConnection = transaction_handle;
 
-        let query = sqlx::query_as::<_, Rating>(
+        let query = sqlx::query_as!(
+            Rating,
             r#"
             SELECT * FROM "Rating"
             WHERE id = $1
-            "#)
-            .bind(params.id)
-            .fetch_optional(conn)
+            "#,
+            params.id
+        )
+            .fetch_optional(transaction_handle.as_mut())
             .await?;
 
         if let Some(rating) = query {
@@ -62,15 +63,15 @@ impl RatingRepository {
         params: UserGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultMultiple<Rating> {
-        let conn: &mut PgConnection = transaction_handle;
-
-        let ratings = sqlx::query_as::<_, Rating>(
+        let ratings = sqlx::query_as!(
+            Rating,
             r#"
             SELECT * FROM "Rating"
             WHERE user_id = $1
-            "#)
-            .bind(params.id)
-            .fetch_all(conn)
+            "#,
+            params.id
+        )
+            .fetch_all(transaction_handle.as_mut())
             .await?;
 
         Ok(ratings)
@@ -89,16 +90,16 @@ impl RatingRepository {
         params: AudiobookGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultMultiple<Rating> {
-        let conn: &mut PgConnection = transaction_handle;
-
         let ratings =
-            sqlx::query_as::<_, Rating>(
+            sqlx::query_as!(
+                Rating,
                 r#"
                 SELECT * FROM "Rating"
                 WHERE audiobook_id = $1
-                "#)
-                .bind(params.id)
-                .fetch_all(conn)
+                "#,
+                params.id
+            )
+                .fetch_all(transaction_handle.as_mut())
                 .await?;
 
         Ok(ratings)
@@ -108,9 +109,8 @@ impl RatingRepository {
         params: &RatingGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultSingle<Rating> {
-        let conn: &mut PgConnection = transaction_handle;
-
-        let rating = sqlx::query_as::<_, Rating>(
+        let rating = sqlx::query_as!(
+            Rating,
             r#"
             UPDATE "Rating"
             SET
@@ -119,9 +119,9 @@ impl RatingRepository {
             WHERE id = $1
             RETURNING *
             "#,
+            params.id
         )
-        .bind(params.id)
-        .fetch_one(conn)
+        .fetch_one(transaction_handle.as_mut())
         .await?;
 
         Ok(rating)
@@ -130,45 +130,26 @@ impl RatingRepository {
     pub async fn update<'a>(
         params: &RatingUpdate,
         transaction_handle: &mut Transaction<'a, Postgres>,
-    ) -> DbResultSingle<Rating> {
-        let conn: &mut PgConnection = transaction_handle;
+    ) -> DbResultMultiple<Rating> {
+        let ratings = sqlx::query_as!(
+            Rating,
+            r#"
+            UPDATE "Rating"
+            SET
+                rating = COALESCE($1, rating),
+                review = COALESCE($2, review),
+                edited_at = current_timestamp
+            WHERE id = $3
+            RETURNING *
+            "#,
+            params.rating,
+            params.review,
+            params.id,
+        )
+            .fetch_all(transaction_handle.as_mut())
+            .await?;
 
-        let mut query_builder: QueryBuilder<Postgres> =
-            QueryBuilder::new("UPDATE \"Rating\" SET\n");
-
-        RatingRepository::add_to_update_query(
-            "rating=",
-            &mut query_builder,
-            params.rating.as_ref(),
-        );
-        RatingRepository::add_to_update_query(
-            "review=",
-            &mut query_builder,
-            params.review.as_ref(),
-        );
-
-        query_builder.push(
-            "edited_at = current_timestamp\n\
-         WHERE id =",
-        );
-        query_builder.push_bind(params.id);
-        query_builder.push("\n");
-        query_builder.push("RETURNING *");
-
-        let rating = query_builder.build_query_as().fetch_one(conn).await?;
-        Ok(rating)
-    }
-
-    fn add_to_update_query<'a>(
-        column_name: &str,
-        query_builder: &mut QueryBuilder<'a, Postgres>,
-        value: Option<&'a String>,
-    ) {
-        if let Some(value) = value {
-            query_builder.push(column_name);
-            query_builder.push_bind(value);
-            query_builder.push(",\n");
-        }
+        Ok(ratings)
     }
 
     /// Function which checks if the rating is correct (existing and not deleted)
@@ -206,17 +187,19 @@ impl DbRepository for RatingRepository {
 
 #[async_trait]
 impl DbCreate<RatingCreate, Rating> for RatingRepository {
-    async fn create(&mut self, data: &RatingCreate) -> DbResultSingle<Rating> {
-        let rating = sqlx::query_as::<_, Rating>(
+    async fn create(&mut self, params: &RatingCreate) -> DbResultSingle<Rating> {
+        let rating = sqlx::query_as!(
+            Rating,
             r#"
             INSERT INTO "Rating" (user_id, audiobook_id, rating, review)
             VALUES ($1, $2, $3, $4)
             RETURNING *
-            "#)
-            .bind(&data.user_id)
-            .bind(&data.audiobook_id)
-            .bind(&data.rating)
-            .bind(&data.review)
+            "#,
+            params.user_id,
+            params.audiobook_id,
+            params.rating,
+            params.review
+        )
             .fetch_one(&*self.pool_handler.pool)
             .await?;
 
@@ -253,7 +236,7 @@ impl DbDelete<RatingGetById, Rating> for RatingRepository {
 #[async_trait]
 impl DbUpdate<RatingUpdate, Rating> for RatingRepository {
     async fn update(&mut self, params: &RatingUpdate) -> DbResultMultiple<Rating> {
-        if params.review.is_none() && params.rating.is_none() {
+        if params.review.is_none()  {
             return Err(DbError::from(BusinessLogicError::new(RatingUpdateEmpty)));
         }
 
@@ -264,9 +247,9 @@ impl DbUpdate<RatingUpdate, Rating> for RatingRepository {
                 .await?;
         RatingRepository::rating_is_correct(rating)?;
 
-        let rating = RatingRepository::update(params, &mut transcation).await?;
+        let ratings = RatingRepository::update(params, &mut transcation).await?;
 
         transcation.commit().await?;
-        Ok(vec![rating])
+        Ok(ratings)
     }
 }

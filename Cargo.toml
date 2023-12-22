@@ -10,6 +10,6 @@ anyhow = { version = "1.0.75", features = [] }
 async-trait = "0.1.74"
 chrono = "0.4.31"
 dotenv = "0.15.0"
-sqlx = { version = "0.7.2", features = ["chrono", "runtime-tokio-native-tls", "postgres"] }
+sqlx = { version = "0.7.2", features = ["chrono", "runtime-tokio-native-tls", "postgres", "bigdecimal"] }
 tokio = { version = "1.34.0", features = ["full"] }
 uuid = { version = "1.5.0", features = ["v4"] }

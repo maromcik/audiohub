@@ -1,20 +1,14 @@
-use crate::database::common::error::BusinessLogicErrorKind::{
-    AudiobookDeleted, AudiobookDoesNotExist, AudiobookUpdateParametersEmpty,
-};
+use crate::database::common::error::BusinessLogicErrorKind::{AudiobookDeleted, AudiobookDoesNotExist, AudiobookUpdateParametersEmpty};
 use crate::database::common::error::{
     BusinessLogicError, DbError, DbResultMultiple, DbResultSingle,
 };
-use crate::database::common::{
-    DbCreate, DbDelete, DbPoolHandler, DbRepository, DbUpdate, PoolHandler,
-};
+use crate::database::common::{DbCreate, DbDelete, DbPoolHandler, DbRepository, DbUpdate, PoolHandler};
 use async_trait::async_trait;
-use chrono::{Duration, Utc};
-use sqlx::{Acquire, Postgres, QueryBuilder, Transaction};
 
-use crate::database::models::audiobook::{
-    Audiobook, AudiobookCreate, AudiobookDelete, AudiobookGetById, AudiobookUpdate,
-};
-use crate::database::models::Id;
+use sqlx::{Postgres, Transaction};
+
+use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookGetById, AudiobookUpdate};
+
 
 pub struct AudiobookRepository {
     pool_handler: PoolHandler,
@@ -25,116 +19,24 @@ impl AudiobookRepository {
         params: AudiobookGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultSingle<Option<Audiobook>> {
-        let mut tx = transaction_handle.begin().await?;
-
-        let query = sqlx::query_as::<_, Audiobook>(
+        let query = sqlx::query_as!(
+            Audiobook,
             r#"
             SELECT * FROM "Audiobook"
             WHERE id = $1
             "#,
+            params.id
         )
-        .bind(params.id)
-        .fetch_optional(&mut *tx)
+        .fetch_optional(transaction_handle.as_mut())
         .await?;
 
         if let Some(book) = query {
-            tx.commit().await?;
             return Ok(Option::from(book));
         }
 
         Err(DbError::from(BusinessLogicError::new(
             AudiobookDoesNotExist,
         )))
-    }
-
-    pub fn build_query(update_info: &AudiobookUpdate) -> QueryBuilder<Postgres> {
-        // let change_to_option_i64 = |value| Some(value.into());
-
-        let mut query_builder: QueryBuilder<Postgres> =
-            QueryBuilder::new(r#"UPDATE "Audiobook" SET "#);
-
-        AudiobookRepository::add_string_to_query(&mut query_builder, &update_info.name, "name");
-        AudiobookRepository::add_num_to_query(
-            &mut query_builder,
-            &update_info.publisher_id,
-            "publisher_id",
-        );
-        AudiobookRepository::add_num_to_query(
-            &mut query_builder,
-            &update_info.genre_id,
-            "genre_id",
-        );
-        AudiobookRepository::add_num_to_query(
-            &mut query_builder,
-            &update_info.author_id,
-            "author_id",
-        );
-        AudiobookRepository::add_num_to_query(
-            &mut query_builder,
-            &update_info.price_dollars.map(|x| x as i64),
-            "price_dollars",
-        );
-        AudiobookRepository::add_num_to_query(
-            &mut query_builder,
-            &update_info.price_cents.map(|x| x as i64),
-            "price_cents",
-        );
-        AudiobookRepository::add_length_to_query(&mut query_builder, &update_info.length, "length");
-        AudiobookRepository::add_string_to_query(
-            &mut query_builder,
-            &update_info.file_path,
-            "file_path",
-        );
-        AudiobookRepository::add_num_to_query(
-            &mut query_builder,
-            &update_info.stream_count,
-            "stream_count",
-        );
-        AudiobookRepository::add_num_to_query(
-            &mut query_builder,
-            &update_info.overall_rating.map(|x| x as i64),
-            "overall_rating",
-        );
-
-        let time_of_edit = Utc::now();
-        query_builder.push(format!("edited_at = '{}' ", time_of_edit));
-        query_builder.push(format!(
-            " WHERE id = '{}'\
-        RETURNING *",
-            update_info.id
-        ));
-
-        query_builder
-    }
-
-    fn add_string_to_query(
-        query_builder: &mut QueryBuilder<Postgres>,
-        string_value: &Option<String>,
-        name: &str,
-    ) {
-        if let Some(val) = &string_value {
-            query_builder.push(format!("{} = '{}', ", name, val));
-        }
-    }
-
-    fn add_num_to_query(
-        query_builder: &mut QueryBuilder<Postgres>,
-        id_value: &Option<Id>,
-        name: &str,
-    ) {
-        if let Some(val) = &id_value {
-            query_builder.push(format!("{} = '{}', ", name, val));
-        }
-    }
-
-    fn add_length_to_query(
-        query_builder: &mut QueryBuilder<Postgres>,
-        string_value: &Option<Duration>,
-        name: &str,
-    ) {
-        if let Some(val) = &string_value {
-            query_builder.push(format!("{} = '{}', ", name, val));
-        }
     }
 
     pub fn audiobook_is_correct(audiobook: Option<Audiobook>) -> DbResultSingle<Audiobook> {
@@ -165,26 +67,25 @@ impl DbRepository for AudiobookRepository {
 
 #[async_trait]
 impl DbCreate<AudiobookCreate, Audiobook> for AudiobookRepository {
-    async fn create(&mut self, data: &AudiobookCreate) -> DbResultSingle<Audiobook> {
-        let created_at = Utc::now();
-        let book = sqlx::query_as::<_, Audiobook>(
+    async fn create(&mut self, params: &AudiobookCreate) -> DbResultSingle<Audiobook> {
+        let book = sqlx::query_as!(
+            Audiobook,
             r#"
-            INSERT INTO "Audiobook" (name, author_id, publisher_id, genre_id, price_dollars, price_cents, length, file_path, stream_count, overall_rating, created_at, edited_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-            RETURNING *"#,
+            INSERT INTO "Audiobook" (name, author_id, publisher_id, genre_id, price_dollars, price_cents, length, file_path, stream_count, overall_rating)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            RETURNING *
+            "#,
+            params.name,
+            params.author_id,
+            params.publisher_id,
+            params.genre_id,
+            params.price_dollars,
+            params.price_cents,
+            params.length,
+            params.file_path,
+            params.stream_count,
+            params.overall_rating
         )
-        .bind(&data.name)
-        .bind(data.author_id)
-        .bind(data.publisher_id)
-        .bind(data.genre_id)
-        .bind(data.price_dollars)
-        .bind(data.price_cents)
-        .bind(data.length)
-        .bind(&data.file_path)
-        .bind(data.stream_count)
-        .bind(data.overall_rating)
-        .bind(created_at)
-        .bind(created_at)
         .fetch_one(&*self.pool_handler.pool)
         .await?;
 
@@ -202,20 +103,44 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
         }
 
         let mut transaction = self.pool_handler.pool.begin().await?;
-
-        let book_query = AudiobookRepository::get_audiobook(
-            AudiobookGetById { id: params.id },
-            &mut transaction,
+        let audiobook = AudiobookRepository::get_audiobook(AudiobookGetById { id: params.id }, &mut transaction).await?;
+        let validated_audiobook = AudiobookRepository::audiobook_is_correct(audiobook)?;
+        let updated_audio_books = sqlx::query_as!(
+            Audiobook,
+            r#"
+            UPDATE "Audiobook"
+            SET
+                name = COALESCE($1, name),
+                author_id = COALESCE($2, author_id),
+                publisher_id = COALESCE($3, publisher_id),
+                genre_id = COALESCE($4, genre_id),
+                price_dollars = COALESCE($5, price_dollars),
+                price_cents = COALESCE($6, price_cents),
+                length = COALESCE($7, length),
+                file_path = COALESCE($8, file_path),
+                stream_count = COALESCE($9, stream_count),
+                overall_rating = COALESCE($10, overall_rating),
+                edited_at = current_timestamp
+            WHERE id = $11
+            RETURNING *
+            "#,
+            params.name,
+            params.author_id,
+            params.publisher_id,
+            params.genre_id,
+            params.price_dollars,
+            params.price_cents,
+            params.length,
+            params.file_path,
+            params.stream_count,
+            params.overall_rating,
+            validated_audiobook.id
         )
-        .await?;
-        let _ = AudiobookRepository::audiobook_is_correct(book_query.clone())?;
-
-        let mut query_builder = AudiobookRepository::build_query(params);
-        let books = query_builder
-            .build_query_as()
             .fetch_all(transaction.as_mut())
             .await?;
-        Ok(books)
+        transaction.commit().await?;
+
+        Ok(updated_audio_books)
     }
 }
 
@@ -231,21 +156,18 @@ impl DbDelete<AudiobookDelete, Audiobook> for AudiobookRepository {
 
         let _ = AudiobookRepository::audiobook_is_correct(book_query.clone())?;
 
-        let id = params.id;
-        let deleted_at = Utc::now();
-
-        let books = sqlx::query_as::<_, Audiobook>(
+        let books = sqlx::query_as!(
+            Audiobook,
             r#"
             UPDATE "Audiobook" SET
                 name = $1,
-                deleted_at = $2,
-                edited_at = $2
+                deleted_at = current_timestamp,
+                edited_at = current_timestamp
             WHERE id = $1
             RETURNING *
             "#,
+            params.id,
         )
-        .bind(id)
-        .bind(deleted_at)
         .fetch_all(transaction.as_mut())
         .await?;
         transaction.commit().await?;

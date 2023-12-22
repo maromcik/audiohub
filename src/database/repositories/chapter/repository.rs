@@ -1,6 +1,4 @@
-use crate::database::common::error::BusinessLogicErrorKind::{
-    ChapterDeleted, ChapterDoesNotExist, ChapterUpdateEmpty,
-};
+use crate::database::common::error::BusinessLogicErrorKind::{ChapterDeleted, ChapterDoesNotExist, RatingUpdateEmpty};
 use crate::database::common::error::{
     BusinessLogicError, DbError, DbResultMultiple, DbResultSingle,
 };
@@ -10,7 +8,7 @@ use crate::database::common::{
 use crate::database::models::audiobook::AudiobookGetById;
 use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetById, ChapterUpdate};
 use async_trait::async_trait;
-use sqlx::{PgConnection, Postgres, Transaction};
+use sqlx::{Postgres, Transaction};
 
 pub struct ChapterRepository {
     pool_handler: PoolHandler,
@@ -30,15 +28,15 @@ impl ChapterRepository {
         params: &ChapterGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultSingle<Option<Chapter>> {
-        let conn: &mut PgConnection = transaction_handle;
-
-        let query = sqlx::query_as::<_, Chapter>(
+        let query = sqlx::query_as!(
+            Chapter,
             r#"
             SELECT * FROM "Chapter"
             WHERE id = $1
-            "#)
-            .bind(params.id)
-            .fetch_optional(conn)
+            "#,
+            params.id
+        )
+            .fetch_optional(transaction_handle.as_mut())
             .await?;
 
         if let Some(chapter) = query {
@@ -61,16 +59,16 @@ impl ChapterRepository {
         params: AudiobookGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultMultiple<Chapter> {
-        let conn: &mut PgConnection = transaction_handle;
-
         let chapters =
-            sqlx::query_as::<_, Chapter>(
+            sqlx::query_as!(
+                Chapter,
                 r#"
                 SELECT * FROM "Chapter"
                 WHERE audiobook_id = $1
-                "#)
-                .bind(params.id)
-                .fetch_all(conn)
+                "#,
+                params.id
+            )
+                .fetch_all(transaction_handle.as_mut())
                 .await?;
 
         Ok(chapters)
@@ -80,9 +78,8 @@ impl ChapterRepository {
         params: &ChapterGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultSingle<Chapter> {
-        let conn: &mut PgConnection = transaction_handle;
-
-        let chapter = sqlx::query_as::<_, Chapter>(
+        let chapter = sqlx::query_as!(
+            Chapter,
             r#"
             UPDATE "Chapter"
             SET
@@ -90,10 +87,10 @@ impl ChapterRepository {
                 edited_at = current_timestamp
             WHERE id = $1
             RETURNING *"#,
+            params.id
         )
-        .bind(params.id)
-        .fetch_one(conn)
-        .await?;
+            .fetch_one(transaction_handle.as_mut())
+            .await?;
 
         Ok(chapter)
     }
@@ -102,28 +99,23 @@ impl ChapterRepository {
         params: &ChapterUpdate,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultSingle<Chapter> {
-        let conn: &mut PgConnection = transaction_handle;
-
-        if let Some(name) = &params.name {
-            let chapter = sqlx::query_as::<_, Chapter>(
-                r#"
-                UPDATE "Chapter"
-                SET
-                    name = $1,
-                    edited_at = current_timestamp
-                WHERE id = $2
-                RETURNING *
-                "#,
-            )
-            .bind(name)
-            .bind(&params.id)
-            .fetch_one(conn)
+        let chapter = sqlx::query_as!(
+            Chapter,
+            r#"
+            UPDATE "Chapter"
+            SET
+                name = COALESCE($1, name),
+                edited_at = current_timestamp
+            WHERE id = $2
+            RETURNING *
+            "#,
+            params.name,
+            params.id
+        )
+            .fetch_one(transaction_handle.as_mut())
             .await?;
 
-            return Ok(chapter);
-        }
-
-        Err(DbError::from(BusinessLogicError::new(ChapterUpdateEmpty)))
+        return Ok(chapter);
     }
 
     /// Function which checks if the chapter is correct (existing and not deleted)
@@ -161,17 +153,19 @@ impl DbRepository for ChapterRepository {
 
 #[async_trait]
 impl DbCreate<ChapterCreate, Chapter> for ChapterRepository {
-    async fn create(&mut self, data: &ChapterCreate) -> DbResultSingle<Chapter> {
-        let chapter = sqlx::query_as::<_, Chapter>(
+    async fn create(&mut self, params: &ChapterCreate) -> DbResultSingle<Chapter> {
+        let chapter = sqlx::query_as!(
+            Chapter,
             r#"
             INSERT INTO "Chapter" (name, audiobook_id, length, sequential_number)
             VALUES ($1, $2, $3, $4)
             RETURNING *
-            "#)
-            .bind(&data.name)
-            .bind(&data.audiobook_id)
-            .bind(&data.length)
-            .bind(&data.sequential_number)
+            "#,
+            params.name,
+            params.audiobook_id,
+            params.length,
+            params.sequential_number,
+        )
             .fetch_one(&*self.pool_handler.pool)
             .await?;
 
@@ -207,8 +201,8 @@ impl DbDelete<ChapterGetById, Chapter> for ChapterRepository {
 #[async_trait]
 impl DbUpdate<ChapterUpdate, Chapter> for ChapterRepository {
     async fn update(&mut self, params: &ChapterUpdate) -> DbResultMultiple<Chapter> {
-        if params.name.is_none() {
-            return Err(DbError::from(BusinessLogicError::new(ChapterUpdateEmpty)));
+        if params.name.is_none()  {
+            return Err(DbError::from(BusinessLogicError::new(RatingUpdateEmpty)));
         }
 
         let mut transcation = self.pool_handler.pool.begin().await?;
