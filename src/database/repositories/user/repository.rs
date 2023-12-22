@@ -10,7 +10,10 @@ use crate::database::common::error::BusinessLogicErrorKind::{
     UserDeleted, UserDoesNotExist, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
 };
 use crate::database::common::error::{BusinessLogicError, DbError};
-use crate::database::models::user::{User, UserLogin, UserCreate, UserDelete, UserGetById, UserUpdate};
+use crate::database::models::active_audiobook::ActiveAudiobook;
+use crate::database::models::audiobook::AudiobookGetById;
+use crate::database::models::user::{User, UserLogin, UserCreate, UserDelete, UserGetById, UserUpdate, AddActiveAudiobook, RemoveActiveAudiobook, UpdateActiveAudiobook};
+use crate::database::repositories::audiobook::repository::AudiobookRepository;
 
 pub struct UserRepository {
     pool_handler: PoolHandler,
@@ -256,4 +259,64 @@ impl DbDelete<UserDelete, User> for UserRepository {
 
         Ok(users)
     }
+}
+
+impl UserRepository {
+    async fn add_active_audiobook(&mut self, params: &AddActiveAudiobook) -> DbResultSingle<ActiveAudiobook> {
+        let active_audiobook = sqlx::query_as!(
+            ActiveAudiobook,
+            r#"
+            INSERT INTO "Active_Audiobook" (user_id, audiobook_id, playback_chapter_id, playback_position_in_chapter)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+            "#,
+            params.user_id,
+            params.audiobook_id,
+            params.playback_chapter_id,
+            params.playback_position_in_chapter
+        )
+            .fetch_one(self.pool_handler.pool.as_ref())
+            .await?;
+
+        Ok(active_audiobook)
+    }
+
+    async fn remove_active_audiobook(&mut self, params: &RemoveActiveAudiobook) -> DbResultSingle<ActiveAudiobook> {
+        let removed_active_audiobook = sqlx::query_as!(
+            ActiveAudiobook,
+            r#"
+            DELETE FROM "Active_Audiobook"
+            WHERE user_id = $1 AND audiobook_id = $2 AND playback_chapter_id = $3
+            RETURNING *
+            "#,
+            params.user_id,
+            params.audiobook_id,
+            params.playback_chapter_id,
+        )
+            .fetch_one(self.pool_handler.pool.as_ref())
+            .await?;
+
+        Ok(removed_active_audiobook)
+    }
+
+    async fn update_chapter_of_active_audiobook(&mut self, params: &UpdateActiveAudiobook) -> DbResultSingle<ActiveAudiobook> {
+        let updated_active_audiobook = sqlx::query_as!(
+            ActiveAudiobook,
+            r#"
+            UPDATE "Active_Audiobook"
+            SET playback_position_in_chapter = $1
+            WHERE user_id = $2 AND audiobook_id = $3 AND playback_chapter_id = $4
+            RETURNING *
+            "#,
+            params.user_id,
+            params.audiobook_id,
+            params.playback_chapter_id,
+            params.playback_position_in_chapter
+        )
+            .fetch_one(self.pool_handler.pool.as_ref())
+            .await?;
+
+        Ok(updated_active_audiobook)
+    }
+
 }
