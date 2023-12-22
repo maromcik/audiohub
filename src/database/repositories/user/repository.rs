@@ -227,7 +227,7 @@ impl DbDelete<UserDelete, User> for UserRepository {
 }
 
 impl UserRepository {
-    pub async fn get_all_active_audiobooks(&mut self, params: &UserGetById) -> DbResultMultiple<Audiobook> {
+    pub async fn get_all_active_audiobooks(&mut self, params: &UserGetById) -> DbResultMultiple<ActiveAudiobook> {
         let active_audiobooks = sqlx::query_as!(
             ActiveAudiobook,
             r#"
