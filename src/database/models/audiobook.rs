@@ -1,5 +1,5 @@
 use crate::database::models::Id;
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, PgInterval, Utc};
 
 use sqlx::postgres::types::PgInterval;
 
@@ -30,7 +30,7 @@ pub struct AudiobookCreate {
     pub genre_id: Id,
     pub price_dollars: i32,
     pub price_cents: i32,
-    pub length: Duration,
+    pub length: PgInterval,
     pub file_path: String,
     pub stream_count: i64,
     pub overall_rating: i16,
@@ -47,7 +47,7 @@ impl AudiobookCreate {
         genre_id: &Id,
         price_dollars: &i32,
         price_cents: &i32,
-        length: &Duration,
+        length: &PgInterval,
         file_path: &str,
         stream_count: &i64,
         overall_rating: &i16,
@@ -75,7 +75,7 @@ pub struct AudiobookUpdate {
     pub genre_id: Option<Id>,
     pub price_dollars: Option<i32>,
     pub price_cents: Option<i32>,
-    pub length: Option<Duration>,
+    pub length: Option<PgInterval>,
     pub file_path: Option<String>,
     pub stream_count: Option<i64>,
     pub overall_rating: Option<i16>,
@@ -92,7 +92,7 @@ impl AudiobookUpdate {
         genre_id: Option<&Id>,
         price_dollars: Option<&i32>,
         price_cents: Option<&i32>,
-        length: Option<&Duration>,
+        length: Option<&PgInterval>,
         file_path: Option<&str>,
         stream_count: Option<&i64>,
         overall_rating: Option<&i16>,

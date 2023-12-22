@@ -18,7 +18,7 @@ pub struct Chapter {
 pub struct ChapterCreate {
     pub name: String,
     pub audiobook_id: Id,
-    pub length: Duration,
+    pub length: PgInterval,
     pub sequential_number: i32,
 }
 

@@ -7,7 +7,7 @@ pub struct Rating {
     pub audiobook_id: Id,
     pub user_id: Id,
     pub rating: i16,
-    pub review: String,
+    pub review: Option<String>,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
@@ -18,13 +18,13 @@ pub struct RatingCreate {
     pub audiobook_id: Id,
     pub user_id: Id,
     pub rating: i16,
-    pub review: String,
+    pub review: Option<String>,
 }
 
 #[derive(Debug, Clone)]
 pub struct RatingUpdate {
     pub id: Id,
-    pub rating: Option<String>,
+    pub rating: i16,
     pub review: Option<String>,
 }
 
