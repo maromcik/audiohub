@@ -1,6 +1,6 @@
 pub(crate) mod audiobook;
 pub(crate) mod audiobook_author;
-pub(crate) mod audiobook_user;
+pub(crate) mod active_audiobook;
 pub(crate) mod author;
 pub(crate) mod bookmark;
 pub(crate) mod chapter;

@@ -19,8 +19,8 @@ CREATE INDEX IF NOT EXISTS "Rating_userid_id_idx" ON "audiobooks".public."Rating
 CREATE INDEX IF NOT EXISTS "Bookmark_user_id_idx" ON "audiobooks".public."Bookmark" (user_id);
 CREATE INDEX IF NOT EXISTS "Bookmark_audiobook_id_idx" ON "audiobooks".public."Bookmark" (audiobook_id);
 
-CREATE INDEX IF NOT EXISTS "Audiobook_User_user_id_idx" ON "audiobooks".public."Audiobook_User" (user_id);
-CREATE INDEX IF NOT EXISTS "Audiobook_User_audiobook_id_idx" ON "audiobooks".public."Audiobook_User" (audiobook_id);
+CREATE INDEX IF NOT EXISTS "Active_Audiobook_user_id_idx" ON "audiobooks".public."Active_Audiobook" (user_id);
+CREATE INDEX IF NOT EXISTS "Active_Audiobook_audiobook_id_idx" ON "audiobooks".public."Active_Audiobook" (audiobook_id);
 
 CREATE INDEX IF NOT EXISTS "Audiobook_Author_author_id_idx" ON "audiobooks".public."Audiobook_Author" (author_id);
 CREATE INDEX IF NOT EXISTS "Audiobook_Author_audiobook_id_idx" ON "audiobooks".public."Audiobook_Author" (audiobook_id);

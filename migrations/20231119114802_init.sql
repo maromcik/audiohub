@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS "Bookmark"
 );
 
 
-CREATE TABLE IF NOT EXISTS "Audiobook_User"
+CREATE TABLE IF NOT EXISTS "Active_Audiobook"
 (
     user_id                         bigserial        NOT NULL,
     audiobook_id                    bigserial        NOT NULL,
