@@ -63,6 +63,9 @@ CREATE TABLE IF NOT EXISTS "Audiobook"
     file_path           text            NOT NULL,
     stream_count        bigint          NOT NULL,
     overall_rating      smallint        NOT NULL,
+    created_at   timestamptz NOT NULL DEFAULT now(),
+    edited_at    timestamptz NOT NULL DEFAULT now(),
+    deleted_at   timestamptz,
 
     FOREIGN KEY (publisher_id)      REFERENCES "Publisher" (id),
     FOREIGN KEY (genre_id)          REFERENCES "Genre" (id),
