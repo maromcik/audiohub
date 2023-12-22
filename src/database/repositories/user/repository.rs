@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use chrono::Utc;
-use sqlx::{Acquire, Postgres, Transaction};
+use sqlx::{Postgres, Transaction};
 
 use crate::database::common::error::BusinessLogicErrorKind::{
     UserDeleted, UserDoesNotExist, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
@@ -228,7 +228,7 @@ impl DbDelete<UserDelete, User> for UserRepository {
 }
 
 impl UserRepository {
-    async fn add_active_audiobook(
+    pub async fn add_active_audiobook(
         &mut self,
         params: &AddActiveAudiobook,
     ) -> DbResultSingle<ActiveAudiobook> {
@@ -250,7 +250,7 @@ impl UserRepository {
         Ok(active_audiobook)
     }
 
-    async fn remove_active_audiobook(
+    pub async fn remove_active_audiobook(
         &mut self,
         params: &RemoveActiveAudiobook,
     ) -> DbResultSingle<ActiveAudiobook> {
@@ -271,7 +271,7 @@ impl UserRepository {
         Ok(removed_active_audiobook)
     }
 
-    async fn update_chapter_of_active_audiobook(
+    pub async fn update_chapter_of_active_audiobook(
         &mut self,
         params: &UpdateActiveAudiobook,
     ) -> DbResultSingle<ActiveAudiobook> {

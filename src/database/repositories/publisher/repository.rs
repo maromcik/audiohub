@@ -8,7 +8,7 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbRepository, DbUpdate, PoolHandler,
 };
 use async_trait::async_trait;
-use sqlx::{Acquire, Postgres, Transaction};
+use sqlx::{Postgres, Transaction};
 
 use crate::database::models::publisher::{
     Publisher, PublisherCreate, PublisherDelete, PublisherGetById, PublisherUpdate,

@@ -11,7 +11,7 @@ use crate::database::models::audiobook::AudiobookGetById;
 use crate::database::models::rating::{Rating, RatingCreate, RatingGetById, RatingUpdate};
 use crate::database::models::user::UserGetById;
 use async_trait::async_trait;
-use sqlx::{PgConnection, Postgres, QueryBuilder, Transaction};
+use sqlx::{Postgres, Transaction};
 
 pub struct RatingRepository {
     pool_handler: PoolHandler,

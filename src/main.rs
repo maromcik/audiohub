@@ -5,14 +5,16 @@ use database::common::PoolHandler;
 use database::repositories::user::repository::UserRepository;
 use dotenv::dotenv;
 use sqlx::postgres::PgPoolOptions;
-use sqlx::{Pool, Postgres};
+use sqlx::{PgPool};
+use crate::database::common::{DbPoolHandler, DbRepository};
+
 mod database;
 
-async fn setup_pool() -> anyhow::Result<Pool<Postgres>> {
+async fn setup_pool() -> anyhow::Result<PgPool> {
     dotenv().ok();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let pool = PgPoolOptions::new()
-        .max_connections(5)
+    let pool: PgPool = PgPoolOptions::new()
+        .max_connections(10)
         .connect(&database_url)
         .await?;
 
@@ -23,10 +25,9 @@ async fn setup_pool() -> anyhow::Result<Pool<Postgres>> {
 async fn main() -> anyhow::Result<()> {
     // Create connection pool
     let pool = Arc::new(setup_pool().await?);
-    let _row: (i64,) = sqlx::query_as("SELECT $1")
-        .bind(150_i64)
-        .fetch_one(pool.as_ref())
-        .await?;
+
     // sqlx::migrate!("./migrations").run(&*pool).await?;
+    // let mut user_repository = UserRepository::new(PoolHandler::new(pool));
+
     Ok(())
 }
