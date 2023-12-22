@@ -5,7 +5,7 @@ use sqlx::{Postgres, Transaction};
 use crate::database::common::error::BusinessLogicErrorKind::{
     UserDeleted, UserDoesNotExist, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
 };
-use crate::database::common::error::{BusinessLogicError, DbError, DbResult};
+use crate::database::common::error::{BusinessLogicError, DbError};
 use crate::database::common::error::{DbResultMultiple, DbResultSingle};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler,
