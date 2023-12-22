@@ -1,12 +1,3 @@
--- PKs
-CREATE INDEX IF NOT EXISTS "Author_id_idx" ON "audiobooks".public."Author" (id);
-CREATE INDEX IF NOT EXISTS "Chapter_id_idx" ON "audiobooks".public."Chapter" (id);
-CREATE INDEX IF NOT EXISTS "Genre_id_idx" ON "audiobooks".public."Genre" (id);
-CREATE INDEX IF NOT EXISTS "Publisher_id_idx" ON "audiobooks".public."Publisher" (id);
-CREATE INDEX IF NOT EXISTS "Audiobook_id_idx" ON "audiobooks".public."Audiobook" (id);
-CREATE INDEX IF NOT EXISTS "Rating_id_idx" ON "audiobooks".public."Rating" (id);
-CREATE INDEX IF NOT EXISTS "User_id_idx" ON "audiobooks".public."User" (id);
-
 -- FKs
 CREATE INDEX IF NOT EXISTS "Audiobook_author_id_idx" ON "audiobooks".public."Audiobook" (author_id);
 CREATE INDEX IF NOT EXISTS "Audiobook_genre_id_id_idx" ON "audiobooks".public."Audiobook" (genre_id);
