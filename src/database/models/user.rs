@@ -1,5 +1,4 @@
 use chrono::{DateTime, Duration, Utc};
-use crate::database::models::active_audiobook::ActiveAudiobook;
 use crate::database::models::Id;
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]

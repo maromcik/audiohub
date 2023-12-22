@@ -11,9 +11,7 @@ use crate::database::common::error::BusinessLogicErrorKind::{
 };
 use crate::database::common::error::{BusinessLogicError, DbError};
 use crate::database::models::active_audiobook::ActiveAudiobook;
-use crate::database::models::audiobook::AudiobookGetById;
 use crate::database::models::user::{User, UserLogin, UserCreate, UserDelete, UserGetById, UserUpdate, AddActiveAudiobook, RemoveActiveAudiobook, UpdateActiveAudiobook};
-use crate::database::repositories::audiobook::repository::AudiobookRepository;
 
 pub struct UserRepository {
     pool_handler: PoolHandler,
