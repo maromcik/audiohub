@@ -27,6 +27,7 @@ impl RatingRepository {
         params: &RatingGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultSingle<Option<Rating>> {
+
         let conn: &mut PgConnection = transaction_handle;
 
         let query = sqlx::query_as::<_, Rating>(r#"SELECT * FROM "Rating" WHERE id = $1"#)
@@ -199,7 +200,7 @@ impl DbCreate<RatingCreate, Rating> for RatingRepository {
 impl DbReadOne<RatingGetById, Rating> for RatingRepository {
 
     async fn read_one(&mut self, params: &RatingGetById) -> DbResultSingle<Rating> {
-        let mut transaction = &self.pool_handler.pool.begin().await?;
+        let mut transaction = self.pool_handler.pool.begin().await?;
         let rating = RatingRepository::get_rating(params, &mut transaction).await?;
         let rating = RatingRepository::rating_is_correct(rating);
         transaction.commit().await?;
@@ -211,9 +212,9 @@ impl DbReadOne<RatingGetById, Rating> for RatingRepository {
 impl DbDelete<RatingGetById, Rating> for RatingRepository {
 
     async fn delete(&mut self, params: &RatingGetById) -> DbResultMultiple<Rating> {
-        let mut transaction = &self.pool_handler.pool.begin().await?;
+        let mut transaction = self.pool_handler.pool.begin().await?;
         let rating = RatingRepository::get_rating(params, &mut transaction).await?;
-        if let Ok(correct_rating) = RatingRepository::rating_is_correct(rating) {
+        if let Ok(_) = RatingRepository::rating_is_correct(rating) {
             let rating = RatingRepository::delete_rating(params, &mut transaction).await?;
             transaction.commit().await?;
             Ok(vec![rating])

@@ -165,7 +165,7 @@ impl DbCreate<ChapterCreate, Chapter> for ChapterRepository {
 impl DbReadOne<ChapterGetById, Chapter> for ChapterRepository {
 
     async fn read_one(&mut self, params: &ChapterGetById) -> DbResultSingle<Chapter> {
-        let mut transaction = &self.pool_handler.pool.begin().await?;
+        let mut transaction = self.pool_handler.pool.begin().await?;
         let chapter = ChapterRepository::get(params, &mut transaction).await?;
         let chapter = ChapterRepository::is_correct(chapter);
         transaction.commit().await?;
@@ -177,16 +177,14 @@ impl DbReadOne<ChapterGetById, Chapter> for ChapterRepository {
 impl DbDelete<ChapterGetById, Chapter> for ChapterRepository {
 
     async fn delete(&mut self, params: &ChapterGetById) -> DbResultMultiple<Chapter> {
-        let mut transaction = &self.pool_handler.pool.begin().await?;
+        let mut transaction = self.pool_handler.pool.begin().await?;
         let chapter = ChapterRepository::get(params, &mut transaction).await?;
-        if let Ok(correct_chapter) = ChapterRepository::is_correct(chapter) {
-            let chapter = ChapterRepository::delete_chapter(params, &mut transaction).await?;
-            transaction.commit().await?;
-            Ok(vec![chapter])
-        } else {
-            Err(DbError::from(BusinessLogicError::new(ChapterDeleted)))
-        }
+        ChapterRepository::is_correct(chapter)?;
 
+        let chapter = ChapterRepository::delete_chapter(params, &mut transaction).await?;
+        transaction.commit().await?;
+
+        Ok(vec![chapter])
     }
 }
 
