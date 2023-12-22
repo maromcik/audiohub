@@ -1,8 +1,8 @@
 use std::env;
 use std::sync::Arc;
 
-use database::common::PoolHandler;
-use database::repositories::user::repository::UserRepository;
+// use database::common::PoolHandler;
+// use database::repositories::user::repository::UserRepository;
 use dotenv::dotenv;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool};
