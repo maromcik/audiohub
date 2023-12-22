@@ -5,16 +5,15 @@ use sqlx::{Postgres, Transaction};
 use crate::database::common::error::BusinessLogicErrorKind::{
     UserDeleted, UserDoesNotExist, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
 };
-use crate::database::common::error::{BusinessLogicError, DbError};
+use crate::database::common::error::{BusinessLogicError, DbError, DbResult};
 use crate::database::common::error::{DbResultMultiple, DbResultSingle};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::models::active_audiobook::ActiveAudiobook;
-use crate::database::models::user::{
-    AddActiveAudiobook, RemoveActiveAudiobook, UpdateActiveAudiobook, User, UserCreate, UserDelete,
-    UserGetById, UserLogin, UserUpdate,
-};
+use crate::database::models::audiobook::Audiobook;
+use crate::database::models::bookmark::Bookmark;
+use crate::database::models::user::{AddActiveAudiobook, BookmarkOperation, RemoveActiveAudiobook, UpdateActiveAudiobook, User, UserCreate, UserDelete, UserGetById, UserLogin, UserUpdate};
 
 pub struct UserRepository {
     pool_handler: PoolHandler,
@@ -107,8 +106,8 @@ impl DbCreate<UserCreate, User> for UserRepository {
             params.password_hash,
             params.password_salt,
         )
-        .fetch_one(&*self.pool_handler.pool)
-        .await?;
+            .fetch_one(&*self.pool_handler.pool)
+            .await?;
 
         Ok(user)
     }
@@ -218,8 +217,8 @@ impl DbDelete<UserDelete, User> for UserRepository {
             params.id,
             Utc::now()
         )
-        .fetch_all(transaction.as_mut())
-        .await?;
+            .fetch_all(transaction.as_mut())
+            .await?;
 
         transaction.commit().await?;
 
@@ -228,6 +227,21 @@ impl DbDelete<UserDelete, User> for UserRepository {
 }
 
 impl UserRepository {
+    pub async fn get_all_active_audiobooks(&mut self, params: &UserGetById) -> DbResultMultiple<Audiobook> {
+        let active_audiobooks = sqlx::query_as!(
+            ActiveAudiobook,
+            r#"
+            SELECT * FROM "Active_Audiobook"
+            WHERE user_id = $1
+            "#,
+            params.id
+        )
+            .fetch_all(self.pool_handler.pool.as_ref())
+            .await?;
+        Ok(active_audiobooks)
+    }
+
+
     pub async fn add_active_audiobook(
         &mut self,
         params: &AddActiveAudiobook,
@@ -265,8 +279,8 @@ impl UserRepository {
             params.audiobook_id,
             params.playback_chapter_id,
         )
-        .fetch_one(self.pool_handler.pool.as_ref())
-        .await?;
+            .fetch_one(self.pool_handler.pool.as_ref())
+            .await?;
 
         Ok(removed_active_audiobook)
     }
@@ -289,9 +303,56 @@ impl UserRepository {
             params.audiobook_id,
             params.playback_chapter_id
         )
-        .fetch_one(self.pool_handler.pool.as_ref())
-        .await?;
+            .fetch_one(self.pool_handler.pool.as_ref())
+            .await?;
 
         Ok(updated_active_audiobook)
+    }
+
+
+    pub async fn get_all_bookmarks(&mut self, params: &UserGetById) -> DbResultMultiple<Bookmark> {
+        let bookmarks = sqlx::query_as!(
+            Bookmark,
+            r#"
+            SELECT * FROM "Bookmark"
+            WHERE user_id = $1
+            "#,
+            params.id
+        )
+            .fetch_all(self.pool_handler.pool.as_ref())
+            .await?;
+        Ok(bookmarks)
+    }
+
+    pub async fn bookmark(&mut self, params: &BookmarkOperation) -> DbResultSingle<Bookmark> {
+        let bookmark = sqlx::query_as!(
+            Bookmark,
+            r#"
+            INSERT INTO "Bookmark" (user_id, audiobook_id)
+            VALUES ($1, $2)
+            RETURNING *
+            "#,
+            params.user_id,
+            params.audiobook_id
+        )
+            .fetch_one(self.pool_handler.pool.as_ref())
+            .await?;
+        Ok(bookmark)
+    }
+
+    pub async fn unbookmark(&mut self, params: &BookmarkOperation) -> DbResultSingle<Bookmark> {
+        let bookmark = sqlx::query_as!(
+            Bookmark,
+            r#"
+            DELETE FROM "Bookmark"
+            WHERE user_id = $1 AND audiobook_id = $2
+            RETURNING *
+            "#,
+            params.user_id,
+            params.audiobook_id
+        )
+            .fetch_one(self.pool_handler.pool.as_ref())
+            .await?;
+        Ok(bookmark)
     }
 }

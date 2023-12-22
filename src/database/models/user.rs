@@ -173,14 +173,14 @@ impl AddActiveAudiobook {
     #[must_use]
     #[inline]
     pub const fn new(
-        user_id: &Id,
-        audiobook_id: &Id,
+        user_id: Id,
+        audiobook_id: Id,
         playback_chapter_id: Id,
         playback_position_in_chapter: Option<PgInterval>,
     ) -> Self {
         Self {
-            user_id: *user_id,
-            audiobook_id: *audiobook_id,
+            user_id,
+            audiobook_id,
             playback_chapter_id,
             playback_position_in_chapter,
         }
@@ -197,11 +197,11 @@ pub struct RemoveActiveAudiobook {
 impl RemoveActiveAudiobook {
     #[must_use]
     #[inline]
-    pub const fn new(user_id: &Id, audiobook_id: &Id, playback_chapter_id: &Id) -> Self {
+    pub const fn new(user_id: Id, audiobook_id: Id, playback_chapter_id: Id) -> Self {
         Self {
-            user_id: *user_id,
-            audiobook_id: *audiobook_id,
-            playback_chapter_id: *playback_chapter_id,
+            user_id,
+            audiobook_id,
+            playback_chapter_id,
         }
     }
 }
@@ -218,16 +218,37 @@ impl UpdateActiveAudiobook {
     #[must_use]
     #[inline]
     pub const fn new(
-        user_id: &Id,
-        audiobook_id: &Id,
+        user_id: Id,
+        audiobook_id: Id,
         playback_chapter_id: Id,
         playback_position_in_chapter: PgInterval,
     ) -> Self {
         Self {
-            user_id: *user_id,
-            audiobook_id: *audiobook_id,
+            user_id,
+            audiobook_id,
             playback_chapter_id,
             playback_position_in_chapter,
         }
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct BookmarkOperation {
+    pub user_id: Id,
+    pub audiobook_id: Id,
+}
+
+impl BookmarkOperation {
+    #[must_use]
+    #[inline]
+    pub const fn new(
+        user_id: Id,
+        audiobook_id: Id,
+    ) -> Self {
+        Self {
+            user_id,
+            audiobook_id,
+        }
+    }
+}
+
