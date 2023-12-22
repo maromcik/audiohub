@@ -107,6 +107,17 @@ impl Display for BusinessLogicErrorKind {
                     )
                 )
             }
+            AuthorDoesNotExist => f.write_str(does_not_exist("author").as_str()),
+            AuthorDeleted => f.write_str(deleted("author").as_str()),
+            AuthorUpdateParametersEmpty => {
+                write!(
+                    f,
+                    concat!(
+                    "The provided parameters for Author update query are incorrect",
+                    " (no Author field would be changed)."
+                    )
+                )
+            }
         }
     }
 }

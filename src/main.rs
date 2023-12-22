@@ -4,7 +4,8 @@ use std::sync::Arc;
 use dotenv::dotenv;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{Pool, Postgres};
-
+use database::repositories::user::repository::UserRepository;
+use database::common::PoolHandler;
 mod database;
 
 async fn setup_pool() -> anyhow::Result<Pool<Postgres>> {
