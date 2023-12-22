@@ -1,13 +1,6 @@
 use std::fmt::{Debug, Display, Formatter};
 
-use BusinessLogicErrorKind::{
-    AudiobookDeleted, AudiobookDoesNotExist, AudiobookUpdateParametersEmpty, CommentDeleted,
-    CommentDoesNotExist, PostDeleted, PostDoesNotExist, PublisherDeleted, PublisherDoesNotExist,
-    PublisherUpdateParametersEmpty, UserDeleted, UserDoesNotExist, UserNotCreatorOfComment,
-    UserNotCreatorOfPost, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
-    RatingDeleted, RatingDoesNotExist, RatingUpdateEmpty,
-    ChapterUpdateEmpty, ChapterDeleted, ChapterDoesNotExist
-};
+use BusinessLogicErrorKind::*;
 
 #[derive(Debug)]
 pub enum BusinessLogicErrorKind {
@@ -15,6 +8,7 @@ pub enum BusinessLogicErrorKind {
     UserDoesNotExist,
     UserDeleted,
     UserPasswordDoesNotMatch,
+    UserUpdateParametersEmpty,
 
     // --------------------------
     // Publisher errors
@@ -28,12 +22,6 @@ pub enum BusinessLogicErrorKind {
     AudiobookUpdateParametersEmpty,
 
     // --------------------------
-    // Post errors
-    PostDoesNotExist,
-    PostDeleted,
-    UserNotCreatorOfPost,
-
-    // --------------------------
     // Rating errors
     RatingDoesNotExist,
     RatingDeleted,
@@ -45,15 +33,11 @@ pub enum BusinessLogicErrorKind {
     ChapterDeleted,
     ChapterUpdateEmpty,
 
-    // --------------------------
-    // Comment errors
-    CommentDoesNotExist,
-    CommentDeleted,
-    UserNotCreatorOfComment,
-
-    // --------------------------
-    // Generic errors
-    UserUpdateParametersEmpty,
+    // ------------------
+    // Author errors
+    AuthorDoesNotExist,
+    AuthorDeleted,
+    AuthorUpdateParametersEmpty
 }
 
 impl Display for BusinessLogicErrorKind {
@@ -112,22 +96,6 @@ impl Display for BusinessLogicErrorKind {
                         "The provided parameters for Audiobook update query are incorrect",
                         " (no Audiobook field would be changed)."
                     )
-                )
-            }
-            PostDoesNotExist => f.write_str(does_not_exist("post").as_str()),
-            PostDeleted => f.write_str(deleted("post").as_str()),
-            UserNotCreatorOfPost => {
-                write!(
-                    f,
-                    "The specified user cannot change the post, as they did not create it!"
-                )
-            }
-            CommentDoesNotExist => f.write_str(does_not_exist("comment").as_str()),
-            CommentDeleted => f.write_str(deleted("comment").as_str()),
-            UserNotCreatorOfComment => {
-                write!(
-                    f,
-                    "The specified user cannot change the comment, as they did not create it!"
                 )
             }
             UserUpdateParametersEmpty => {
