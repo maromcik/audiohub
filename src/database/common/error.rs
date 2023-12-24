@@ -25,19 +25,23 @@ pub enum BusinessLogicErrorKind {
     // Rating errors
     RatingDoesNotExist,
     RatingDeleted,
-    RatingUpdateEmpty,
+    RatingUpdateParametersEmpty,
 
     // --------------------------
     // Chapter errors
     ChapterDoesNotExist,
     ChapterDeleted,
-    ChapterUpdateEmpty,
+    ChapterUpdateParametersEmpty,
 
     // ------------------
     // Author errors
     AuthorDoesNotExist,
     AuthorDeleted,
     AuthorUpdateParametersEmpty,
+
+    GenreDeleted,
+    GenreDoesNotExist,
+    GenreUpdateParametersEmpty,
 }
 
 impl Display for BusinessLogicErrorKind {
@@ -56,7 +60,7 @@ impl Display for BusinessLogicErrorKind {
             }
             RatingDoesNotExist => f.write_str(does_not_exist("rating").as_str()),
             RatingDeleted => f.write_str(deleted("rating").as_str()),
-            RatingUpdateEmpty => {
+            RatingUpdateParametersEmpty => {
                 write!(
                     f,
                     concat!(
@@ -67,7 +71,7 @@ impl Display for BusinessLogicErrorKind {
             }
             ChapterDoesNotExist => f.write_str(does_not_exist("chapter").as_str()),
             ChapterDeleted => f.write_str(deleted("chapter").as_str()),
-            ChapterUpdateEmpty => {
+            ChapterUpdateParametersEmpty => {
                 write!(
                     f,
                     concat!(
@@ -115,6 +119,17 @@ impl Display for BusinessLogicErrorKind {
                     concat!(
                         "The provided parameters for Author update query are incorrect",
                         " (no Author field would be changed)."
+                    )
+                )
+            }
+            GenreDoesNotExist => f.write_str(does_not_exist("genre").as_str()),
+            GenreDeleted => f.write_str(deleted("genre").as_str()),
+            GenreUpdateParametersEmpty => {
+                write!(
+                    f,
+                    concat!(
+                    "The provided parameters for Genre update query are incorrect",
+                    " (no Genre field would be changed)."
                     )
                 )
             }

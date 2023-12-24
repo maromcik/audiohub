@@ -1,4 +1,4 @@
-use crate::database::common::error::BusinessLogicErrorKind::{ChapterDeleted, ChapterDoesNotExist, RatingUpdateEmpty};
+use crate::database::common::error::BusinessLogicErrorKind::{ChapterDeleted, ChapterDoesNotExist, RatingUpdateParametersEmpty};
 use crate::database::common::error::{
     BusinessLogicError, DbError, DbResultMultiple, DbResultSingle,
 };
@@ -202,7 +202,7 @@ impl DbDelete<ChapterGetById, Chapter> for ChapterRepository {
 impl DbUpdate<ChapterUpdate, Chapter> for ChapterRepository {
     async fn update(&mut self, params: &ChapterUpdate) -> DbResultMultiple<Chapter> {
         if params.name.is_none()  {
-            return Err(DbError::from(BusinessLogicError::new(RatingUpdateEmpty)));
+            return Err(DbError::from(BusinessLogicError::new(RatingUpdateParametersEmpty)));
         }
 
         let mut transcation = self.pool_handler.pool.begin().await?;

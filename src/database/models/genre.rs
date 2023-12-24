@@ -9,3 +9,67 @@ pub struct Genre {
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
 }
+
+#[derive(Debug, Clone)]
+pub struct GenreCreate {
+    pub name: String,
+}
+
+impl GenreCreate {
+    #[must_use]
+    #[inline]
+    pub fn new(name: &str) -> Self {
+        Self {
+            name: name.to_owned(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct GenreUpdate {
+    pub id: Id,
+    pub name: Option<String>,
+}
+
+impl GenreUpdate {
+    pub fn new(id: &Id, name: Option<&str>) -> Self {
+        let change_to_owned = |value: &str| Some(value.to_owned());
+        Self {
+            id: *id,
+            name: name.and_then(change_to_owned),
+        }
+    }
+
+    #[inline]
+    #[must_use]
+    pub const fn update_fields_none(&self) -> bool {
+        self.name.is_none()
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct GenreDelete {
+    pub id: Id,
+}
+
+impl GenreDelete {
+    #[must_use]
+    #[inline]
+    pub fn new(id: &Id) -> Self {
+        Self { id: *id }
+    }
+}
+
+/// Structure for specific genre access
+#[derive(Debug, Clone)]
+pub struct GenreGetById {
+    pub id: Id,
+}
+
+impl GenreGetById {
+    #[must_use]
+    #[inline]
+    pub fn new(id: &Id) -> Self {
+        Self { id: *id }
+    }
+}

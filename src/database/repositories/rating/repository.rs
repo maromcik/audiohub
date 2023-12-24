@@ -1,5 +1,5 @@
 use crate::database::common::error::BusinessLogicErrorKind::{
-    RatingDeleted, RatingDoesNotExist, RatingUpdateEmpty,
+    RatingDeleted, RatingDoesNotExist, RatingUpdateParametersEmpty,
 };
 use crate::database::common::error::{
     BusinessLogicError, DbError, DbResultMultiple, DbResultSingle,
@@ -237,7 +237,7 @@ impl DbDelete<RatingGetById, Rating> for RatingRepository {
 impl DbUpdate<RatingUpdate, Rating> for RatingRepository {
     async fn update(&mut self, params: &RatingUpdate) -> DbResultMultiple<Rating> {
         if params.review.is_none()  {
-            return Err(DbError::from(BusinessLogicError::new(RatingUpdateEmpty)));
+            return Err(DbError::from(BusinessLogicError::new(RatingUpdateParametersEmpty)));
         }
 
         let mut transcation = self.pool_handler.pool.begin().await?;
