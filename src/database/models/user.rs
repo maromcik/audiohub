@@ -241,14 +241,10 @@ pub struct BookmarkOperation {
 impl BookmarkOperation {
     #[must_use]
     #[inline]
-    pub const fn new(
-        user_id: Id,
-        audiobook_id: Id,
-    ) -> Self {
+    pub const fn new(user_id: Id, audiobook_id: Id) -> Self {
         Self {
             user_id,
             audiobook_id,
         }
     }
 }
-

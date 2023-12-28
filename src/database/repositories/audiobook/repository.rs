@@ -1,14 +1,19 @@
-use crate::database::common::error::BusinessLogicErrorKind::{AudiobookDeleted, AudiobookDoesNotExist, AudiobookUpdateParametersEmpty};
+use crate::database::common::error::BusinessLogicErrorKind::{
+    AudiobookDeleted, AudiobookDoesNotExist, AudiobookUpdateParametersEmpty,
+};
 use crate::database::common::error::{
     BusinessLogicError, DbError, DbResultMultiple, DbResultSingle,
 };
-use crate::database::common::{DbCreate, DbDelete, DbPoolHandler, DbRepository, DbUpdate, PoolHandler};
+use crate::database::common::{
+    DbCreate, DbDelete, DbPoolHandler, DbRepository, DbUpdate, PoolHandler,
+};
 use async_trait::async_trait;
 
 use sqlx::{Postgres, Transaction};
 
-use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookGetById, AudiobookUpdate};
-
+use crate::database::models::audiobook::{
+    Audiobook, AudiobookCreate, AudiobookDelete, AudiobookGetById, AudiobookUpdate,
+};
 
 pub struct AudiobookRepository {
     pool_handler: PoolHandler,
@@ -103,7 +108,11 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
         }
 
         let mut transaction = self.pool_handler.pool.begin().await?;
-        let audiobook = AudiobookRepository::get_audiobook(AudiobookGetById { id: params.id }, &mut transaction).await?;
+        let audiobook = AudiobookRepository::get_audiobook(
+            AudiobookGetById { id: params.id },
+            &mut transaction,
+        )
+        .await?;
         let validated_audiobook = AudiobookRepository::audiobook_is_correct(audiobook)?;
         let updated_audio_books = sqlx::query_as!(
             Audiobook,
@@ -136,8 +145,8 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
             params.overall_rating,
             validated_audiobook.id
         )
-            .fetch_all(transaction.as_mut())
-            .await?;
+        .fetch_all(transaction.as_mut())
+        .await?;
         transaction.commit().await?;
 
         Ok(updated_audio_books)

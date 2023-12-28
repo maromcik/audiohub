@@ -128,8 +128,8 @@ impl Display for BusinessLogicErrorKind {
                 write!(
                     f,
                     concat!(
-                    "The provided parameters for Genre update query are incorrect",
-                    " (no Genre field would be changed)."
+                        "The provided parameters for Genre update query are incorrect",
+                        " (no Genre field would be changed)."
                     )
                 )
             }

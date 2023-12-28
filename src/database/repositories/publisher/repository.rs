@@ -31,8 +31,8 @@ impl PublisherRepository {
             "#,
             params.id
         )
-            .fetch_optional(transaction_handle.as_mut())
-            .await?;
+        .fetch_optional(transaction_handle.as_mut())
+        .await?;
 
         if let Some(publisher) = query {
             return Ok(Some(publisher));
@@ -153,7 +153,6 @@ impl DbDelete<PublisherDelete, Publisher> for PublisherRepository {
         )
         .fetch_all(transaction.as_mut())
         .await?;
-
 
         transaction.commit().await?;
 

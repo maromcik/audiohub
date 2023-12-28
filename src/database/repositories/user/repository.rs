@@ -13,7 +13,10 @@ use crate::database::common::{
 use crate::database::models::active_audiobook::ActiveAudiobook;
 
 use crate::database::models::bookmark::Bookmark;
-use crate::database::models::user::{AddActiveAudiobook, BookmarkOperation, RemoveActiveAudiobook, UpdateActiveAudiobook, User, UserCreate, UserDelete, UserGetById, UserLogin, UserUpdate};
+use crate::database::models::user::{
+    AddActiveAudiobook, BookmarkOperation, RemoveActiveAudiobook, UpdateActiveAudiobook, User,
+    UserCreate, UserDelete, UserGetById, UserLogin, UserUpdate,
+};
 
 pub struct UserRepository {
     pool_handler: PoolHandler,
@@ -41,8 +44,8 @@ impl UserRepository {
             "#,
             params.id
         )
-            .fetch_optional(transaction_handle.as_mut())
-            .await?;
+        .fetch_optional(transaction_handle.as_mut())
+        .await?;
 
         if let Some(user) = query {
             return Ok(Option::from(user));
@@ -126,8 +129,8 @@ impl DbReadOne<UserLogin, User> for UserRepository {
             "#,
             params.email
         )
-            .fetch_optional(&*self.pool_handler.pool)
-            .await?;
+        .fetch_optional(&*self.pool_handler.pool)
+        .await?;
 
         let user_result = UserRepository::user_is_correct(user);
         if let Ok(user) = user_result {
@@ -183,8 +186,8 @@ impl DbUpdate<UserUpdate, User> for UserRepository {
             params.password_salt,
             validated_user.id
         )
-            .fetch_all(transaction.as_mut())
-            .await?;
+        .fetch_all(transaction.as_mut())
+        .await?;
         transaction.commit().await?;
         Ok(updated_users)
     }
@@ -202,7 +205,6 @@ impl DbDelete<UserDelete, User> for UserRepository {
         //user does not exist
         let _ = UserRepository::user_is_correct(user_query.clone())?;
 
-
         let users = sqlx::query_as!(
             User,
             r#"
@@ -217,8 +219,8 @@ impl DbDelete<UserDelete, User> for UserRepository {
             params.id,
             Utc::now()
         )
-            .fetch_all(transaction.as_mut())
-            .await?;
+        .fetch_all(transaction.as_mut())
+        .await?;
 
         transaction.commit().await?;
 
@@ -227,7 +229,10 @@ impl DbDelete<UserDelete, User> for UserRepository {
 }
 
 impl UserRepository {
-    pub async fn get_all_active_audiobooks(&mut self, params: &UserGetById) -> DbResultMultiple<ActiveAudiobook> {
+    pub async fn get_all_active_audiobooks(
+        &mut self,
+        params: &UserGetById,
+    ) -> DbResultMultiple<ActiveAudiobook> {
         let active_audiobooks = sqlx::query_as!(
             ActiveAudiobook,
             r#"
@@ -236,11 +241,10 @@ impl UserRepository {
             "#,
             params.id
         )
-            .fetch_all(self.pool_handler.pool.as_ref())
-            .await?;
+        .fetch_all(self.pool_handler.pool.as_ref())
+        .await?;
         Ok(active_audiobooks)
     }
-
 
     pub async fn add_active_audiobook(
         &mut self,
@@ -279,8 +283,8 @@ impl UserRepository {
             params.audiobook_id,
             params.playback_chapter_id,
         )
-            .fetch_one(self.pool_handler.pool.as_ref())
-            .await?;
+        .fetch_one(self.pool_handler.pool.as_ref())
+        .await?;
 
         Ok(removed_active_audiobook)
     }
@@ -303,12 +307,11 @@ impl UserRepository {
             params.audiobook_id,
             params.playback_chapter_id
         )
-            .fetch_one(self.pool_handler.pool.as_ref())
-            .await?;
+        .fetch_one(self.pool_handler.pool.as_ref())
+        .await?;
 
         Ok(updated_active_audiobook)
     }
-
 
     pub async fn get_all_bookmarks(&mut self, params: &UserGetById) -> DbResultMultiple<Bookmark> {
         let bookmarks = sqlx::query_as!(
@@ -319,8 +322,8 @@ impl UserRepository {
             "#,
             params.id
         )
-            .fetch_all(self.pool_handler.pool.as_ref())
-            .await?;
+        .fetch_all(self.pool_handler.pool.as_ref())
+        .await?;
         Ok(bookmarks)
     }
 
@@ -335,8 +338,8 @@ impl UserRepository {
             params.user_id,
             params.audiobook_id
         )
-            .fetch_one(self.pool_handler.pool.as_ref())
-            .await?;
+        .fetch_one(self.pool_handler.pool.as_ref())
+        .await?;
         Ok(bookmark)
     }
 
@@ -351,8 +354,8 @@ impl UserRepository {
             params.user_id,
             params.audiobook_id
         )
-            .fetch_one(self.pool_handler.pool.as_ref())
-            .await?;
+        .fetch_one(self.pool_handler.pool.as_ref())
+        .await?;
         Ok(bookmark)
     }
 }

@@ -1,4 +1,6 @@
-use crate::database::common::error::BusinessLogicErrorKind::{ChapterDeleted, ChapterDoesNotExist, RatingUpdateParametersEmpty};
+use crate::database::common::error::BusinessLogicErrorKind::{
+    ChapterDeleted, ChapterDoesNotExist, RatingUpdateParametersEmpty,
+};
 use crate::database::common::error::{
     BusinessLogicError, DbError, DbResultMultiple, DbResultSingle,
 };
@@ -36,8 +38,8 @@ impl ChapterRepository {
             "#,
             params.id
         )
-            .fetch_optional(transaction_handle.as_mut())
-            .await?;
+        .fetch_optional(transaction_handle.as_mut())
+        .await?;
 
         if let Some(chapter) = query {
             return Ok(Some(chapter));
@@ -59,17 +61,16 @@ impl ChapterRepository {
         params: AudiobookGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultMultiple<Chapter> {
-        let chapters =
-            sqlx::query_as!(
-                Chapter,
-                r#"
+        let chapters = sqlx::query_as!(
+            Chapter,
+            r#"
                 SELECT * FROM "Chapter"
                 WHERE audiobook_id = $1
                 "#,
-                params.id
-            )
-                .fetch_all(transaction_handle.as_mut())
-                .await?;
+            params.id
+        )
+        .fetch_all(transaction_handle.as_mut())
+        .await?;
 
         Ok(chapters)
     }
@@ -89,8 +90,8 @@ impl ChapterRepository {
             RETURNING *"#,
             params.id
         )
-            .fetch_one(transaction_handle.as_mut())
-            .await?;
+        .fetch_one(transaction_handle.as_mut())
+        .await?;
 
         Ok(chapter)
     }
@@ -112,8 +113,8 @@ impl ChapterRepository {
             params.name,
             params.id
         )
-            .fetch_one(transaction_handle.as_mut())
-            .await?;
+        .fetch_one(transaction_handle.as_mut())
+        .await?;
 
         return Ok(chapter);
     }
@@ -166,8 +167,8 @@ impl DbCreate<ChapterCreate, Chapter> for ChapterRepository {
             params.length,
             params.sequential_number,
         )
-            .fetch_one(&*self.pool_handler.pool)
-            .await?;
+        .fetch_one(&*self.pool_handler.pool)
+        .await?;
 
         Ok(chapter)
     }
@@ -201,8 +202,10 @@ impl DbDelete<ChapterGetById, Chapter> for ChapterRepository {
 #[async_trait]
 impl DbUpdate<ChapterUpdate, Chapter> for ChapterRepository {
     async fn update(&mut self, params: &ChapterUpdate) -> DbResultMultiple<Chapter> {
-        if params.name.is_none()  {
-            return Err(DbError::from(BusinessLogicError::new(RatingUpdateParametersEmpty)));
+        if params.name.is_none() {
+            return Err(DbError::from(BusinessLogicError::new(
+                RatingUpdateParametersEmpty,
+            )));
         }
 
         let mut transcation = self.pool_handler.pool.begin().await?;

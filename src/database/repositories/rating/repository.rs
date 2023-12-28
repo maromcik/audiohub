@@ -31,7 +31,6 @@ impl RatingRepository {
         params: &RatingGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultSingle<Option<Rating>> {
-
         let query = sqlx::query_as!(
             Rating,
             r#"
@@ -40,8 +39,8 @@ impl RatingRepository {
             "#,
             params.id
         )
-            .fetch_optional(transaction_handle.as_mut())
-            .await?;
+        .fetch_optional(transaction_handle.as_mut())
+        .await?;
 
         if let Some(rating) = query {
             return Ok(Some(rating));
@@ -71,8 +70,8 @@ impl RatingRepository {
             "#,
             params.id
         )
-            .fetch_all(transaction_handle.as_mut())
-            .await?;
+        .fetch_all(transaction_handle.as_mut())
+        .await?;
 
         Ok(ratings)
     }
@@ -90,17 +89,16 @@ impl RatingRepository {
         params: AudiobookGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultMultiple<Rating> {
-        let ratings =
-            sqlx::query_as!(
-                Rating,
-                r#"
+        let ratings = sqlx::query_as!(
+            Rating,
+            r#"
                 SELECT * FROM "Rating"
                 WHERE audiobook_id = $1
                 "#,
-                params.id
-            )
-                .fetch_all(transaction_handle.as_mut())
-                .await?;
+            params.id
+        )
+        .fetch_all(transaction_handle.as_mut())
+        .await?;
 
         Ok(ratings)
     }
@@ -146,8 +144,8 @@ impl RatingRepository {
             params.review,
             params.id,
         )
-            .fetch_all(transaction_handle.as_mut())
-            .await?;
+        .fetch_all(transaction_handle.as_mut())
+        .await?;
 
         Ok(ratings)
     }
@@ -200,8 +198,8 @@ impl DbCreate<RatingCreate, Rating> for RatingRepository {
             params.rating,
             params.review
         )
-            .fetch_one(&*self.pool_handler.pool)
-            .await?;
+        .fetch_one(&*self.pool_handler.pool)
+        .await?;
 
         Ok(rating)
     }
@@ -236,8 +234,10 @@ impl DbDelete<RatingGetById, Rating> for RatingRepository {
 #[async_trait]
 impl DbUpdate<RatingUpdate, Rating> for RatingRepository {
     async fn update(&mut self, params: &RatingUpdate) -> DbResultMultiple<Rating> {
-        if params.review.is_none()  {
-            return Err(DbError::from(BusinessLogicError::new(RatingUpdateParametersEmpty)));
+        if params.review.is_none() {
+            return Err(DbError::from(BusinessLogicError::new(
+                RatingUpdateParametersEmpty,
+            )));
         }
 
         let mut transcation = self.pool_handler.pool.begin().await?;

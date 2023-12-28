@@ -5,7 +5,7 @@ use std::sync::Arc;
 // use database::repositories::user::repository::UserRepository;
 use dotenv::dotenv;
 use sqlx::postgres::PgPoolOptions;
-use sqlx::{PgPool};
+use sqlx::PgPool;
 // use crate::database::common::{DbPoolHandler, DbRepository};
 
 mod database;

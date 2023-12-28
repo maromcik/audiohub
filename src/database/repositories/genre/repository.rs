@@ -10,9 +10,7 @@ use crate::database::common::{
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
-use crate::database::models::genre::{
-    Genre, GenreCreate, GenreDelete, GenreGetById, GenreUpdate,
-};
+use crate::database::models::genre::{Genre, GenreCreate, GenreDelete, GenreGetById, GenreUpdate};
 
 pub struct GenreRepository {
     pool_handler: PoolHandler,
@@ -31,16 +29,14 @@ impl GenreRepository {
             "#,
             params.id
         )
-            .fetch_optional(transaction_handle.as_mut())
-            .await?;
+        .fetch_optional(transaction_handle.as_mut())
+        .await?;
 
         if let Some(genre) = query {
             return Ok(Some(genre));
         }
 
-        Err(DbError::from(BusinessLogicError::new(
-            GenreDoesNotExist,
-        )))
+        Err(DbError::from(BusinessLogicError::new(GenreDoesNotExist)))
     }
 
     pub fn genre_is_correct(genre: Option<Genre>) -> DbResultSingle<Genre> {
@@ -51,9 +47,7 @@ impl GenreRepository {
             return Err(DbError::from(BusinessLogicError::new(GenreDeleted)));
         }
 
-        Err(DbError::from(BusinessLogicError::new(
-            GenreDoesNotExist,
-        )))
+        Err(DbError::from(BusinessLogicError::new(GenreDoesNotExist)))
     }
 }
 
@@ -83,8 +77,8 @@ impl DbCreate<GenreCreate, Genre> for GenreRepository {
             "#,
             params.name
         )
-            .fetch_one(&*self.pool_handler.pool)
-            .await?;
+        .fetch_one(&*self.pool_handler.pool)
+        .await?;
 
         Ok(genre)
     }
@@ -102,8 +96,7 @@ impl DbUpdate<GenreUpdate, Genre> for GenreRepository {
         let mut transaction = self.pool_handler.pool.begin().await?;
         let genre_id = GenreGetById::new(&params.id);
 
-        let query_genre =
-            GenreRepository::get_genre(genre_id, &mut transaction).await?;
+        let query_genre = GenreRepository::get_genre(genre_id, &mut transaction).await?;
         let _ = GenreRepository::genre_is_correct(query_genre);
 
         let genres = sqlx::query_as!(
@@ -119,8 +112,8 @@ impl DbUpdate<GenreUpdate, Genre> for GenreRepository {
             params.name,
             params.id
         )
-            .fetch_all(transaction.as_mut())
-            .await?;
+        .fetch_all(transaction.as_mut())
+        .await?;
 
         transaction.commit().await?;
         Ok(genres)
@@ -133,11 +126,8 @@ impl DbDelete<GenreDelete, Genre> for GenreRepository {
         let mut transaction = self.pool_handler.pool.begin().await?;
 
         // Check existence
-        let _ = GenreRepository::get_genre(
-            GenreGetById { id: params.id },
-            &mut transaction,
-        )
-            .await?;
+        let _ =
+            GenreRepository::get_genre(GenreGetById { id: params.id }, &mut transaction).await?;
 
         let genres = sqlx::query_as!(
             Genre,
@@ -151,9 +141,8 @@ impl DbDelete<GenreDelete, Genre> for GenreRepository {
                "#,
             params.id
         )
-            .fetch_all(transaction.as_mut())
-            .await?;
-
+        .fetch_all(transaction.as_mut())
+        .await?;
 
         transaction.commit().await?;
 
