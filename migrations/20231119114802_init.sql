@@ -38,16 +38,6 @@ CREATE TABLE IF NOT EXISTS "Genre"
 );
 
 
-CREATE TABLE IF NOT EXISTS "Author"
-(
-    id         bigserial PRIMARY KEY,
-    ---------------------------------------------
-    name       text        NOT NULL,
-    created_at      timestamptz NOT NULL DEFAULT now(),
-    edited_at       timestamptz NOT NULL DEFAULT now(),
-    deleted_at      timestamptz
-);
-
 
 CREATE TABLE IF NOT EXISTS "Audiobook"
 (
@@ -69,7 +59,7 @@ CREATE TABLE IF NOT EXISTS "Audiobook"
 
     FOREIGN KEY (publisher_id)      REFERENCES "Publisher" (id),
     FOREIGN KEY (genre_id)          REFERENCES "Genre" (id),
-    FOREIGN KEY (author_id)      REFERENCES "Author" (id)
+    FOREIGN KEY (author_id)      REFERENCES "User" (id)
 );
 
 CREATE TABLE IF NOT EXISTS "Chapter"
@@ -125,14 +115,4 @@ CREATE TABLE IF NOT EXISTS "Active_Audiobook"
     FOREIGN KEY (user_id)       REFERENCES "User" (id),
     FOREIGN KEY (audiobook_id)  REFERENCES "Audiobook" (id),
     FOREIGN KEY (audiobook_id)  REFERENCES "Chapter" (id)
-);
-
-CREATE TABLE IF NOT EXISTS "Audiobook_Author"
-(
-    author_id           bigserial        NOT NULL,
-    audiobook_id        bigserial        NOT NULL,
-
-    PRIMARY KEY (author_id, audiobook_id),
-    FOREIGN KEY (author_id)       REFERENCES "Author" (id),
-    FOREIGN KEY (audiobook_id)  REFERENCES "Audiobook" (id)
 );
