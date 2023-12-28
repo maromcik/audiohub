@@ -4,6 +4,7 @@ use actix_web::web;
 use std::env;
 use crate::database::common::{setup_pool, DbPoolHandler, DbRepository};
 use actix_web::{App, HttpServer};
+use actix_files::{Files as ActixFiles, Files};
 use std::sync::Arc;
 use env_logger::Env;
 use log::{info, warn};
@@ -11,6 +12,8 @@ use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::user::repository::UserRepository;
 
 mod database;
+mod handlers;
+mod templates;
 
 const DEFAULT_HOSTNAME: &str = "localhost";
 const DEFAULT_PORT: &str = "8000";
@@ -31,6 +34,9 @@ async fn main() -> anyhow::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(user_repository.clone()))
+            .route("/register", web::get().to(handlers::register))
+            .route("/login", web::get().to(handlers::login))
+            .service(ActixFiles::new("/", "./src/static").prefer_utf8(true))
     })
         .bind(host)?
         .run()
