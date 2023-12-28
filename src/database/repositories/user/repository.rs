@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use chrono::Utc;
-use sqlx::encode::IsNull::No;
-use sqlx::{Postgres, QueryBuilder, Transaction};
+
+use sqlx::{Postgres, Transaction};
 
 use crate::database::common::error::BusinessLogicErrorKind::{
     UserDeleted, UserDoesNotExist, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
@@ -13,7 +13,6 @@ use crate::database::common::{
 };
 use crate::database::models::active_audiobook::ActiveAudiobook;
 
-use crate::database::common::utilities::*;
 use crate::database::models::bookmark::Bookmark;
 use crate::database::models::user::{
     AddActiveAudiobook, BookmarkOperation, RemoveActiveAudiobook, UpdateActiveAudiobook, User,
@@ -134,11 +133,10 @@ impl DbReadOne<UserLogin, User> for UserRepository {
         .fetch_optional(&*self.pool_handler.pool)
         .await?;
 
-        let user_result = UserRepository::user_is_correct(user);
-        if let Ok(user) = user_result {
-            if UserRepository::verify_password(&params.password_hash, &user.password_hash) {
-                return Ok(user);
-            }
+        let user = UserRepository::user_is_correct(user)?;
+
+        if UserRepository::verify_password(&params.password_hash, &user.password_hash) {
+            return Ok(user);
         }
 
         Err(DbError::from(BusinessLogicError::new(
@@ -148,7 +146,29 @@ impl DbReadOne<UserLogin, User> for UserRepository {
 }
 
 #[async_trait]
+impl DbReadOne<UserGetById, User> for UserRepository {
+    /// Login the user with provided parameters, if the user does not exist, is deleted or the
+    /// passwords don't match, return the error about combination of email/password not working
+    async fn read_one(&mut self, params: &UserGetById) -> DbResultSingle<User> {
+        let maybe_user = sqlx::query_as!(
+            User,
+            r#"
+            SELECT * FROM "User"
+            WHERE id = $1
+            "#,
+            params.id
+        )
+        .fetch_optional(&*self.pool_handler.pool)
+        .await?;
+
+        let user = UserRepository::user_is_correct(maybe_user)?;
+        Ok(user)
+    }
+}
+
+#[async_trait]
 impl DbReadMany<UserSearch, User> for UserRepository {
+    // ALTERNATIVE
     // async fn read_many(&mut self, params: &UserSearch) -> DbResultMultiple<User> {
     //     let mut query: QueryBuilder<Postgres> = QueryBuilder::new(r#" SELECT * FROM "User""#);
     //     if !params.search_fields_none() {

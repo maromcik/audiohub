@@ -14,6 +14,37 @@ pub struct Rating {
 }
 
 #[derive(Debug, Clone)]
+pub struct RatingSearch {
+    pub audiobook_id: Option<Id>,
+    pub user_id: Option<Id>,
+    pub min_rating: Option<i16>,
+    pub max_rating: Option<i16>,
+    pub review: Option<String>,
+}
+
+impl RatingSearch {
+    #[must_use]
+    #[inline]
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        audiobook_id: Option<Id>,
+        user_id: Option<Id>,
+        min_rating: Option<i16>,
+        max_rating: Option<i16>,
+        review: Option<&str>,
+    ) -> Self {
+        let change_to_owned = |value: &str| Some(value.to_owned());
+        Self {
+            audiobook_id,
+            user_id,
+            min_rating,
+            max_rating,
+            review: review.and_then(change_to_owned),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct RatingCreate {
     pub audiobook_id: Id,
     pub user_id: Id,

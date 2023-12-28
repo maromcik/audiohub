@@ -5,12 +5,14 @@ use crate::database::common::error::{
     BusinessLogicError, DbError, DbResultMultiple, DbResultSingle,
 };
 use crate::database::common::{
-    DbCreate, DbDelete, DbPoolHandler, DbRepository, DbUpdate, PoolHandler,
+    DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
-use crate::database::models::genre::{Genre, GenreCreate, GenreDelete, GenreGetById, GenreUpdate};
+use crate::database::models::genre::{
+    Genre, GenreCreate, GenreDelete, GenreGetById, GenreSearch, GenreUpdate,
+};
 
 pub struct GenreRepository {
     pool_handler: PoolHandler,
@@ -61,6 +63,45 @@ impl DbRepository for GenreRepository {
     #[inline]
     async fn disconnect(&mut self) -> () {
         self.pool_handler.disconnect().await;
+    }
+}
+
+#[async_trait]
+impl DbReadOne<GenreGetById, Genre> for GenreRepository {
+    /// Login the user with provided parameters, if the user does not exist, is deleted or the
+    /// passwords don't match, return the error about combination of email/password not working
+    async fn read_one(&mut self, params: &GenreGetById) -> DbResultSingle<Genre> {
+        let maybe_genre = sqlx::query_as!(
+            Genre,
+            r#"
+            SELECT * FROM "Genre"
+            WHERE id = $1
+            "#,
+            params.id
+        )
+        .fetch_optional(&*self.pool_handler.pool)
+        .await?;
+
+        let genre = GenreRepository::genre_is_correct(maybe_genre)?;
+        Ok(genre)
+    }
+}
+
+#[async_trait]
+impl DbReadMany<GenreSearch, Genre> for GenreRepository {
+    async fn read_many(&mut self, params: &GenreSearch) -> DbResultMultiple<Genre> {
+        let genres = sqlx::query_as!(
+            Genre,
+            r#"
+            SELECT * FROM "Genre"
+            WHERE
+                (name = $1 OR $1 IS NULL)
+            "#,
+            params.name
+        )
+        .fetch_all(self.pool_handler.pool.as_ref())
+        .await?;
+        Ok(genres)
     }
 }
 

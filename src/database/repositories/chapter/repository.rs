@@ -5,10 +5,12 @@ use crate::database::common::error::{
     BusinessLogicError, DbError, DbResultMultiple, DbResultSingle,
 };
 use crate::database::common::{
-    DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler,
+    DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::models::audiobook::AudiobookGetById;
-use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetById, ChapterUpdate};
+use crate::database::models::chapter::{
+    Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate,
+};
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
@@ -182,6 +184,33 @@ impl DbReadOne<ChapterGetById, Chapter> for ChapterRepository {
         let chapter = ChapterRepository::is_correct(chapter);
         transaction.commit().await?;
         chapter
+    }
+}
+
+#[async_trait]
+impl DbReadMany<ChapterSearch, Chapter> for ChapterRepository {
+    async fn read_many(&mut self, params: &ChapterSearch) -> DbResultMultiple<Chapter> {
+        let chapters = sqlx::query_as!(
+            Chapter,
+            r#"
+            SELECT * FROM "Chapter"
+            WHERE
+                (name = $1 OR $1 IS NULL)
+                AND (name = $1 OR $1 IS NULL)
+                AND (audiobook_id = $2 OR $2 IS NULL)
+                AND (length >= $3 OR $3 IS NULL)
+                AND (length <= $4 OR $4 IS NULL)
+                AND (sequential_number = $5 OR $5 IS NULL)
+            "#,
+            params.name,
+            params.audiobook_id,
+            params.min_length,
+            params.max_length,
+            params.sequential_number,
+        )
+        .fetch_all(self.pool_handler.pool.as_ref())
+        .await?;
+        Ok(chapters)
     }
 }
 

@@ -26,6 +26,21 @@ impl PublisherCreate {
 }
 
 #[derive(Debug, Clone)]
+pub struct PublisherSearch {
+    pub name: String,
+}
+
+impl PublisherSearch {
+    #[must_use]
+    #[inline]
+    pub fn new(name: &str) -> Self {
+        Self {
+            name: name.to_owned(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct PublisherUpdate {
     pub id: Id,
     pub name: Option<String>,

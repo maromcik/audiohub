@@ -26,6 +26,21 @@ impl GenreCreate {
 }
 
 #[derive(Debug, Clone)]
+pub struct GenreSearch {
+    pub name: String,
+}
+
+impl GenreSearch {
+    #[must_use]
+    #[inline]
+    pub fn new(name: &str) -> Self {
+        Self {
+            name: name.to_owned(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct GenreUpdate {
     pub id: Id,
     pub name: Option<String>,

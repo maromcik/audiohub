@@ -5,13 +5,13 @@ use crate::database::common::error::{
     BusinessLogicError, DbError, DbResultMultiple, DbResultSingle,
 };
 use crate::database::common::{
-    DbCreate, DbDelete, DbPoolHandler, DbRepository, DbUpdate, PoolHandler,
+    DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
 use crate::database::models::publisher::{
-    Publisher, PublisherCreate, PublisherDelete, PublisherGetById, PublisherUpdate,
+    Publisher, PublisherCreate, PublisherDelete, PublisherGetById, PublisherSearch, PublisherUpdate,
 };
 
 pub struct PublisherRepository {
@@ -67,6 +67,45 @@ impl DbRepository for PublisherRepository {
     #[inline]
     async fn disconnect(&mut self) -> () {
         self.pool_handler.disconnect().await;
+    }
+}
+
+#[async_trait]
+impl DbReadOne<PublisherGetById, Publisher> for PublisherRepository {
+    /// Login the user with provided parameters, if the user does not exist, is deleted or the
+    /// passwords don't match, return the error about combination of email/password not working
+    async fn read_one(&mut self, params: &PublisherGetById) -> DbResultSingle<Publisher> {
+        let maybe_publisher = sqlx::query_as!(
+            Publisher,
+            r#"
+            SELECT * FROM "Publisher"
+            WHERE id = $1
+            "#,
+            params.id
+        )
+        .fetch_optional(&*self.pool_handler.pool)
+        .await?;
+
+        let publisher = PublisherRepository::publisher_is_correct(maybe_publisher)?;
+        Ok(publisher)
+    }
+}
+
+#[async_trait]
+impl DbReadMany<PublisherSearch, Publisher> for PublisherRepository {
+    async fn read_many(&mut self, params: &PublisherSearch) -> DbResultMultiple<Publisher> {
+        let publishers = sqlx::query_as!(
+            Publisher,
+            r#"
+            SELECT * FROM "Publisher"
+            WHERE
+                (name = $1 OR $1 IS NULL)
+            "#,
+            params.name
+        )
+        .fetch_all(self.pool_handler.pool.as_ref())
+        .await?;
+        Ok(publishers)
     }
 }
 

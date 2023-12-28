@@ -5,11 +5,14 @@ use crate::database::common::error::{
     BusinessLogicError, DbError, DbResultMultiple, DbResultSingle,
 };
 use crate::database::common::{
-    DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler,
+    DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::models::audiobook::AudiobookGetById;
-use crate::database::models::rating::{Rating, RatingCreate, RatingGetById, RatingUpdate};
+use crate::database::models::rating::{
+    Rating, RatingCreate, RatingGetById, RatingSearch, RatingUpdate,
+};
 use crate::database::models::user::UserGetById;
+
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
@@ -213,6 +216,32 @@ impl DbReadOne<RatingGetById, Rating> for RatingRepository {
         let rating = RatingRepository::rating_is_correct(rating);
         transaction.commit().await?;
         rating
+    }
+}
+
+#[async_trait]
+impl DbReadMany<RatingSearch, Rating> for RatingRepository {
+    async fn read_many(&mut self, params: &RatingSearch) -> DbResultMultiple<Rating> {
+        let ratings = sqlx::query_as!(
+            Rating,
+            r#"
+            SELECT * FROM "Rating"
+            WHERE
+                (audiobook_id = $1 OR $1 IS NULL)
+                AND (user_id = $2 OR $2 IS NULL)
+                AND (rating >= $3 OR $3 IS NULL)
+                AND (rating <= $4 OR $4 IS NULL)
+                AND (review = $5 OR $5 IS NULL)
+            "#,
+            params.audiobook_id,
+            params.user_id,
+            params.min_rating,
+            params.max_rating,
+            params.review,
+        )
+        .fetch_all(self.pool_handler.pool.as_ref())
+        .await?;
+        Ok(ratings)
     }
 }
 

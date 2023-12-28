@@ -15,6 +15,15 @@ pub struct Chapter {
 }
 
 #[derive(Debug, Clone)]
+pub struct ChapterSearch {
+    pub name: Option<String>,
+    pub audiobook_id: Option<Id>,
+    pub min_length: Option<PgInterval>,
+    pub max_length: Option<PgInterval>,
+    pub sequential_number: Option<i32>,
+}
+
+#[derive(Debug, Clone)]
 pub struct ChapterCreate {
     pub name: String,
     pub audiobook_id: Id,

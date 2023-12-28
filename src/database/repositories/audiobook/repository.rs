@@ -5,14 +5,14 @@ use crate::database::common::error::{
     BusinessLogicError, DbError, DbResultMultiple, DbResultSingle,
 };
 use crate::database::common::{
-    DbCreate, DbDelete, DbPoolHandler, DbRepository, DbUpdate, PoolHandler,
+    DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use async_trait::async_trait;
 
 use sqlx::{Postgres, Transaction};
 
 use crate::database::models::audiobook::{
-    Audiobook, AudiobookCreate, AudiobookDelete, AudiobookGetById, AudiobookUpdate,
+    Audiobook, AudiobookCreate, AudiobookDelete, AudiobookGetById, AudiobookSearch, AudiobookUpdate,
 };
 
 pub struct AudiobookRepository {
@@ -67,6 +67,67 @@ impl DbRepository for AudiobookRepository {
 
     async fn disconnect(&mut self) -> () {
         self.pool_handler.disconnect().await;
+    }
+}
+
+#[async_trait]
+impl DbReadOne<AudiobookGetById, Audiobook> for AudiobookRepository {
+    /// Login the user with provided parameters, if the user does not exist, is deleted or the
+    /// passwords don't match, return the error about combination of email/password not working
+    async fn read_one(&mut self, params: &AudiobookGetById) -> DbResultSingle<Audiobook> {
+        let maybe_audiobook = sqlx::query_as!(
+            Audiobook,
+            r#"
+            SELECT * FROM "Audiobook"
+            WHERE id = $1
+            "#,
+            params.id
+        )
+        .fetch_optional(&*self.pool_handler.pool)
+        .await?;
+
+        let audiobook = AudiobookRepository::audiobook_is_correct(maybe_audiobook)?;
+        Ok(audiobook)
+    }
+}
+
+#[async_trait]
+impl DbReadMany<AudiobookSearch, Audiobook> for AudiobookRepository {
+    async fn read_many(&mut self, params: &AudiobookSearch) -> DbResultMultiple<Audiobook> {
+        let audiobooks = sqlx::query_as!(
+            Audiobook,
+            r#"
+            SELECT * FROM "Audiobook"
+            WHERE
+                (name = $1 OR $1 IS NULL)
+                AND (author_id = $2 OR $2 IS NULL)
+                AND (publisher_id = $3 OR $3 IS NULL)
+                AND (genre_id = $4 OR $4 IS NULL)
+                AND (price_dollars >= $5 OR $5 IS NULL)
+                AND (price_dollars <= $6 OR $6 IS NULL)
+                AND (length >= $7 OR $7 IS NULL)
+                AND (length <= $8 OR $8 IS NULL)
+                AND (stream_count >= $9 OR $9 IS NULL)
+                AND (stream_count <= $10 OR $10 IS NULL)
+                AND (overall_rating >= $11 OR $11 IS NULL)
+                AND (overall_rating <= $12 OR $12 IS NULL)
+            "#,
+            params.name,
+            params.author_id,
+            params.publisher_id,
+            params.genre_id,
+            params.min_price_dollars,
+            params.max_price_dollars,
+            params.min_length,
+            params.max_length,
+            params.min_stream_count,
+            params.max_stream_count,
+            params.min_overall_rating,
+            params.max_overall_rating,
+        )
+        .fetch_all(self.pool_handler.pool.as_ref())
+        .await?;
+        Ok(audiobooks)
     }
 }
 

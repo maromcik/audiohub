@@ -23,6 +23,22 @@ pub struct Audiobook {
 }
 
 #[derive(Debug, Clone)]
+pub struct AudiobookSearch {
+    pub name: Option<String>,
+    pub author_id: Option<Id>,
+    pub publisher_id: Option<Id>,
+    pub genre_id: Option<Id>,
+    pub min_price_dollars: Option<i32>,
+    pub max_price_dollars: Option<i32>,
+    pub min_length: Option<PgInterval>,
+    pub max_length: Option<PgInterval>,
+    pub min_stream_count: Option<i64>,
+    pub max_stream_count: Option<i64>,
+    pub min_overall_rating: Option<i16>,
+    pub max_overall_rating: Option<i16>,
+}
+
+#[derive(Debug, Clone)]
 pub struct AudiobookCreate {
     pub name: String,
     pub author_id: Id,
