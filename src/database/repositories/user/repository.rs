@@ -1,19 +1,24 @@
 use async_trait::async_trait;
 use chrono::Utc;
-use sqlx::{Postgres, QueryBuilder, Transaction};
 use sqlx::encode::IsNull::No;
+use sqlx::{Postgres, QueryBuilder, Transaction};
 
 use crate::database::common::error::BusinessLogicErrorKind::{
     UserDeleted, UserDoesNotExist, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
 };
 use crate::database::common::error::{BusinessLogicError, DbError};
 use crate::database::common::error::{DbResultMultiple, DbResultSingle};
-use crate::database::common::{DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler};
+use crate::database::common::{
+    DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
+};
 use crate::database::models::active_audiobook::ActiveAudiobook;
 
+use crate::database::common::utilities::*;
 use crate::database::models::bookmark::Bookmark;
-use crate::database::models::user::{AddActiveAudiobook, BookmarkOperation, RemoveActiveAudiobook, UpdateActiveAudiobook, User, UserCreate, UserDelete, UserGetById, UserLogin, UserSearch, UserUpdate};
-use crate::database::common::utilities::{*};
+use crate::database::models::user::{
+    AddActiveAudiobook, BookmarkOperation, RemoveActiveAudiobook, UpdateActiveAudiobook, User,
+    UserCreate, UserDelete, UserGetById, UserLogin, UserSearch, UserUpdate,
+};
 
 pub struct UserRepository {
     pool_handler: PoolHandler,
@@ -144,27 +149,44 @@ impl DbReadOne<UserLogin, User> for UserRepository {
 
 #[async_trait]
 impl DbReadMany<UserSearch, User> for UserRepository {
+    // async fn read_many(&mut self, params: &UserSearch) -> DbResultMultiple<User> {
+    //     let mut query: QueryBuilder<Postgres> = QueryBuilder::new(r#" SELECT * FROM "User""#);
+    //     if !params.search_fields_none() {
+    //         query.push(" WHERE ");
+    //     }
+    //
+    //     let mut query_pairs: Vec<String> = Vec::new();
+    //     parse_value("username", &params.username, &mut query_pairs, None);
+    //     parse_value("name", &params.name, &mut query_pairs, None);
+    //     parse_value("surname", &params.surname, &mut query_pairs, None);
+    //     parse_value("email", &params.email, &mut query_pairs, None);
+    //
+    //     add_sql_to_query(&mut query, &query_pairs, Some(" AND "));
+    //
+    //     println!("query: {}", query.sql());
+    //     let mut transaction = self.pool_handler.pool.begin().await?;
+    //
+    //     let users = query
+    //         .build_query_as()
+    //         .fetch_all(transaction.as_mut())
+    //         .await?;
+    //     Ok(users)
+    // }
     async fn read_many(&mut self, params: &UserSearch) -> DbResultMultiple<User> {
-        let mut query: QueryBuilder<Postgres> = QueryBuilder::new(r#" SELECT * FROM "User""#);
-        if !params.search_fields_none() {
-            query.push(" WHERE ");
-        }
-
-        let mut query_pairs: Vec<String> = Vec::new();
-        parse_value("username", &params.username, &mut query_pairs, None);
-        parse_value("name", &params.name, &mut query_pairs, None);
-        parse_value("surname", &params.surname, &mut query_pairs, None);
-        parse_value("email", &params.email, &mut query_pairs, None);
-
-        add_sql_to_query(&mut query, &query_pairs, Some(" AND "));
-
-        println!("query: {}", query.sql());
-        let mut transaction = self.pool_handler.pool.begin().await?;
-
-        let users = query
-            .build_query_as()
-            .fetch_all(transaction.as_mut())
-            .await?;
+        let users = sqlx::query_as!(
+            User,
+            r#"
+            SELECT * FROM "User"
+            WHERE
+                (username = $1 OR $1 IS NULL) AND (email = $2 OR $2 IS NULL) AND (name = $3 OR $3 IS NULL) AND (surname = $4 OR $4 IS NULL)
+            "#,
+            params.username,
+            params.email,
+            params.name,
+            params.surname
+        )
+        .fetch_all(self.pool_handler.pool.as_ref())
+        .await?;
         Ok(users)
     }
 }

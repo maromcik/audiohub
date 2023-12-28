@@ -4,7 +4,9 @@ pub mod user_repo_tests {
 
     use sqlx::PgPool;
 
-    use crate::database::common::{DbCreate, DbPoolHandler, DbReadMany, DbRepository, DbUpdate, PoolHandler};
+    use crate::database::common::{
+        DbCreate, DbPoolHandler, DbReadMany, DbRepository, DbUpdate, PoolHandler,
+    };
     use crate::database::models::user::{UserCreate, UserSearch, UserUpdate};
     use crate::database::repositories::user::repository::UserRepository;
 
