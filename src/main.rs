@@ -24,10 +24,8 @@ async fn setup_pool() -> anyhow::Result<PgPool> {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // Create connection pool
-    let _pool = Arc::new(setup_pool().await?);
-
-    // sqlx::migrate!("./migrations").run(&*pool).await?;
+    let pool = Arc::new(setup_pool().await?);
+    sqlx::migrate!("./migrations").run(&*pool).await?;
     // let mut user_repository = UserRepository::new(PoolHandler::new(pool));
-
     Ok(())
 }
