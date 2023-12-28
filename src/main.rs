@@ -1,9 +1,7 @@
+use crate::database::common::{setup_pool, DbPoolHandler, DbRepository};
 use std::sync::Arc;
-use crate::database::common::{DbPoolHandler, DbRepository, setup_pool};
 
 mod database;
-
-
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
