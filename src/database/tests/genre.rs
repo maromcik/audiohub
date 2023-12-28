@@ -29,7 +29,7 @@ pub mod genre_repo_tests {
             .await
             .unwrap();
         let u = &genres[0];
-        assert_eq!(u.name, "ufonske porno");
+        assert_eq!(u.name, "audio");
         genre_repository.disconnect().await;
     }
 }
