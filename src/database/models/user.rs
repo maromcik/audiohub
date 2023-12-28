@@ -58,6 +58,41 @@ impl UserCreate {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct UserSearch {
+    pub username: Option<String>,
+    pub email: Option<String>,
+    pub name: Option<String>,
+    pub surname: Option<String>,
+}
+
+impl UserSearch {
+    #[must_use]
+    #[inline]
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        username: Option<&str>,
+        email: Option<&str>,
+        name: Option<&str>,
+        surname: Option<&str>,
+    ) -> Self {
+        let change_to_owned = |value: &str| Some(value.to_owned());
+        Self {
+            username: username.and_then(change_to_owned),
+            email: email.and_then(change_to_owned),
+            name: name.and_then(change_to_owned),
+            surname: surname.and_then(change_to_owned),
+        }
+    }
+    #[must_use]
+    pub const fn search_fields_none(&self) -> bool {
+        self.username.is_none()
+            && self.email.is_none()
+            && self.name.is_none()
+            && self.surname.is_none()
+    }
+}
+
 /// Structure passed to the repository when trying to update a user
 #[derive(Debug, Clone)]
 pub struct UserUpdate {

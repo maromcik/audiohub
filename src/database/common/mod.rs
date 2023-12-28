@@ -1,3 +1,4 @@
 pub use repository::*;
 pub(crate) mod error;
-mod repository;
+pub mod repository;
+pub mod utilities;
