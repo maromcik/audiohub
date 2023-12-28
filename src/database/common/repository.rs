@@ -1,6 +1,10 @@
+use std::env;
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use dotenv::dotenv;
+use sqlx::PgPool;
+use sqlx::postgres::PgPoolOptions;
 
 use crate::database::common::error::{DbResultMultiple, DbResultSingle};
 
@@ -131,4 +135,15 @@ pub trait DbRepository {
 
     /// Method allowing the database repository to disconnect from the database pool gracefully
     async fn disconnect(&mut self) -> ();
+}
+
+pub async fn setup_pool(max_conn: u32) -> anyhow::Result<PgPool> {
+    dotenv().ok();
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let pool: PgPool = PgPoolOptions::new()
+        .max_connections(max_conn)
+        .connect(&database_url)
+        .await?;
+
+    Ok(pool)
 }
