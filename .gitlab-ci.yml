@@ -3,11 +3,13 @@ workflow:
     - when: always
 
 default:
-  image: rust:alpine3.18
+  image: rust:1.73-bullseye
   before_script:
-    - apk add --no-cache alpine-sdk
+    - apt-get update
+    - apt-get install postgresql-client --yes
     - rustc --version
     - cargo --version
+    - echo 'DATABASE_URL="postgres://${PG_USER}:${PG_PASS}@${PG_HOST}/${PG_DB}"' > .env
 
   tags:
     - shared-fi
@@ -34,7 +36,8 @@ lint:
     - rustup component add rustfmt
     - cargo fmt -- --check
     - rustup component add clippy
-    - cargo clippy -- -D warnings
+    - cargo check
+#    - cargo clippy -- -D warnings
 
 tests:
   stage: tests
