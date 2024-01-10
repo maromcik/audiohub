@@ -39,6 +39,6 @@ pub fn configure_webapp(pool: &Arc<PgPool>) -> Box<dyn FnOnce(&mut ServiceConfig
             .service(audiobook_scope)
             .service(chapter_scope)
             .service(rating_scope)
-            .service(ActixFiles::new("/", "./src/static").prefer_utf8(true));
+            .service(ActixFiles::new("/", "./static").prefer_utf8(true));
     })
 }
