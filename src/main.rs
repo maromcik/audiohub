@@ -3,13 +3,13 @@ use crate::database::common::{setup_pool, DbPoolHandler, DbRepository};
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::database::repositories::*;
+use crate::init::configure_webapp;
 use actix_web::web;
 use actix_web::{App, HttpServer};
 use env_logger::Env;
 use log::{info, warn};
 use std::env;
 use std::sync::Arc;
-use crate::init::configure_webapp;
 
 mod database;
 mod init;
@@ -28,8 +28,7 @@ async fn main() -> anyhow::Result<()> {
     };
     info!("starting server on {host}");
 
-    HttpServer::new(move || App::new()
-        .configure(configure_webapp(&pool)))
+    HttpServer::new(move || App::new().configure(configure_webapp(&pool)))
         .bind(host)?
         .run()
         .await?;
