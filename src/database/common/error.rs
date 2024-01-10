@@ -108,6 +108,9 @@ impl Display for BusinessLogicErrorKind {
             }
             DatabaseError => write!(f, "Unknown database error occured"),
             MigrationError => write!(f, "Unknown migration-related error occured"),
+            UniqueConstraintError => write!(f, "Duplicate value"),
+            NotNullError => write!(f, "Field cannot be null"),
+            ForeignKeyError => write!(f, "Related field error"),
         }
     }
 }
