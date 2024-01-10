@@ -6,7 +6,7 @@ use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::rating::repository::RatingRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::handlers::{user_login, user_register};
-use actix_files::{Files as ActixFiles, Files};
+use actix_files::{Files as ActixFiles};
 use actix_web::web;
 use actix_web::web::ServiceConfig;
 use sqlx::PgPool;
