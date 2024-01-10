@@ -5,7 +5,6 @@ use actix_web::{App, HttpServer};
 use env_logger::Env;
 use log::{info, warn};
 use std::env;
-use std::sync::Arc;
 
 mod database;
 mod error;
