@@ -1,9 +1,9 @@
+use crate::database::common::error::{BusinessLogicError, BusinessLogicErrorKind, DbError};
 use actix_web::http::header::ContentType;
 use actix_web::http::StatusCode;
 use actix_web::{HttpResponse, ResponseError};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use crate::database::common::error::{BusinessLogicError, BusinessLogicErrorKind, DbError};
 
 #[derive(Serialize, Deserialize)]
 struct Error {
@@ -32,7 +32,6 @@ pub enum AppError {
     Conflict,
 }
 
-
 impl From<DbError> for AppError {
     fn from(e: DbError) -> Self {
         match e.business_error.error_kind {
@@ -51,10 +50,10 @@ impl From<DbError> for AppError {
             | BusinessLogicErrorKind::ChapterDoesNotExist
             | BusinessLogicErrorKind::GenreDoesNotExist
             | BusinessLogicErrorKind::RatingDoesNotExist => Self::NotFound,
-            
+
             BusinessLogicErrorKind::UniqueConstraintError => Self::Conflict,
 
-            _ => Self::InternalServerError
+            _ => Self::InternalServerError,
         }
     }
 }

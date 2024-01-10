@@ -8,10 +8,10 @@ use std::env;
 use std::sync::Arc;
 
 mod database;
-mod init;
-mod handlers;
-mod templates;
 mod error;
+mod handlers;
+mod init;
+mod templates;
 
 const DEFAULT_HOSTNAME: &str = "localhost";
 const DEFAULT_PORT: &str = "8000";

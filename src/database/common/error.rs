@@ -1,5 +1,5 @@
-use std::fmt::{Debug, Display, Formatter};
 use sqlx::Error;
+use std::fmt::{Debug, Display, Formatter};
 
 use BusinessLogicErrorKind::*;
 
@@ -36,7 +36,7 @@ pub enum BusinessLogicErrorKind {
     MigrationError,
     UniqueConstraintError,
     NotNullError,
-    ForeignKeyError
+    ForeignKeyError,
 }
 
 impl Display for BusinessLogicErrorKind {
@@ -59,8 +59,8 @@ impl Display for BusinessLogicErrorKind {
                 write!(
                     f,
                     concat!(
-                    "The provided parameters for Rating update query are incorrect",
-                    " (no Rating field would be changed)."
+                        "The provided parameters for Rating update query are incorrect",
+                        " (no Rating field would be changed)."
                     )
                 )
             }
@@ -70,8 +70,8 @@ impl Display for BusinessLogicErrorKind {
                 write!(
                     f,
                     concat!(
-                    "The provided parameters for Chapter update query are incorrect",
-                    " (no Chapter field would be changed)."
+                        "The provided parameters for Chapter update query are incorrect",
+                        " (no Chapter field would be changed)."
                     )
                 )
             }
@@ -81,8 +81,8 @@ impl Display for BusinessLogicErrorKind {
                 write!(
                     f,
                     concat!(
-                    "The provided parameters for Audiobook update query are incorrect",
-                    " (no Audiobook field would be changed)."
+                        "The provided parameters for Audiobook update query are incorrect",
+                        " (no Audiobook field would be changed)."
                     )
                 )
             }
@@ -90,8 +90,8 @@ impl Display for BusinessLogicErrorKind {
                 write!(
                     f,
                     concat!(
-                    "The provided parameters for User update query are incorrect",
-                    " (no User field would be changed)."
+                        "The provided parameters for User update query are incorrect",
+                        " (no User field would be changed)."
                     )
                 )
             }
@@ -101,13 +101,13 @@ impl Display for BusinessLogicErrorKind {
                 write!(
                     f,
                     concat!(
-                    "The provided parameters for Genre update query are incorrect",
-                    " (no Genre field would be changed)."
+                        "The provided parameters for Genre update query are incorrect",
+                        " (no Genre field would be changed)."
                     )
                 )
             }
             DatabaseError => write!(f, "Unknown database error occured"),
-            MigrationError => write!(f, "Unknown migration-related error occured")
+            MigrationError => write!(f, "Unknown migration-related error occured"),
         }
     }
 }
@@ -198,15 +198,28 @@ impl std::error::Error for DbError {
 impl From<sqlx::Error> for DbError {
     fn from(value: sqlx::Error) -> Self {
         match value {
-            sqlx::Error::Database(err) => {
-                match err.kind() {
-                    sqlx::error::ErrorKind::ForeignKeyViolation => Self::new(BusinessLogicError::new(ForeignKeyError), &format!("sqlx error: {err}")),
-                    sqlx::error::ErrorKind::UniqueViolation => Self::new(BusinessLogicError::new(UniqueConstraintError), &format!("sqlx error: {err}")),
-                    sqlx::error::ErrorKind::NotNullViolation => Self::new(BusinessLogicError::new(NotNullError), &format!("sqlx error: {err}")),
-                    _ => Self::new(BusinessLogicError::new(DatabaseError), &format!("sqlx error: {err}"))
-                }
-            }
-            _ => Self::new(BusinessLogicError::new(DatabaseError), &format!("sqlx error: {value}"))
+            sqlx::Error::Database(err) => match err.kind() {
+                sqlx::error::ErrorKind::ForeignKeyViolation => Self::new(
+                    BusinessLogicError::new(ForeignKeyError),
+                    &format!("sqlx error: {err}"),
+                ),
+                sqlx::error::ErrorKind::UniqueViolation => Self::new(
+                    BusinessLogicError::new(UniqueConstraintError),
+                    &format!("sqlx error: {err}"),
+                ),
+                sqlx::error::ErrorKind::NotNullViolation => Self::new(
+                    BusinessLogicError::new(NotNullError),
+                    &format!("sqlx error: {err}"),
+                ),
+                _ => Self::new(
+                    BusinessLogicError::new(DatabaseError),
+                    &format!("sqlx error: {err}"),
+                ),
+            },
+            _ => Self::new(
+                BusinessLogicError::new(DatabaseError),
+                &format!("sqlx error: {value}"),
+            ),
         }
     }
 }
@@ -214,7 +227,10 @@ impl From<sqlx::Error> for DbError {
 /// Conversion from sqlx migrate error, useful when using `?` operator
 impl From<sqlx::migrate::MigrateError> for DbError {
     fn from(value: sqlx::migrate::MigrateError) -> Self {
-        Self::new(BusinessLogicError::new(MigrationError), &format!("Migration error: {value}"))
+        Self::new(
+            BusinessLogicError::new(MigrationError),
+            &format!("Migration error: {value}"),
+        )
     }
 }
 
