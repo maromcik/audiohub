@@ -27,13 +27,33 @@ pub enum AppError {
     BadRequest,
     #[error("templating error")]
     TemplatingError,
+
+    #[error("conflict")]
+    Conflict,
 }
 
 
+impl From<DbError> for AppError {
+    fn from(e: DbError) -> Self {
+        match e.business_error.error_kind {
+            BusinessLogicErrorKind::UserUpdateParametersEmpty
+            | BusinessLogicErrorKind::AudiobookUpdateParametersEmpty
+            | BusinessLogicErrorKind::ChapterUpdateParametersEmpty
+            | BusinessLogicErrorKind::RatingUpdateParametersEmpty
+            | BusinessLogicErrorKind::AudiobookDeleted
+            | BusinessLogicErrorKind::ChapterDeleted
+            | BusinessLogicErrorKind::GenreDeleted
+            | BusinessLogicErrorKind::RatingDeleted
+            | BusinessLogicErrorKind::UserDeleted => Self::BadRequest,
 
-impl From<BusinessLogicError> for AppError {
-    fn from(error: BusinessLogicErrorKind) -> Self {
-        match error {
+            BusinessLogicErrorKind::UserDoesNotExist
+            | BusinessLogicErrorKind::AudiobookDoesNotExist
+            | BusinessLogicErrorKind::ChapterDoesNotExist
+            | BusinessLogicErrorKind::GenreDoesNotExist
+            | BusinessLogicErrorKind::RatingDoesNotExist => Self::NotFound,
+            
+            BusinessLogicErrorKind::UniqueConstraintError => Self::Conflict,
+
             _ => Self::InternalServerError
         }
     }
@@ -43,6 +63,7 @@ impl ResponseError for AppError {
     fn status_code(&self) -> StatusCode {
         match *self {
             AppError::BadRequest => StatusCode::BAD_REQUEST,
+            AppError::Conflict => StatusCode::CONFLICT,
             AppError::NotFound => StatusCode::NOT_FOUND,
             AppError::TemplatingError | AppError::InternalServerError => {
                 StatusCode::INTERNAL_SERVER_ERROR
