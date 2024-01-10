@@ -14,6 +14,7 @@ use crate::database::models::publisher::{
     Publisher, PublisherCreate, PublisherDelete, PublisherGetById, PublisherSearch, PublisherUpdate,
 };
 
+#[derive(Clone)]
 pub struct PublisherRepository {
     pool_handler: PoolHandler,
 }

@@ -19,6 +19,7 @@ use crate::database::models::user::{
     UserCreate, UserDelete, UserGetById, UserLogin, UserSearch, UserUpdate,
 };
 
+#[derive(Clone)]
 pub struct UserRepository {
     pool_handler: PoolHandler,
 }

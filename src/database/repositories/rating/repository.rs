@@ -16,6 +16,7 @@ use crate::database::models::user::UserGetById;
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
+#[derive(Clone)]
 pub struct RatingRepository {
     pool_handler: PoolHandler,
 }

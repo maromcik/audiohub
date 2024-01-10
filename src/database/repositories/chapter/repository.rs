@@ -14,6 +14,7 @@ use crate::database::models::chapter::{
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
+#[derive(Clone)]
 pub struct ChapterRepository {
     pool_handler: PoolHandler,
 }

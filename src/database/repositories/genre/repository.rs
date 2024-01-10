@@ -14,6 +14,7 @@ use crate::database::models::genre::{
     Genre, GenreCreate, GenreDelete, GenreGetById, GenreSearch, GenreUpdate,
 };
 
+#[derive(Clone)]
 pub struct GenreRepository {
     pool_handler: PoolHandler,
 }

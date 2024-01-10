@@ -15,6 +15,7 @@ use crate::database::models::audiobook::{
     Audiobook, AudiobookCreate, AudiobookDelete, AudiobookGetById, AudiobookSearch, AudiobookUpdate,
 };
 
+#[derive(Clone)]
 pub struct AudiobookRepository {
     pool_handler: PoolHandler,
 }
