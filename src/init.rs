@@ -5,6 +5,8 @@ use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::rating::repository::RatingRepository;
 use crate::database::repositories::user::repository::UserRepository;
+use crate::handlers::{user_login, user_register};
+use actix_files::{Files as ActixFiles, Files};
 use actix_web::web;
 use actix_web::web::ServiceConfig;
 use sqlx::PgPool;
@@ -17,9 +19,10 @@ pub fn configure_webapp(pool: &Arc<PgPool>) -> Box<dyn FnOnce(&mut ServiceConfig
     let genre_repository = GenreRepository::new(PoolHandler::new(pool.clone()));
     let rating_repository = RatingRepository::new(PoolHandler::new(pool.clone()));
 
-    let user_scope = web::scope("user").app_data(web::Data::new(user_repository.clone()));
-    // .service(user_get);
-    // .service(user_post);
+    let user_scope = web::scope("user")
+        .app_data(web::Data::new(user_repository.clone()))
+        .service(user_login)
+        .service(user_register);
 
     let audiobook_scope =
         web::scope("audiobook").app_data(web::Data::new(audiobook_repository.clone()));
@@ -35,6 +38,7 @@ pub fn configure_webapp(pool: &Arc<PgPool>) -> Box<dyn FnOnce(&mut ServiceConfig
             .service(genre_scope)
             .service(audiobook_scope)
             .service(chapter_scope)
-            .service(rating_scope);
+            .service(rating_scope)
+            .service(ActixFiles::new("/", "./src/static").prefer_utf8(true));
     })
 }
