@@ -1,19 +1,18 @@
-use crate::database::common::{*};
-use crate::database::repositories::{*};
-use actix_web::web;
-use std::env;
+use crate::database::common::*;
 use crate::database::common::{setup_pool, DbPoolHandler, DbRepository};
-use actix_web::{App, HttpServer};
-use actix_files::{Files as ActixFiles, Files};
-use std::sync::Arc;
-use env_logger::Env;
-use log::{info, warn};
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::user::repository::UserRepository;
+use crate::database::repositories::*;
+use crate::init::configure_webapp;
+use actix_web::web;
+use actix_web::{App, HttpServer};
+use env_logger::Env;
+use log::{info, warn};
+use std::env;
+use std::sync::Arc;
 
 mod database;
-mod handlers;
-mod templates;
+mod init;
 
 const DEFAULT_HOSTNAME: &str = "localhost";
 const DEFAULT_PORT: &str = "8000";
@@ -28,16 +27,8 @@ async fn main() -> anyhow::Result<()> {
         warn!("failed loading .env file: {e}");
     };
     info!("starting server on {host}");
-    let user_repository = UserRepository::new(PoolHandler::new(pool.clone()));
-    let audiobook_repository = AudiobookRepository::new(PoolHandler::new(pool.clone()));
 
-    HttpServer::new(move || {
-        App::new()
-            .app_data(web::Data::new(user_repository.clone()))
-            .route("/register", web::get().to(handlers::register))
-            .route("/login", web::get().to(handlers::login))
-            .service(ActixFiles::new("/", "./src/static").prefer_utf8(true))
-    })
+    HttpServer::new(move || App::new().configure(configure_webapp(&pool)))
         .bind(host)?
         .run()
         .await?;
