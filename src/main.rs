@@ -1,10 +1,6 @@
 use crate::database::common::*;
 use crate::database::common::{setup_pool, DbPoolHandler, DbRepository};
-use crate::database::repositories::audiobook::repository::AudiobookRepository;
-use crate::database::repositories::user::repository::UserRepository;
-use crate::database::repositories::*;
 use crate::init::configure_webapp;
-use actix_web::web;
 use actix_web::{App, HttpServer};
 use env_logger::Env;
 use log::{info, warn};
@@ -12,8 +8,9 @@ use std::env;
 use std::sync::Arc;
 
 mod database;
+mod handlers;
 mod init;
-
+mod templates;
 const DEFAULT_HOSTNAME: &str = "localhost";
 const DEFAULT_PORT: &str = "8000";
 
