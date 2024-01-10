@@ -8,10 +8,10 @@ use crate::database::repositories::user::repository::UserRepository;
 use actix_web::web;
 use actix_web::web::ServiceConfig;
 use sqlx::PgPool;
-use std::sync::Arc;
+
 use crate::handlers::user_index;
 
-pub fn configure_webapp(pool: PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
+pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let user_repository = UserRepository::new(PoolHandler::new(pool.clone()));
     let audiobook_repository = AudiobookRepository::new(PoolHandler::new(pool.clone()));
     let chapter_repository = ChapterRepository::new(PoolHandler::new(pool.clone()));
