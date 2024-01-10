@@ -12,7 +12,8 @@ use actix_web::web::ServiceConfig;
 use sqlx::PgPool;
 use std::sync::Arc;
 
-pub fn configure_webapp(pool: &Arc<PgPool>) -> Box<dyn FnOnce(&mut ServiceConfig)> {
+
+pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let user_repository = UserRepository::new(PoolHandler::new(pool.clone()));
     let audiobook_repository = AudiobookRepository::new(PoolHandler::new(pool.clone()));
     let chapter_repository = ChapterRepository::new(PoolHandler::new(pool.clone()));

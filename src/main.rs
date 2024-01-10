@@ -5,11 +5,11 @@ use actix_web::{App, HttpServer};
 use env_logger::Env;
 use log::{info, warn};
 use std::env;
-use std::sync::Arc;
 
 mod database;
-mod init;
+mod error;
 mod handlers;
+mod init;
 mod templates;
 
 const DEFAULT_HOSTNAME: &str = "localhost";
@@ -18,7 +18,7 @@ const DEFAULT_PORT: &str = "8000";
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
     // Create connection pool
-    let pool = Arc::new(setup_pool(10_u32).await?);
+    let pool = setup_pool(10_u32).await?;
     let host = parse_host();
     env_logger::init_from_env(Env::default().default_filter_or("info"));
     if let Err(e) = dotenvy::dotenv() {

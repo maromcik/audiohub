@@ -10,8 +10,7 @@ pub mod genre_repo_tests {
 
     #[sqlx::test(fixtures("genres"))]
     async fn create_genre(pool: PgPool) {
-        let arc_pool = Arc::new(pool);
-        let mut genre_repository = GenreRepository::new(PoolHandler::new(arc_pool));
+        let genre_repository = GenreRepository::new(PoolHandler::new(pool));
         let u = genre_repository
             .create(&GenreCreate::new("mexicky rap"))
             .await
@@ -22,8 +21,7 @@ pub mod genre_repo_tests {
 
     #[sqlx::test(fixtures("genres"))]
     async fn update_genre(pool: PgPool) {
-        let arc_pool = Arc::new(pool);
-        let mut genre_repository = GenreRepository::new(PoolHandler::new(arc_pool));
+        let genre_repository = GenreRepository::new(PoolHandler::new(pool));
         let genres = genre_repository
             .update(&GenreUpdate::new(&10, Some("audio")))
             .await
