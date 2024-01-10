@@ -1,4 +1,3 @@
-use crate::database::common::error::{BusinessLogicErrorKind, DbResultMultiple};
 use crate::database::common::{DbDelete, DbReadOne};
 use crate::database::models::user::{UserDelete, UserLogin};
 use crate::database::repositories::user::repository::UserRepository;
