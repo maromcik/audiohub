@@ -10,8 +10,6 @@ use actix_files::Files as ActixFiles;
 use actix_web::web;
 use actix_web::web::ServiceConfig;
 use sqlx::PgPool;
-use std::sync::Arc;
-
 
 pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let user_repository = UserRepository::new(PoolHandler::new(pool.clone()));

@@ -1,4 +1,3 @@
-use sqlx::Error;
 use std::fmt::{Debug, Display, Formatter};
 
 use BusinessLogicErrorKind::*;
