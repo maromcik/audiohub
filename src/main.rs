@@ -11,6 +11,7 @@ mod database;
 mod init;
 mod handlers;
 mod templates;
+mod error;
 
 const DEFAULT_HOSTNAME: &str = "localhost";
 const DEFAULT_PORT: &str = "8000";
