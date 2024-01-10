@@ -1,6 +1,6 @@
 // handlers.rs
 use crate::database::repositories::user::repository::UserRepository;
-use crate::templates::{LoginTemplate, RegistrationTemplate};
+use crate::templates::user::{RegistrationTemplate, LoginTemplate};
 
 use actix_web::{
     delete, error::ErrorInternalServerError, get, patch, post, put, web, HttpResponse,
