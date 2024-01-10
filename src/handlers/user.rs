@@ -3,10 +3,10 @@ use crate::database::repositories::user::repository::UserRepository;
 use crate::templates::{LoginTemplate, RegistrationTemplate};
 
 use actix_web::{
-    delete, error::ErrorInternalServerError, get, patch, post, put, web, HttpResponse, Result as ActixResult,
+    delete, error::ErrorInternalServerError, get, patch, post, put, web, HttpResponse,
+    Result as ActixResult,
 };
 use askama::Template;
-
 
 #[get("/register")]
 pub async fn register(user_repo: web::Data<UserRepository>) -> ActixResult<HttpResponse> {
