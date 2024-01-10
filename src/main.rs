@@ -1,4 +1,3 @@
-use crate::database::common::setup_pool;
 use crate::database::common::DbPoolHandler;
 use crate::database::common::DbRepository;
 use crate::init::configure_webapp;
