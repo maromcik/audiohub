@@ -9,16 +9,18 @@ use actix_web::web;
 use actix_web::web::ServiceConfig;
 use sqlx::PgPool;
 use std::sync::Arc;
+use crate::handlers::user_index;
 
-pub fn configure_webapp(pool: &Arc<PgPool>) -> Box<dyn FnOnce(&mut ServiceConfig)> {
+pub fn configure_webapp(pool: PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let user_repository = UserRepository::new(PoolHandler::new(pool.clone()));
     let audiobook_repository = AudiobookRepository::new(PoolHandler::new(pool.clone()));
     let chapter_repository = ChapterRepository::new(PoolHandler::new(pool.clone()));
     let genre_repository = GenreRepository::new(PoolHandler::new(pool.clone()));
     let rating_repository = RatingRepository::new(PoolHandler::new(pool.clone()));
 
-    let user_scope = web::scope("user").app_data(web::Data::new(user_repository.clone()));
-    // .service(user_get);
+    let user_scope = web::scope("user")
+        .app_data(web::Data::new(user_repository.clone()))
+        .service(user_index);
     // .service(user_post);
 
     let audiobook_scope =
