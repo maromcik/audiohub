@@ -9,8 +9,10 @@ use env_logger::Env;
 use log::{info, warn};
 use std::env;
 use std::sync::Arc;
+use crate::init::configure_webapp;
 
 mod database;
+mod init;
 
 const DEFAULT_HOSTNAME: &str = "localhost";
 const DEFAULT_PORT: &str = "8000";
@@ -25,10 +27,9 @@ async fn main() -> anyhow::Result<()> {
         warn!("failed loading .env file: {e}");
     };
     info!("starting server on {host}");
-    let user_repository = UserRepository::new(PoolHandler::new(pool.clone()));
-    let audiobook_repository = AudiobookRepository::new(PoolHandler::new(pool.clone()));
 
-    HttpServer::new(move || App::new().app_data(web::Data::new(user_repository.clone())))
+    HttpServer::new(move || App::new()
+        .configure(configure_webapp(&pool)))
         .bind(host)?
         .run()
         .await?;
