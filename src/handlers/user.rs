@@ -1,4 +1,4 @@
-// handlers.rs
+// testiki
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
 use crate::templates::user::{LoginTemplate, RegistrationTemplate};
@@ -14,7 +14,7 @@ use pbkdf2::{
     },
     Pbkdf2
 };
-use crate::database::models::user::UserCreate;
+use crate::database::models::user::{UserCreate, UserLogin};
 
 #[get("/register")]
 pub async fn register(user_repo: web::Data<UserRepository>) -> Result<HttpResponse, AppError> {
@@ -69,4 +69,21 @@ pub async fn create_user(form: web::Form<NewUserForm>,
 fn hash_password(password: String, salt: SaltString) -> Result<String, pbkdf2::password_hash::Error >{
     let password_hash = Pbkdf2.hash_password(password.as_bytes(), &salt)?.to_string();
     Ok(password_hash)
+}
+
+#[derive(serde::Deserialize)]
+pub struct LoginUser {
+    email: String,
+    password: String,
+}
+
+pub async fn login_user(form: web::Form<LoginUser>,
+                        mut user_repo: web::Data<UserRepository>) -> Result<HttpResponse, AppError>{
+    let user_login = UserLogin{ email: form.email.to_string(), password_hash: form.password.to_string() };
+    //let db_user = user_repo.read_one(&user_login).await?;
+
+    //verify passwords
+    //login
+
+    Ok(HttpResponse::Ok().content_type("text/html").body(user_login.email))
 }
