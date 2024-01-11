@@ -1,20 +1,18 @@
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
+use crate::templates::homepage_template::HomepageTemplate;
 use crate::templates::user::{LoginTemplate, RegistrationTemplate};
 use actix_web::{get, post, web, HttpResponse};
 use askama::Template;
 
 pub use hmac;
 
-use pbkdf2::{
-    password_hash::{
-        rand_core::OsRng,
-        PasswordHash, PasswordHasher, PasswordVerifier, SaltString
-    },
-    Pbkdf2
-};
 use crate::database::common::{DbCreate, DbReadOne};
 use crate::database::models::user::{UserCreate, UserLogin};
+use pbkdf2::{
+    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    Pbkdf2,
+};
 
 #[get("/register")]
 pub async fn register(user_repo: web::Data<UserRepository>) -> Result<HttpResponse, AppError> {
@@ -41,13 +39,15 @@ pub struct NewUserForm {
 }
 
 #[post("/register")]
-pub async fn add_user(form: web::Form<NewUserForm>,
-                         mut user_repo: web::Data<UserRepository>) -> Result<HttpResponse, AppError>{
-
+pub async fn add_user(
+    form: web::Form<NewUserForm>,
+    mut user_repo: web::Data<UserRepository>,
+) -> Result<HttpResponse, AppError> {
     let salt = SaltString::generate(&mut OsRng);
-    let hashed_password = hash_password(form.password.to_string(), salt).unwrap_or_else(|_| "".to_string());
+    let hashed_password =
+        hash_password(form.password.to_string(), salt).unwrap_or_else(|_| "".to_string());
 
-    let new_user = UserCreate{
+    let new_user = UserCreate {
         username: form.username.to_string(),
         email: form.email.to_string(),
         name: form.name.to_string(),
@@ -58,16 +58,26 @@ pub async fn add_user(form: web::Form<NewUserForm>,
         password_salt: "".to_string(),
     };
 
-
     let created_user = user_repo.create(&new_user).await?;
-    let user1 = user_repo.read_one(&UserLogin::new(&form.email, &hashed_password.clone())).await?;
+    let user1 = user_repo
+        .read_one(&UserLogin::new(&form.email, &hashed_password.clone()))
+        .await?;
 
-    Ok(HttpResponse::Ok().content_type("text/html").body(user1.username))
+    let template = HomepageTemplate {};
+    let body = template.render()?;
 
+    Ok(HttpResponse::Ok()
+        .content_type("text/html")
+        .body(user1.username))
 }
 
-fn hash_password(password: String, salt: SaltString) -> Result<String, pbkdf2::password_hash::Error >{
-    let password_hash = Pbkdf2.hash_password(password.as_bytes(), &salt)?.to_string();
+fn hash_password(
+    password: String,
+    salt: SaltString,
+) -> Result<String, pbkdf2::password_hash::Error> {
+    let password_hash = Pbkdf2
+        .hash_password(password.as_bytes(), &salt)?
+        .to_string();
     Ok(password_hash)
 }
 
@@ -77,13 +87,20 @@ pub struct LoginUser {
     password: String,
 }
 
-pub async fn login_user(form: web::Form<LoginUser>,
-                        mut user_repo: web::Data<UserRepository>) -> Result<HttpResponse, AppError>{
-    let user_login = UserLogin{ email: form.email.to_string(), password_hash: form.password.to_string() };
+pub async fn login_user(
+    form: web::Form<LoginUser>,
+    mut user_repo: web::Data<UserRepository>,
+) -> Result<HttpResponse, AppError> {
+    let user_login = UserLogin {
+        email: form.email.to_string(),
+        password_hash: form.password.to_string(),
+    };
     //let db_user = user_repo.read_one(&user_login).await?;
 
     //verify passwords
     //login
 
-    Ok(HttpResponse::Ok().content_type("text/html").body(user_login.email))
+    Ok(HttpResponse::Ok()
+        .content_type("text/html")
+        .body(user_login.email))
 }

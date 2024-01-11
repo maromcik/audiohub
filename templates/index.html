@@ -1,10 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="utf-8" />
+    <title>Homepage</title>
+    <link rel="stylesheet" href="../static/css/main.css">
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.4"
+            integrity="sha384-zUfuhFKKZCbHTY6aRR46gxiqszMk5tcHjsVFxnUo8VMus4kHGVdIYVbOYYNlKmHV"
+            crossorigin="anonymous"></script>
 </head>
 <body>
-Dobry den
+
+    <div class="appbar">
+        <div class="title">
+            Homepage
+        </div>
+    </div>
+    <div class="sidebar">
+        <a class="active first" href="#home">Home</a>
+        <a href="#books">Books</a>
+        <a href="#genre">Genre</a>
+        <a href="#profile">Profile</a>
+    </div>
 </body>
 </html>
