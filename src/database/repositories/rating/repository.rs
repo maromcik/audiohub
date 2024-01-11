@@ -16,6 +16,7 @@ use crate::database::models::user::UserGetById;
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
+#[derive(Clone)]
 pub struct RatingRepository {
     pool_handler: PoolHandler,
 }
@@ -181,14 +182,14 @@ impl DbRepository for RatingRepository {
     }
 
     #[inline]
-    async fn disconnect(&mut self) -> () {
+    async fn disconnect(&self) -> () {
         self.pool_handler.disconnect().await;
     }
 }
 
 #[async_trait]
 impl DbCreate<RatingCreate, Rating> for RatingRepository {
-    async fn create(&mut self, params: &RatingCreate) -> DbResultSingle<Rating> {
+    async fn create(&self, params: &RatingCreate) -> DbResultSingle<Rating> {
         let rating = sqlx::query_as!(
             Rating,
             r#"
@@ -201,7 +202,7 @@ impl DbCreate<RatingCreate, Rating> for RatingRepository {
             params.rating,
             params.review
         )
-        .fetch_one(&*self.pool_handler.pool)
+        .fetch_one(&self.pool_handler.pool)
         .await?;
 
         Ok(rating)
@@ -210,7 +211,7 @@ impl DbCreate<RatingCreate, Rating> for RatingRepository {
 
 #[async_trait]
 impl DbReadOne<RatingGetById, Rating> for RatingRepository {
-    async fn read_one(&mut self, params: &RatingGetById) -> DbResultSingle<Rating> {
+    async fn read_one(&self, params: &RatingGetById) -> DbResultSingle<Rating> {
         let mut transaction = self.pool_handler.pool.begin().await?;
         let rating = RatingRepository::get_rating(params, &mut transaction).await?;
         let rating = RatingRepository::rating_is_correct(rating);
@@ -221,7 +222,7 @@ impl DbReadOne<RatingGetById, Rating> for RatingRepository {
 
 #[async_trait]
 impl DbReadMany<RatingSearch, Rating> for RatingRepository {
-    async fn read_many(&mut self, params: &RatingSearch) -> DbResultMultiple<Rating> {
+    async fn read_many(&self, params: &RatingSearch) -> DbResultMultiple<Rating> {
         let ratings = sqlx::query_as!(
             Rating,
             r#"
@@ -239,7 +240,7 @@ impl DbReadMany<RatingSearch, Rating> for RatingRepository {
             params.max_rating,
             params.review,
         )
-        .fetch_all(self.pool_handler.pool.as_ref())
+        .fetch_all(&self.pool_handler.pool)
         .await?;
         Ok(ratings)
     }
@@ -247,7 +248,7 @@ impl DbReadMany<RatingSearch, Rating> for RatingRepository {
 
 #[async_trait]
 impl DbDelete<RatingGetById, Rating> for RatingRepository {
-    async fn delete(&mut self, params: &RatingGetById) -> DbResultMultiple<Rating> {
+    async fn delete(&self, params: &RatingGetById) -> DbResultMultiple<Rating> {
         let mut transaction = self.pool_handler.pool.begin().await?;
         let rating = RatingRepository::get_rating(params, &mut transaction).await?;
         if let Ok(_) = RatingRepository::rating_is_correct(rating) {
@@ -262,7 +263,7 @@ impl DbDelete<RatingGetById, Rating> for RatingRepository {
 
 #[async_trait]
 impl DbUpdate<RatingUpdate, Rating> for RatingRepository {
-    async fn update(&mut self, params: &RatingUpdate) -> DbResultMultiple<Rating> {
+    async fn update(&self, params: &RatingUpdate) -> DbResultMultiple<Rating> {
         if params.review.is_none() {
             return Err(DbError::from(BusinessLogicError::new(
                 RatingUpdateParametersEmpty,

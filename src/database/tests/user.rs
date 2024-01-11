@@ -12,8 +12,7 @@ pub mod user_repo_tests {
 
     #[sqlx::test(fixtures("users"))]
     async fn create_user(pool: PgPool) {
-        let arc_pool = Arc::new(pool);
-        let mut user_repository = UserRepository::new(PoolHandler::new(arc_pool));
+        let user_repository = UserRepository::new(PoolHandler::new(pool));
         let u = user_repository
             .create(&UserCreate::new("cokel", "c@c.com", "", "", "", "", "", ""))
             .await
@@ -24,8 +23,7 @@ pub mod user_repo_tests {
 
     #[sqlx::test(fixtures("users"))]
     async fn update_user(pool: PgPool) {
-        let arc_pool = Arc::new(pool);
-        let mut user_repository = UserRepository::new(PoolHandler::new(arc_pool));
+        let user_repository = UserRepository::new(PoolHandler::new(pool));
         let users = user_repository
             .update(&UserUpdate::new(
                 &10,
@@ -48,8 +46,7 @@ pub mod user_repo_tests {
 
     #[sqlx::test(fixtures("users"))]
     async fn get_filtered_users(pool: PgPool) {
-        let arc_pool = Arc::new(pool);
-        let mut user_repository = UserRepository::new(PoolHandler::new(arc_pool));
+        let user_repository = UserRepository::new(PoolHandler::new(pool));
         let users = user_repository
             .read_many(&UserSearch::new(None, None, None, None))
             .await

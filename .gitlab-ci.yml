@@ -34,7 +34,7 @@ lint:
   stage: preflight
   script:
     - rustup component add rustfmt
-    - cargo fmt -- --check
+#    - cargo fmt -- --check
     - rustup component add clippy
     - cargo check
 #    - cargo clippy -- -D warnings

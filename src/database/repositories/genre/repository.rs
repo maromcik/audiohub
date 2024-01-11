@@ -14,6 +14,7 @@ use crate::database::models::genre::{
     Genre, GenreCreate, GenreDelete, GenreGetById, GenreSearch, GenreUpdate,
 };
 
+#[derive(Clone)]
 pub struct GenreRepository {
     pool_handler: PoolHandler,
 }
@@ -61,7 +62,7 @@ impl DbRepository for GenreRepository {
     }
 
     #[inline]
-    async fn disconnect(&mut self) -> () {
+    async fn disconnect(&self) -> () {
         self.pool_handler.disconnect().await;
     }
 }
@@ -70,7 +71,7 @@ impl DbRepository for GenreRepository {
 impl DbReadOne<GenreGetById, Genre> for GenreRepository {
     /// Login the user with provided parameters, if the user does not exist, is deleted or the
     /// passwords don't match, return the error about combination of email/password not working
-    async fn read_one(&mut self, params: &GenreGetById) -> DbResultSingle<Genre> {
+    async fn read_one(&self, params: &GenreGetById) -> DbResultSingle<Genre> {
         let maybe_genre = sqlx::query_as!(
             Genre,
             r#"
@@ -79,7 +80,7 @@ impl DbReadOne<GenreGetById, Genre> for GenreRepository {
             "#,
             params.id
         )
-        .fetch_optional(&*self.pool_handler.pool)
+        .fetch_optional(&self.pool_handler.pool)
         .await?;
 
         let genre = GenreRepository::genre_is_correct(maybe_genre)?;
@@ -89,7 +90,7 @@ impl DbReadOne<GenreGetById, Genre> for GenreRepository {
 
 #[async_trait]
 impl DbReadMany<GenreSearch, Genre> for GenreRepository {
-    async fn read_many(&mut self, params: &GenreSearch) -> DbResultMultiple<Genre> {
+    async fn read_many(&self, params: &GenreSearch) -> DbResultMultiple<Genre> {
         let genres = sqlx::query_as!(
             Genre,
             r#"
@@ -99,7 +100,7 @@ impl DbReadMany<GenreSearch, Genre> for GenreRepository {
             "#,
             params.name
         )
-        .fetch_all(self.pool_handler.pool.as_ref())
+        .fetch_all(&self.pool_handler.pool)
         .await?;
         Ok(genres)
     }
@@ -108,7 +109,7 @@ impl DbReadMany<GenreSearch, Genre> for GenreRepository {
 #[async_trait]
 impl DbCreate<GenreCreate, Genre> for GenreRepository {
     /// Create a new genre with the given data
-    async fn create(&mut self, params: &GenreCreate) -> DbResultSingle<Genre> {
+    async fn create(&self, params: &GenreCreate) -> DbResultSingle<Genre> {
         let genre = sqlx::query_as!(
             Genre,
             r#"
@@ -118,7 +119,7 @@ impl DbCreate<GenreCreate, Genre> for GenreRepository {
             "#,
             params.name
         )
-        .fetch_one(&*self.pool_handler.pool)
+        .fetch_one(&self.pool_handler.pool)
         .await?;
 
         Ok(genre)
@@ -127,7 +128,7 @@ impl DbCreate<GenreCreate, Genre> for GenreRepository {
 
 #[async_trait]
 impl DbUpdate<GenreUpdate, Genre> for GenreRepository {
-    async fn update(&mut self, params: &GenreUpdate) -> DbResultMultiple<Genre> {
+    async fn update(&self, params: &GenreUpdate) -> DbResultMultiple<Genre> {
         if params.update_fields_none() {
             return Err(DbError::from(BusinessLogicError::new(
                 GenreUpdateParametersEmpty,
@@ -163,7 +164,7 @@ impl DbUpdate<GenreUpdate, Genre> for GenreRepository {
 
 #[async_trait]
 impl DbDelete<GenreDelete, Genre> for GenreRepository {
-    async fn delete(&mut self, params: &GenreDelete) -> DbResultMultiple<Genre> {
+    async fn delete(&self, params: &GenreDelete) -> DbResultMultiple<Genre> {
         let mut transaction = self.pool_handler.pool.begin().await?;
 
         // Check existence

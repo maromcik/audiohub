@@ -14,6 +14,7 @@ use crate::database::models::chapter::{
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
+#[derive(Clone)]
 pub struct ChapterRepository {
     pool_handler: PoolHandler,
 }
@@ -149,14 +150,14 @@ impl DbRepository for ChapterRepository {
     }
 
     #[inline]
-    async fn disconnect(&mut self) -> () {
+    async fn disconnect(&self) -> () {
         self.pool_handler.disconnect().await;
     }
 }
 
 #[async_trait]
 impl DbCreate<ChapterCreate, Chapter> for ChapterRepository {
-    async fn create(&mut self, params: &ChapterCreate) -> DbResultSingle<Chapter> {
+    async fn create(&self, params: &ChapterCreate) -> DbResultSingle<Chapter> {
         let chapter = sqlx::query_as!(
             Chapter,
             r#"
@@ -169,7 +170,7 @@ impl DbCreate<ChapterCreate, Chapter> for ChapterRepository {
             params.length,
             params.sequential_number,
         )
-        .fetch_one(&*self.pool_handler.pool)
+        .fetch_one(&self.pool_handler.pool)
         .await?;
 
         Ok(chapter)
@@ -178,7 +179,7 @@ impl DbCreate<ChapterCreate, Chapter> for ChapterRepository {
 
 #[async_trait]
 impl DbReadOne<ChapterGetById, Chapter> for ChapterRepository {
-    async fn read_one(&mut self, params: &ChapterGetById) -> DbResultSingle<Chapter> {
+    async fn read_one(&self, params: &ChapterGetById) -> DbResultSingle<Chapter> {
         let mut transaction = self.pool_handler.pool.begin().await?;
         let chapter = ChapterRepository::get(params, &mut transaction).await?;
         let chapter = ChapterRepository::is_correct(chapter);
@@ -189,7 +190,7 @@ impl DbReadOne<ChapterGetById, Chapter> for ChapterRepository {
 
 #[async_trait]
 impl DbReadMany<ChapterSearch, Chapter> for ChapterRepository {
-    async fn read_many(&mut self, params: &ChapterSearch) -> DbResultMultiple<Chapter> {
+    async fn read_many(&self, params: &ChapterSearch) -> DbResultMultiple<Chapter> {
         let chapters = sqlx::query_as!(
             Chapter,
             r#"
@@ -208,7 +209,7 @@ impl DbReadMany<ChapterSearch, Chapter> for ChapterRepository {
             params.max_length,
             params.sequential_number,
         )
-        .fetch_all(self.pool_handler.pool.as_ref())
+        .fetch_all(&self.pool_handler.pool)
         .await?;
         Ok(chapters)
     }
@@ -216,7 +217,7 @@ impl DbReadMany<ChapterSearch, Chapter> for ChapterRepository {
 
 #[async_trait]
 impl DbDelete<ChapterGetById, Chapter> for ChapterRepository {
-    async fn delete(&mut self, params: &ChapterGetById) -> DbResultMultiple<Chapter> {
+    async fn delete(&self, params: &ChapterGetById) -> DbResultMultiple<Chapter> {
         let mut transaction = self.pool_handler.pool.begin().await?;
         let chapter = ChapterRepository::get(params, &mut transaction).await?;
         ChapterRepository::is_correct(chapter)?;
@@ -230,7 +231,7 @@ impl DbDelete<ChapterGetById, Chapter> for ChapterRepository {
 
 #[async_trait]
 impl DbUpdate<ChapterUpdate, Chapter> for ChapterRepository {
-    async fn update(&mut self, params: &ChapterUpdate) -> DbResultMultiple<Chapter> {
+    async fn update(&self, params: &ChapterUpdate) -> DbResultMultiple<Chapter> {
         if params.name.is_none() {
             return Err(DbError::from(BusinessLogicError::new(
                 RatingUpdateParametersEmpty,

@@ -19,6 +19,7 @@ use crate::database::models::user::{
     UserCreate, UserDelete, UserGetById, UserLogin, UserSearch, UserUpdate,
 };
 
+#[derive(Clone)]
 pub struct UserRepository {
     pool_handler: PoolHandler,
 }
@@ -87,7 +88,7 @@ impl DbRepository for UserRepository {
     }
 
     #[inline]
-    async fn disconnect(&mut self) -> () {
+    async fn disconnect(&self) -> () {
         self.pool_handler.disconnect().await;
     }
 }
@@ -95,7 +96,7 @@ impl DbRepository for UserRepository {
 #[async_trait]
 impl DbCreate<UserCreate, User> for UserRepository {
     /// Create a new user with the specified data
-    async fn create(&mut self, params: &UserCreate) -> DbResultSingle<User> {
+    async fn create(&self, params: &UserCreate) -> DbResultSingle<User> {
         let user = sqlx::query_as!(
             User,
             r#"INSERT INTO "User" (username, email, name, surname, bio, profile_picture, password_hash, password_salt)
@@ -110,7 +111,7 @@ impl DbCreate<UserCreate, User> for UserRepository {
             params.password_hash,
             params.password_salt,
         )
-            .fetch_one(&*self.pool_handler.pool)
+            .fetch_one(&self.pool_handler.pool)
             .await?;
 
         Ok(user)
@@ -121,7 +122,7 @@ impl DbCreate<UserCreate, User> for UserRepository {
 impl DbReadOne<UserLogin, User> for UserRepository {
     /// Login the user with provided parameters, if the user does not exist, is deleted or the
     /// passwords don't match, return the error about combination of email/password not working
-    async fn read_one(&mut self, params: &UserLogin) -> DbResultSingle<User> {
+    async fn read_one(&self, params: &UserLogin) -> DbResultSingle<User> {
         let user = sqlx::query_as!(
             User,
             r#"
@@ -130,7 +131,7 @@ impl DbReadOne<UserLogin, User> for UserRepository {
             "#,
             params.email
         )
-        .fetch_optional(&*self.pool_handler.pool)
+        .fetch_optional(&self.pool_handler.pool)
         .await?;
 
         let user = UserRepository::user_is_correct(user)?;
@@ -149,7 +150,7 @@ impl DbReadOne<UserLogin, User> for UserRepository {
 impl DbReadOne<UserGetById, User> for UserRepository {
     /// Login the user with provided parameters, if the user does not exist, is deleted or the
     /// passwords don't match, return the error about combination of email/password not working
-    async fn read_one(&mut self, params: &UserGetById) -> DbResultSingle<User> {
+    async fn read_one(&self, params: &UserGetById) -> DbResultSingle<User> {
         let maybe_user = sqlx::query_as!(
             User,
             r#"
@@ -158,7 +159,7 @@ impl DbReadOne<UserGetById, User> for UserRepository {
             "#,
             params.id
         )
-        .fetch_optional(&*self.pool_handler.pool)
+        .fetch_optional(&self.pool_handler.pool)
         .await?;
 
         let user = UserRepository::user_is_correct(maybe_user)?;
@@ -169,7 +170,7 @@ impl DbReadOne<UserGetById, User> for UserRepository {
 #[async_trait]
 impl DbReadMany<UserSearch, User> for UserRepository {
     // ALTERNATIVE
-    // async fn read_many(&mut self, params: &UserSearch) -> DbResultMultiple<User> {
+    // async fn read_many(&self, params: &UserSearch) -> DbResultMultiple<User> {
     //     let mut query: QueryBuilder<Postgres> = QueryBuilder::new(r#" SELECT * FROM "User""#);
     //     if !params.search_fields_none() {
     //         query.push(" WHERE ");
@@ -192,7 +193,7 @@ impl DbReadMany<UserSearch, User> for UserRepository {
     //         .await?;
     //     Ok(users)
     // }
-    async fn read_many(&mut self, params: &UserSearch) -> DbResultMultiple<User> {
+    async fn read_many(&self, params: &UserSearch) -> DbResultMultiple<User> {
         let users = sqlx::query_as!(
             User,
             r#"
@@ -205,7 +206,7 @@ impl DbReadMany<UserSearch, User> for UserRepository {
             params.name,
             params.surname
         )
-        .fetch_all(self.pool_handler.pool.as_ref())
+        .fetch_all(&self.pool_handler.pool)
         .await?;
         Ok(users)
     }
@@ -215,7 +216,7 @@ impl DbReadMany<UserSearch, User> for UserRepository {
 impl DbUpdate<UserUpdate, User> for UserRepository {
     /// Update user information if we know their id (we're logged in as that user)
     /// Fails if the relevant update fields are all none
-    async fn update(&mut self, params: &UserUpdate) -> DbResultMultiple<User> {
+    async fn update(&self, params: &UserUpdate) -> DbResultMultiple<User> {
         if params.update_fields_none() {
             return Err(DbError::from(BusinessLogicError::new(
                 UserUpdateParametersEmpty,
@@ -262,7 +263,7 @@ impl DbUpdate<UserUpdate, User> for UserRepository {
 #[async_trait]
 impl DbDelete<UserDelete, User> for UserRepository {
     /// Delete the user if we know their id (we're logged in as that user)
-    async fn delete(&mut self, params: &UserDelete) -> DbResultMultiple<User> {
+    async fn delete(&self, params: &UserDelete) -> DbResultMultiple<User> {
         //find user
         let mut transaction = self.pool_handler.pool.begin().await?;
         let user_query =
@@ -296,7 +297,7 @@ impl DbDelete<UserDelete, User> for UserRepository {
 
 impl UserRepository {
     pub async fn get_all_active_audiobooks(
-        &mut self,
+        &self,
         params: &UserGetById,
     ) -> DbResultMultiple<ActiveAudiobook> {
         let active_audiobooks = sqlx::query_as!(
@@ -307,13 +308,13 @@ impl UserRepository {
             "#,
             params.id
         )
-        .fetch_all(self.pool_handler.pool.as_ref())
+        .fetch_all(&self.pool_handler.pool)
         .await?;
         Ok(active_audiobooks)
     }
 
     pub async fn add_active_audiobook(
-        &mut self,
+        &self,
         params: &AddActiveAudiobook,
     ) -> DbResultSingle<ActiveAudiobook> {
         let active_audiobook = sqlx::query_as!(
@@ -328,14 +329,14 @@ impl UserRepository {
             params.playback_chapter_id,
             params.playback_position_in_chapter
         )
-            .fetch_one(self.pool_handler.pool.as_ref())
+            .fetch_one(&self.pool_handler.pool)
             .await?;
 
         Ok(active_audiobook)
     }
 
     pub async fn remove_active_audiobook(
-        &mut self,
+        &self,
         params: &RemoveActiveAudiobook,
     ) -> DbResultSingle<ActiveAudiobook> {
         let removed_active_audiobook = sqlx::query_as!(
@@ -349,14 +350,14 @@ impl UserRepository {
             params.audiobook_id,
             params.playback_chapter_id,
         )
-        .fetch_one(self.pool_handler.pool.as_ref())
+        .fetch_one(&self.pool_handler.pool)
         .await?;
 
         Ok(removed_active_audiobook)
     }
 
     pub async fn update_chapter_of_active_audiobook(
-        &mut self,
+        &self,
         params: &UpdateActiveAudiobook,
     ) -> DbResultSingle<ActiveAudiobook> {
         let updated_active_audiobook = sqlx::query_as!(
@@ -373,13 +374,13 @@ impl UserRepository {
             params.audiobook_id,
             params.playback_chapter_id
         )
-        .fetch_one(self.pool_handler.pool.as_ref())
+        .fetch_one(&self.pool_handler.pool)
         .await?;
 
         Ok(updated_active_audiobook)
     }
 
-    pub async fn get_all_bookmarks(&mut self, params: &UserGetById) -> DbResultMultiple<Bookmark> {
+    pub async fn get_all_bookmarks(&self, params: &UserGetById) -> DbResultMultiple<Bookmark> {
         let bookmarks = sqlx::query_as!(
             Bookmark,
             r#"
@@ -388,12 +389,12 @@ impl UserRepository {
             "#,
             params.id
         )
-        .fetch_all(self.pool_handler.pool.as_ref())
+        .fetch_all(&self.pool_handler.pool)
         .await?;
         Ok(bookmarks)
     }
 
-    pub async fn bookmark(&mut self, params: &BookmarkOperation) -> DbResultSingle<Bookmark> {
+    pub async fn bookmark(&self, params: &BookmarkOperation) -> DbResultSingle<Bookmark> {
         let bookmark = sqlx::query_as!(
             Bookmark,
             r#"
@@ -404,12 +405,12 @@ impl UserRepository {
             params.user_id,
             params.audiobook_id
         )
-        .fetch_one(self.pool_handler.pool.as_ref())
+        .fetch_one(&self.pool_handler.pool)
         .await?;
         Ok(bookmark)
     }
 
-    pub async fn unbookmark(&mut self, params: &BookmarkOperation) -> DbResultSingle<Bookmark> {
+    pub async fn unbookmark(&self, params: &BookmarkOperation) -> DbResultSingle<Bookmark> {
         let bookmark = sqlx::query_as!(
             Bookmark,
             r#"
@@ -420,7 +421,7 @@ impl UserRepository {
             params.user_id,
             params.audiobook_id
         )
-        .fetch_one(self.pool_handler.pool.as_ref())
+        .fetch_one(&self.pool_handler.pool)
         .await?;
         Ok(bookmark)
     }

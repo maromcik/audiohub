@@ -15,6 +15,7 @@ use crate::database::models::audiobook::{
     Audiobook, AudiobookCreate, AudiobookDelete, AudiobookGetById, AudiobookSearch, AudiobookUpdate,
 };
 
+#[derive(Clone)]
 pub struct AudiobookRepository {
     pool_handler: PoolHandler,
 }
@@ -65,7 +66,7 @@ impl DbRepository for AudiobookRepository {
         Self { pool_handler }
     }
 
-    async fn disconnect(&mut self) -> () {
+    async fn disconnect(&self) -> () {
         self.pool_handler.disconnect().await;
     }
 }
@@ -74,7 +75,7 @@ impl DbRepository for AudiobookRepository {
 impl DbReadOne<AudiobookGetById, Audiobook> for AudiobookRepository {
     /// Login the user with provided parameters, if the user does not exist, is deleted or the
     /// passwords don't match, return the error about combination of email/password not working
-    async fn read_one(&mut self, params: &AudiobookGetById) -> DbResultSingle<Audiobook> {
+    async fn read_one(&self, params: &AudiobookGetById) -> DbResultSingle<Audiobook> {
         let maybe_audiobook = sqlx::query_as!(
             Audiobook,
             r#"
@@ -83,7 +84,7 @@ impl DbReadOne<AudiobookGetById, Audiobook> for AudiobookRepository {
             "#,
             params.id
         )
-        .fetch_optional(&*self.pool_handler.pool)
+        .fetch_optional(&self.pool_handler.pool)
         .await?;
 
         let audiobook = AudiobookRepository::audiobook_is_correct(maybe_audiobook)?;
@@ -93,7 +94,7 @@ impl DbReadOne<AudiobookGetById, Audiobook> for AudiobookRepository {
 
 #[async_trait]
 impl DbReadMany<AudiobookSearch, Audiobook> for AudiobookRepository {
-    async fn read_many(&mut self, params: &AudiobookSearch) -> DbResultMultiple<Audiobook> {
+    async fn read_many(&self, params: &AudiobookSearch) -> DbResultMultiple<Audiobook> {
         let audiobooks = sqlx::query_as!(
             Audiobook,
             r#"
@@ -125,7 +126,7 @@ impl DbReadMany<AudiobookSearch, Audiobook> for AudiobookRepository {
             params.min_overall_rating,
             params.max_overall_rating,
         )
-        .fetch_all(self.pool_handler.pool.as_ref())
+        .fetch_all(&self.pool_handler.pool)
         .await?;
         Ok(audiobooks)
     }
@@ -133,7 +134,7 @@ impl DbReadMany<AudiobookSearch, Audiobook> for AudiobookRepository {
 
 #[async_trait]
 impl DbCreate<AudiobookCreate, Audiobook> for AudiobookRepository {
-    async fn create(&mut self, params: &AudiobookCreate) -> DbResultSingle<Audiobook> {
+    async fn create(&self, params: &AudiobookCreate) -> DbResultSingle<Audiobook> {
         let book = sqlx::query_as!(
             Audiobook,
             r#"
@@ -152,7 +153,7 @@ impl DbCreate<AudiobookCreate, Audiobook> for AudiobookRepository {
             params.stream_count,
             params.overall_rating
         )
-        .fetch_one(&*self.pool_handler.pool)
+        .fetch_one(&self.pool_handler.pool)
         .await?;
 
         Ok(book)
@@ -161,7 +162,7 @@ impl DbCreate<AudiobookCreate, Audiobook> for AudiobookRepository {
 
 #[async_trait]
 impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
-    async fn update(&mut self, params: &AudiobookUpdate) -> DbResultMultiple<Audiobook> {
+    async fn update(&self, params: &AudiobookUpdate) -> DbResultMultiple<Audiobook> {
         if params.update_fields_none() {
             return Err(DbError::from(BusinessLogicError::new(
                 AudiobookUpdateParametersEmpty,
@@ -216,7 +217,7 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
 
 #[async_trait]
 impl DbDelete<AudiobookDelete, Audiobook> for AudiobookRepository {
-    async fn delete(&mut self, params: &AudiobookDelete) -> DbResultMultiple<Audiobook> {
+    async fn delete(&self, params: &AudiobookDelete) -> DbResultMultiple<Audiobook> {
         let mut transaction = self.pool_handler.pool.begin().await?;
         let book_query = AudiobookRepository::get_audiobook(
             AudiobookGetById { id: params.id },
