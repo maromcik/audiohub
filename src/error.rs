@@ -1,24 +1,15 @@
-use crate::database::common::error::{BusinessLogicError, BusinessLogicErrorKind, DbError};
-use actix_web::http::header::ContentType;
+use crate::database::common::error::{BusinessLogicErrorKind, DbError};
+use crate::templates::error::GenericError;
 use actix_web::http::StatusCode;
 use actix_web::{HttpResponse, ResponseError};
-use serde::{Deserialize, Serialize};
+use askama::Template;
+use serde::Serialize;
+use std::fmt::{Debug, Display, Formatter};
 use thiserror::Error;
 
-#[derive(Serialize, Deserialize)]
-struct Error {
-    error: String,
-}
-
-impl From<askama::Error> for AppError {
-    fn from(_error: askama::Error) -> Self {
-        Self::TemplatingError
-    }
-}
-
 /// User facing error type
-#[derive(Error, Debug, Serialize)]
-pub enum AppError {
+#[derive(Error, Debug, Serialize, Clone)]
+pub enum AppErrorKind {
     #[error("internal server error")]
     InternalServerError,
     #[error("not found")]
@@ -27,9 +18,31 @@ pub enum AppError {
     BadRequest,
     #[error("templating error")]
     TemplatingError,
-
     #[error("conflict")]
     Conflict,
+}
+
+impl From<askama::Error> for AppError {
+    fn from(_error: askama::Error) -> Self {
+        Self::new(AppErrorKind::TemplatingError, "Templating error")
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct AppError {
+    pub error: AppErrorKind,
+    pub message: String,
+}
+
+impl AppError {
+    #[must_use]
+    #[inline]
+    pub fn new(error: AppErrorKind, description: &str) -> Self {
+        Self {
+            error,
+            message: description.to_owned(),
+        }
+    }
 }
 
 impl From<DbError> for AppError {
@@ -43,38 +56,59 @@ impl From<DbError> for AppError {
             | BusinessLogicErrorKind::ChapterDeleted
             | BusinessLogicErrorKind::GenreDeleted
             | BusinessLogicErrorKind::RatingDeleted
-            | BusinessLogicErrorKind::UserDeleted => Self::BadRequest,
+            | BusinessLogicErrorKind::UserDeleted => {
+                Self::new(AppErrorKind::BadRequest, &e.to_string())
+            }
 
             BusinessLogicErrorKind::UserDoesNotExist
             | BusinessLogicErrorKind::AudiobookDoesNotExist
             | BusinessLogicErrorKind::ChapterDoesNotExist
             | BusinessLogicErrorKind::GenreDoesNotExist
-            | BusinessLogicErrorKind::RatingDoesNotExist => Self::NotFound,
+            | BusinessLogicErrorKind::RatingDoesNotExist => {
+                Self::new(AppErrorKind::NotFound, &e.to_string())
+            }
 
-            BusinessLogicErrorKind::UniqueConstraintError => Self::Conflict,
+            BusinessLogicErrorKind::UniqueConstraintError => {
+                Self::new(AppErrorKind::Conflict, &e.to_string())
+            }
 
-            _ => Self::InternalServerError,
+            _ => Self::new(AppErrorKind::InternalServerError, &e.to_string()),
         }
+    }
+}
+
+impl Display for AppError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Error code: {}, Error message: {}",
+            self.error, self.message
+        )
     }
 }
 
 impl ResponseError for AppError {
     fn status_code(&self) -> StatusCode {
-        match *self {
-            AppError::BadRequest => StatusCode::BAD_REQUEST,
-            AppError::Conflict => StatusCode::CONFLICT,
-            AppError::NotFound => StatusCode::NOT_FOUND,
-            AppError::TemplatingError | AppError::InternalServerError => {
+        match self.error {
+            AppErrorKind::BadRequest => StatusCode::BAD_REQUEST,
+            AppErrorKind::NotFound => StatusCode::NOT_FOUND,
+            AppErrorKind::Conflict => StatusCode::CONFLICT,
+            AppErrorKind::TemplatingError | AppErrorKind::InternalServerError => {
                 StatusCode::INTERNAL_SERVER_ERROR
             }
         }
     }
 
     fn error_response(&self) -> HttpResponse {
-        HttpResponse::build(self.status_code())
-            .insert_header(ContentType::html())
-            .json(Error {
-                error: self.to_string(),
-            })
+        render_template(self)
     }
+}
+
+fn render_template(error: &AppError) -> HttpResponse {
+    let template = GenericError {
+        code: error.status_code().to_string(),
+        description: error.message.clone(),
+    };
+    let body = template.render().unwrap_or_default();
+    HttpResponse::build(error.status_code()).body(body)
 }
