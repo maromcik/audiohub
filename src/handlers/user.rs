@@ -60,7 +60,7 @@ pub async fn create_user(form: web::Form<NewUserForm>,
         password_salt: "".to_string(),
     };
 
-    //let created_user = user_repo.create(&new_user).await?;
+    let created_user = user_repo.create(&new_user).await?;
 
     Ok(HttpResponse::Ok().content_type("text/html").body(new_user.username))
 
