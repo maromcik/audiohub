@@ -38,8 +38,6 @@ pub struct NewUserForm {
     password: String,
     name: String,
     surname: String,
-    bio: String,
-    profile_picture: String,
 }
 
 #[post("/register")]
@@ -54,8 +52,8 @@ pub async fn add_user(form: web::Form<NewUserForm>,
         email: form.email.to_string(),
         name: form.name.to_string(),
         surname: form.surname.to_string(),
-        bio: form.bio.to_string(),
-        profile_picture: form.profile_picture.to_string(),
+        bio: "".to_string(),
+        profile_picture: "".to_string(),
         password_hash: hashed_password.clone(),
         password_salt: "".to_string(),
     };
