@@ -1,4 +1,3 @@
-// testiki
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
 use crate::templates::user::{LoginTemplate, RegistrationTemplate};
@@ -14,6 +13,7 @@ use pbkdf2::{
     },
     Pbkdf2
 };
+use crate::database::common::{DbCreate, DbReadOne};
 use crate::database::models::user::{UserCreate, UserLogin};
 
 #[get("/register")]
@@ -43,7 +43,7 @@ pub struct NewUserForm {
 }
 
 #[post("/register")]
-pub async fn create_user(form: web::Form<NewUserForm>,
+pub async fn add_user(form: web::Form<NewUserForm>,
                          mut user_repo: web::Data<UserRepository>) -> Result<HttpResponse, AppError>{
 
     let salt = SaltString::generate(&mut OsRng);
@@ -56,13 +56,15 @@ pub async fn create_user(form: web::Form<NewUserForm>,
         surname: form.surname.to_string(),
         bio: form.bio.to_string(),
         profile_picture: form.profile_picture.to_string(),
-        password_hash: hashed_password,
+        password_hash: hashed_password.clone(),
         password_salt: "".to_string(),
     };
 
-    let created_user = user_repo.create(&new_user).await?;
 
-    Ok(HttpResponse::Ok().content_type("text/html").body(new_user.username))
+    let created_user = user_repo.create(&new_user).await?;
+    let user1 = user_repo.read_one(&UserLogin::new(&form.email, &hashed_password.clone())).await?;
+
+    Ok(HttpResponse::Ok().content_type("text/html").body(user1.username))
 
 }
 
