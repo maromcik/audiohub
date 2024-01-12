@@ -88,6 +88,19 @@ impl From<actix_identity::error::LoginError> for AppError {
     }
 }
 
+impl From<actix_identity::error::GetIdentityError> for AppError {
+    fn from(value: actix_identity::error::GetIdentityError) -> Self {
+        match value {
+            // GetIdentityError::SessionExpiryError(_) => {}
+            // GetIdentityError::MissingIdentityError(_) => {}
+            // GetIdentityError::SessionGetError(_) => {}
+            // GetIdentityError::LostIdentityError(_) => {}
+            _ => Self::new(AppErrorKind::LoginError, value.to_string().as_str())
+        }
+    }
+}
+
+
 impl Display for AppError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(

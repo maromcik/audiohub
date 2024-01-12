@@ -47,9 +47,6 @@ pub async fn register_user(
         .read_one(&UserLogin::new(&form.email, &form.password))
         .await?;
 
-    let template = HomepageTemplate {};
-    let body = template.render()?;
-
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/user/login"))
         .finish())
