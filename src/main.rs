@@ -8,6 +8,7 @@ use std::env;
 use actix_cors::Cors;
 use actix_identity::IdentityMiddleware;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
+use actix_web::cookie::SameSite;
 use actix_web::http::header;
 use actix_web::middleware::Logger;
 
@@ -34,7 +35,12 @@ async fn main() -> anyhow::Result<()> {
     info!("starting server on {host}");
     HttpServer::new(move || App::new()
         .wrap(IdentityMiddleware::default())
-        .wrap(SessionMiddleware::new(CookieSessionStore::default(), key.clone()))
+        .wrap(
+            SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
+            .cookie_same_site(SameSite::None)
+            .cookie_http_only(true)
+            .cookie_secure(false)
+            .build())
         .wrap(
             Cors::default()
                 .allowed_origin(format!("http://{}", host).as_str())
@@ -46,6 +52,7 @@ async fn main() -> anyhow::Result<()> {
         )
         .wrap(Logger::default())
         .configure(configure_webapp(&pool)))
+        .workers(1)
         .bind(host2)?
         .run()
         .await?;

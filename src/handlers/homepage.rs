@@ -1,7 +1,7 @@
 use crate::error::AppError;
 use crate::templates::homepage_template::HomepageTemplate;
 use actix_identity::Identity;
-use actix_web::{get, web, HttpResponse};
+use actix_web::{get, HttpResponse};
 use askama::Template;
 
 #[get("/")]
