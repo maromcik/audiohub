@@ -4,6 +4,7 @@ use crate::templates::homepage_template::HomepageTemplate;
 use crate::templates::user::{LoginTemplate, RegistrationTemplate};
 use actix_web::{get, post, web, HttpResponse};
 use askama::Template;
+use actix_web::http::header::LOCATION;
 
 pub use hmac;
 
@@ -13,6 +14,7 @@ use pbkdf2::{
     password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Pbkdf2,
 };
+use uuid::Uuid;
 
 #[get("/register")]
 pub async fn register(user_repo: web::Data<UserRepository>) -> Result<HttpResponse, AppError> {
@@ -87,6 +89,7 @@ pub struct LoginUser {
     password: String,
 }
 
+#[post("/login")]
 pub async fn login_user(
     form: web::Form<LoginUser>,
     mut user_repo: web::Data<UserRepository>,
@@ -99,8 +102,16 @@ pub async fn login_user(
 
     //verify passwords
     //login
+    Ok(HttpResponse::SeeOther()
+        .insert_header((LOCATION, "/"))
+        .finish())
+}
 
-    Ok(HttpResponse::Ok()
-        .content_type("text/html")
-        .body(user_login.email))
+async fn validate_credentials() -> Result<Uuid, AppError>{
+    todo!()
+}
+
+async fn verify_password_hash(expected_password_hash: String, password_candidate: String){
+
+    todo!()
 }

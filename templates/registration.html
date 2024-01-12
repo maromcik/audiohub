@@ -10,23 +10,25 @@
             crossorigin="anonymous"></script>
 </head>
 <body>
-<form hx-post="/user/register" hx-boost="true" class="book-form">
-    <h2>Welcome to AudioHub!</h2>
-    <div class="form-content">
-        <div class="page left-page">
-            <input type="text" name="name" placeholder="Name">
-            <input type="text" name="surname" placeholder="Surname">
-            <input type="text" name="email" placeholder="Email">
+<div class="container">
+    <form hx-post="/user/register" hx-boost="true" class="book-form">
+        <h2>Welcome to AudioHub!</h2>
+        <div class="form-content">
+            <div class="page left-page">
+                <input type="text" name="name" placeholder="Name">
+                <input type="text" name="surname" placeholder="Surname">
+                <input type="text" name="email" placeholder="Email">
+            </div>
+            <div class="page right-page">
+                <input type="text" name="username" placeholder="Username">
+                <input type="password" name="password" placeholder="Password">
+                <!--            <textarea name="bio" placeholder="Bio"></textarea>-->
+                <!--            <input type="file" name="profile_picture">-->
+            </div>
         </div>
-        <div class="page right-page">
-            <input type="text" name="username" placeholder="Username">
-            <input type="password" name="password" placeholder="Password">
-<!--            <textarea name="bio" placeholder="Bio"></textarea>-->
-<!--            <input type="file" name="profile_picture">-->
-        </div>
-    </div>
-    <button type="submit" class="register-button">Register</button>
-    <p class="login-link">Already have an account? <a href="/user/login">Login here</a>.</p>
-</form>
+        <button type="submit" class="register-button">Register</button>
+        <p class="login-link">Already have an account? <a href="/user/login">Login here</a>.</p>
+    </form>
+</div>
 </body>
 </html>

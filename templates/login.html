@@ -9,17 +9,19 @@
             crossorigin="anonymous"></script>
 </head>
 <body>
-<form hx-post="/user/login" hx-boost="true" class="book-form">
-    <h2>AudioHub</h2>
-    <div class="form-content">
-        <div class="page">
-            <input type="text" name="username" placeholder="Username">
-            <input type="password" name="password" placeholder="Password">
+<div class="container">
+    <form action="/user/login" method="post" class="book-form">
+        <h2>AudioHub</h2>
+        <div class="form-content">
+            <div class="page">
+                <input type="text" name="email" placeholder="Email">
+                <input type="password" name="password" placeholder="Password">
+            </div>
         </div>
-    </div>
 
-    <button type="submit" class="register-button">Login</button>
-    <p class="login-link">Are you new here? <a href="/user/register">Create an account</a>.</p>
-</form>
+        <button type="submit" class="register-button">Login</button>
+        <p class="login-link">Are you new here? <a href="/user/register">Create an account</a>.</p>
+    </form>
+</div>
 </body>
 </html>
