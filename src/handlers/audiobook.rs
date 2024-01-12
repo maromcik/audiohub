@@ -10,14 +10,14 @@ use crate::database::models::audiobook::{AudiobookCreate, AudiobookCreateForm};
 use crate::database::models::user::UserGetByUsername;
 use crate::database::repositories::user::repository::UserRepository;
 
-#[get("/audiobook/create")]
+#[get("/create")]
 pub async fn create_audiobook_form() -> Result<HttpResponse, AppError> {
     let template = NewAudiobookForm {};
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
-#[post("/audiobook/create")]
+#[post("/create")]
 pub async fn create_audiobook(identity: Option<Identity>, audiobook_repo: web::Data<AudiobookRepository>, user_repo: web::Data<UserRepository>, form: web::Form<AudiobookCreateForm>) -> Result<HttpResponse, AppError> {
     let Some(u) = identity else {
         return Err(AppError::new(AppErrorKind::IdentityError, "Invalid identity"));

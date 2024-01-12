@@ -38,7 +38,7 @@ async fn main() -> anyhow::Result<()> {
         .wrap(
             SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
                 .cookie_same_site(SameSite::None)
-                .cookie_http_only(true)
+                .cookie_http_only(false)
                 .cookie_secure(false)
                 .cookie_content_security(CookieContentSecurity::Private)
                 .build())
