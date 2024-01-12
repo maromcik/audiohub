@@ -17,10 +17,7 @@ use crate::database::common::{
 use crate::database::models::active_audiobook::ActiveAudiobook;
 
 use crate::database::models::bookmark::Bookmark;
-use crate::database::models::user::{
-    AddActiveAudiobook, BookmarkOperation, RemoveActiveAudiobook, UpdateActiveAudiobook, User,
-    UserCreate, UserDelete, UserGetById, UserLogin, UserSearch, UserUpdate,
-};
+use crate::database::models::user::{AddActiveAudiobook, BookmarkOperation, RemoveActiveAudiobook, UpdateActiveAudiobook, User, UserCreate, UserDelete, UserGetById, UserGetByUsername, UserLogin, UserSearch, UserUpdate};
 use crate::error::AppError;
 
 fn generate_salt() -> SaltString {
@@ -189,6 +186,27 @@ impl DbReadOne<UserGetById, User> for UserRepository {
         )
         .fetch_optional(&self.pool_handler.pool)
         .await?;
+
+        let user = UserRepository::user_is_correct(maybe_user)?;
+        Ok(user)
+    }
+}
+
+#[async_trait]
+impl DbReadOne<UserGetByUsername, User> for UserRepository {
+    /// Login the user with provided parameters, if the user does not exist, is deleted or the
+    /// passwords don't match, return the error about combination of email/password not working
+    async fn read_one(&self, params: &UserGetByUsername) -> DbResultSingle<User> {
+        let maybe_user = sqlx::query_as!(
+            User,
+            r#"
+            SELECT * FROM "User"
+            WHERE username = $1
+            "#,
+            params.username
+        )
+            .fetch_optional(&self.pool_handler.pool)
+            .await?;
 
         let user = UserRepository::user_is_correct(maybe_user)?;
         Ok(user)

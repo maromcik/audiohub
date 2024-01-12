@@ -5,8 +5,8 @@ use actix_web::{get, HttpResponse};
 use askama::Template;
 
 #[get("/")]
-pub async fn index(user: Option<Identity>) -> Result<HttpResponse, AppError> {
-    let template = match user {
+pub async fn index(identity: Option<Identity>) -> Result<HttpResponse, AppError> {
+    let template = match identity {
         None => IndexTemplate {
             username: "None".to_string(),
             logged_in: false,

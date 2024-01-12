@@ -191,6 +191,19 @@ pub struct UserGetById {
     pub id: Id,
 }
 
+#[derive(Debug, Clone)]
+pub struct UserGetByUsername {
+    pub username: String,
+}
+
+impl UserGetByUsername {
+    #[must_use]
+    #[inline]
+    pub fn new(username: &str) -> Self {
+        Self { username: username.to_owned() }
+    }
+}
+
 impl UserGetById {
     #[must_use]
     #[inline]

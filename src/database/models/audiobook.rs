@@ -1,5 +1,6 @@
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
+use serde::Deserialize;
 
 use sqlx::postgres::types::PgInterval;
 
@@ -36,6 +37,12 @@ pub struct AudiobookSearch {
     pub max_stream_count: Option<i64>,
     pub min_overall_rating: Option<i16>,
     pub max_overall_rating: Option<i16>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AudiobookCreateForm {
+    pub name: String,
+    pub description: String,
 }
 
 #[derive(Debug, Clone)]

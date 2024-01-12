@@ -20,7 +20,7 @@ pub enum AppErrorKind {
     #[error("templating error")]
     TemplatingError,
     #[error("login error")]
-    LoginError,
+    IdentityError,
     #[error("password hasher error")]
     PasswordHasherError,
     #[error("conflict")]
@@ -84,7 +84,7 @@ impl From<DbError> for AppError {
 
 impl From<actix_identity::error::LoginError> for AppError {
     fn from(value: actix_identity::error::LoginError) -> Self {
-        Self::new(AppErrorKind::LoginError, value.to_string().as_str())
+        Self::new(AppErrorKind::IdentityError, value.to_string().as_str())
     }
 }
 
@@ -95,7 +95,7 @@ impl From<actix_identity::error::GetIdentityError> for AppError {
             // GetIdentityError::MissingIdentityError(_) => {}
             // GetIdentityError::SessionGetError(_) => {}
             // GetIdentityError::LostIdentityError(_) => {}
-            _ => Self::new(AppErrorKind::LoginError, value.to_string().as_str()),
+            _ => Self::new(AppErrorKind::IdentityError, value.to_string().as_str()),
         }
     }
 }
@@ -119,7 +119,7 @@ impl ResponseError for AppError {
             AppErrorKind::TemplatingError
             | AppErrorKind::InternalServerError
             | AppErrorKind::PasswordHasherError
-            | AppErrorKind::LoginError => StatusCode::INTERNAL_SERVER_ERROR,
+            | AppErrorKind::IdentityError => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
