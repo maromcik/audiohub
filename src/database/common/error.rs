@@ -1,4 +1,4 @@
-use sqlx::Error;
+use pbkdf2;
 use std::fmt::{Debug, Display, Formatter};
 
 use BusinessLogicErrorKind::*;
@@ -10,6 +10,7 @@ pub enum BusinessLogicErrorKind {
     UserDeleted,
     UserPasswordDoesNotMatch,
     UserUpdateParametersEmpty,
+    UserPasswordVerificationFailed,
 
     // Audiobook errors
     AudiobookDoesNotExist,
@@ -52,6 +53,9 @@ impl Display for BusinessLogicErrorKind {
                     f,
                     "The provided email and password combination is incorrect."
                 )
+            }
+            UserPasswordVerificationFailed => {
+                write!(f, "Password verification failed.")
             }
             RatingDoesNotExist => f.write_str(does_not_exist("rating").as_str()),
             RatingDeleted => f.write_str(deleted("rating").as_str()),
@@ -241,6 +245,15 @@ impl From<sqlx::migrate::MigrateError> for DbError {
 impl From<BusinessLogicError> for DbError {
     fn from(value: BusinessLogicError) -> Self {
         Self::new(value.clone(), value.to_string().as_str())
+    }
+}
+
+impl From<pbkdf2::password_hash::Error> for DbError {
+    fn from(value: pbkdf2::password_hash::Error) -> Self {
+        Self::new(
+            BusinessLogicError::new(UserPasswordVerificationFailed),
+            value.to_string().as_str(),
+        )
     }
 }
 

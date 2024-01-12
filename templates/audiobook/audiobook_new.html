@@ -1,0 +1,46 @@
+<div class="container mx-auto p-6 bg-black">
+    <form class="bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <h2 class="block text-gray-300 text-xl font-bold mb-2">Add New Audiobook</h2>
+
+        <div class="mb-4">
+            <label class="block text-gray-300 text-sm font-bold mb-2" for="audiobook-name">
+                Audiobook Name
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="audiobook-name" type="text" placeholder="Audiobook Name">
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-300 text-sm font-bold mb-2" for="genre">
+                Genre
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="genre" type="text" placeholder="Genre">
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-300 text-sm font-bold mb-2" for="price">
+                Price
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="price" type="number" step="0.01" placeholder="Price in Dollars">
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-300 text-sm font-bold mb-2" for="bio">
+                Bio
+            </label>
+            <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="bio" placeholder="Bio"></textarea>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-300 text-sm font-bold mb-2" for="picture">
+                Audiobook Picture
+            </label>
+            <input class="shadow appearance-none border rounded py-2 px-3 text-gray-300 leading-tight focus:outline-none focus:shadow-outline" id="picture" type="file">
+        </div>
+
+        <div class="flex items-center justify-between">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                Add Audiobook
+            </button>
+        </div>
+    </form>
+</div>

@@ -3,7 +3,7 @@ workflow:
     - when: always
 
 default:
-  image: rust:1.73-bullseye
+  image: rust:1.75-bullseye
   before_script:
     - apt-get update
     - apt-get install postgresql-client --yes

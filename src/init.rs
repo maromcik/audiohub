@@ -5,11 +5,13 @@ use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::rating::repository::RatingRepository;
 use crate::database::repositories::user::repository::UserRepository;
+use crate::handlers::{
+    add_audiobook, index, user_login, user_login_page, user_register, user_register_page,
+};
+use actix_files::Files as ActixFiles;
 use actix_web::web;
 use actix_web::web::ServiceConfig;
 use sqlx::PgPool;
-
-use crate::handlers::user_index;
 
 pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let user_repository = UserRepository::new(PoolHandler::new(pool.clone()));
@@ -20,11 +22,14 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
 
     let user_scope = web::scope("user")
         .app_data(web::Data::new(user_repository.clone()))
-        .service(user_index);
-    // .service(user_post);
+        .service(user_login_page)
+        .service(user_login)
+        .service(user_register_page)
+        .service(user_register);
 
-    let audiobook_scope =
-        web::scope("audiobook").app_data(web::Data::new(audiobook_repository.clone()));
+    let audiobook_scope = web::scope("audiobook")
+        .app_data(web::Data::new(audiobook_repository.clone()))
+        .service(add_audiobook);
 
     let chapter_scope = web::scope("chapter").app_data(web::Data::new(chapter_repository.clone()));
 
@@ -33,10 +38,13 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let rating_scope = web::scope("rating").app_data(web::Data::new(rating_repository.clone()));
 
     Box::new(|cfg: &mut ServiceConfig| {
-        cfg.service(user_scope)
+        cfg
+            .service(index)
+            .service(user_scope)
             .service(genre_scope)
             .service(audiobook_scope)
             .service(chapter_scope)
-            .service(rating_scope);
+            .service(rating_scope)
+            .service(ActixFiles::new("/", "./src/static").prefer_utf8(true));
     })
 }

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>NewUser</title>
+<!--    <link rel="stylesheet" href="../static/css/register.css">-->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.4"
+            integrity="sha384-zUfuhFKKZCbHTY6aRR46gxiqszMk5tcHjsVFxnUo8VMus4kHGVdIYVbOYYNlKmHV"
+            crossorigin="anonymous"></script>
+</head>
+<body class="h-screen flex justify-center items-center bg-black">
+<div id="login-box" class="w-full h-full flex justify-center items-center bg-black">
+    <form method="post" action="/user/register" class="bg-black shadow-lg border border-gray-800 rounded-lg p-5 flex flex-col items-center space-y-4">
+        <h2 class="text-white text-2xl mb-4">Welcome to AudioHub!</h2>
+        <div class="flex flex-wrap justify-between w-full">
+            <div class="flex flex-col space-y-2 w-full md:w-1/2 px-2">
+                <input type="text" name="name" placeholder="Name" class="p-2.5 rounded border border-gray-400">
+                <input type="text" name="surname" placeholder="Surname" class="p-2.5 rounded border border-gray-400">
+                <input type="text" name="email" placeholder="Email" class="p-2.5 rounded border border-gray-400">
+            </div>
+            <div class="flex flex-col space-y-2 w-full md:w-1/2 px-2">
+                <input type="text" name="username" placeholder="Username" class="p-2.5 rounded border border-gray-400">
+                <input type="password" name="password" placeholder="Password" class="p-2.5 rounded border border-gray-400">
+                <!-- Textarea and file input can be uncommented and styled as needed -->
+            </div>
+        </div>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded mt-4">Register</button>
+        <p class="text-white mt-4">Already have an account? <a href="/user/login" class="text-blue-600 hover:text-blue-400">Login here</a>.</p>
+    </form>
+</div>
+</body>
+</body>
+</html>

@@ -1,5 +1,6 @@
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
+use serde::Deserialize;
 use sqlx::postgres::types::PgInterval;
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
@@ -27,8 +28,16 @@ pub struct UserCreate {
     pub surname: String,
     pub bio: String,
     pub profile_picture: String,
-    pub password_hash: String,
-    pub password_salt: String,
+    pub password: String,
+}
+
+#[derive(serde::Deserialize, Debug, Clone)]
+pub struct NewUserForm {
+    pub username: String,
+    pub email: String,
+    pub password: String,
+    pub name: String,
+    pub surname: String,
 }
 
 impl UserCreate {
@@ -40,20 +49,18 @@ impl UserCreate {
         email: &str,
         name: &str,
         surname: &str,
+        password: &str,
         bio: &str,
         profile_picture: &str,
-        password_hash: &str,
-        password_salt: &str,
     ) -> Self {
         Self {
             username: username.to_owned(),
             email: email.to_owned(),
             name: name.to_owned(),
             surname: surname.to_owned(),
+            password: password.to_owned(),
             bio: bio.to_owned(),
             profile_picture: profile_picture.to_owned(),
-            password_hash: password_hash.to_owned(),
-            password_salt: password_salt.to_owned(),
         }
     }
 }
@@ -103,8 +110,7 @@ pub struct UserUpdate {
     pub surname: Option<String>,
     pub bio: Option<String>,
     pub profile_picture: Option<String>,
-    pub password_hash: Option<String>,
-    pub password_salt: Option<String>,
+    pub password: Option<String>,
 }
 
 impl UserUpdate {
@@ -120,7 +126,6 @@ impl UserUpdate {
         bio: Option<&str>,
         profile_picture: Option<&str>,
         password_hash: Option<&str>,
-        password_salt: Option<&str>,
     ) -> Self {
         let change_to_owned = |value: &str| Some(value.to_owned());
         Self {
@@ -131,8 +136,7 @@ impl UserUpdate {
             surname: surname.and_then(change_to_owned),
             bio: bio.and_then(change_to_owned),
             profile_picture: profile_picture.and_then(change_to_owned),
-            password_hash: password_hash.and_then(change_to_owned),
-            password_salt: password_salt.and_then(change_to_owned),
+            password: password_hash.and_then(change_to_owned),
         }
     }
 
@@ -144,8 +148,7 @@ impl UserUpdate {
             && self.surname.is_none()
             && self.bio.is_none()
             && self.profile_picture.is_none()
-            && self.password_hash.is_none()
-            && self.password_salt.is_none()
+            && self.password.is_none()
     }
 }
 
@@ -164,10 +167,10 @@ impl UserDelete {
 }
 
 /// Structure passed to the repository when trying to log in (read one == login)
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct UserLogin {
-    pub email: String,
-    pub password_hash: String,
+    pub email_or_username: String,
+    pub password: String,
 }
 
 impl UserLogin {
@@ -175,8 +178,8 @@ impl UserLogin {
     #[inline]
     pub fn new(email: &str, password_hash: &str) -> Self {
         Self {
-            email: email.to_owned(),
-            password_hash: password_hash.to_owned(),
+            email_or_username: email.to_owned(),
+            password: password_hash.to_owned(),
         }
     }
 }

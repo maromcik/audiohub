@@ -1,0 +1,88 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: black; /* Set the body's background to black */
+}
+
+.container {
+    background-color: black;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+}
+
+.book-form {
+    background-color: black;
+    box-shadow: 0 0 15px 5px blue;
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.form-content {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.left-page {
+    padding-right: 10px;
+    border-right: 2px solid #ddd; /* Separator line */
+}
+
+.right-page {
+    padding-left: 10px;
+}
+
+.register-button {
+    margin-top: auto; /* Align button to the bottom */
+    background-color: #3399ff;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 5px;
+}
+
+.register-button:hover {
+    background-color: #82b1ff;
+}
+
+
+input, textarea {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+input[type="file"] {
+    border: none;
+}
+
+h2 {
+    text-align: center;
+    color: white;
+    margin-bottom: 20px;
+}
+
+a {
+    color: #3399ff;
+}
