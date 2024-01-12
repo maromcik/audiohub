@@ -14,14 +14,14 @@ use crate::database::models::user::{NewUserForm, UserCreate, UserLogin};
 
 #[get("/register")]
 pub async fn register() -> Result<HttpResponse, AppError> {
-    let template = RegistrationTemplate {};
+    let template = RegistrationTemplate{};
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
 #[get("/login")]
 pub async fn login() -> Result<HttpResponse, AppError> {
-    let template = LoginTemplate {};
+    let template = LoginTemplate{};
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
