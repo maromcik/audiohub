@@ -1,17 +1,17 @@
 use crate::error::AppError;
-use crate::templates::homepage_template::HomepageTemplate;
+use crate::templates::index::IndexTemplate;
 use actix_identity::Identity;
 use actix_web::{get, HttpResponse};
 use askama::Template;
 
 #[get("/")]
-pub async fn homepage(user: Option<Identity>) -> Result<HttpResponse, AppError> {
+pub async fn index(user: Option<Identity>) -> Result<HttpResponse, AppError> {
     let template = match user {
-        None => HomepageTemplate {
+        None => IndexTemplate {
             username: "None".to_string(),
             logged_in: false,
         },
-        Some(u) => HomepageTemplate {
+        Some(u) => IndexTemplate {
             username: u.id()?,
             logged_in: true,
         },

@@ -1,6 +1,5 @@
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
-use crate::templates::homepage_template::HomepageTemplate;
 use crate::templates::user::{LoginTemplate, RegistrationTemplate};
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;

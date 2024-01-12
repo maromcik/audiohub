@@ -1,9 +1,9 @@
 use askama::Template;
 
 #[derive(Template)]
-#[template(path = "registration.html")]
+#[template(path = "user/registration.html")]
 pub struct RegistrationTemplate {}
 
 #[derive(Template)]
-#[template(path = "login.html")]
+#[template(path = "user/login.html")]
 pub struct LoginTemplate {}

@@ -1,5 +1,4 @@
-use crate::database::common::*;
-use crate::database::common::{setup_pool, DbPoolHandler, DbRepository};
+use crate::database::common::setup_pool;
 use crate::init::configure_webapp;
 use actix_web::{cookie::Key, App, HttpServer};
 use env_logger::Env;

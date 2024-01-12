@@ -1,5 +1,5 @@
 use askama::Template;
 
 #[derive(Template)]
-#[template(path = "new_audiobook.html")]
+#[template(path = "audiobook/audiobook_new.html")]
 pub struct NewAudiobookForm {}

@@ -7,6 +7,6 @@ pub use crate::handlers::user::login_user as user_login;
 pub use crate::handlers::user::register as user_register_page;
 pub use crate::handlers::user::register_user as user_register;
 
-pub use crate::handlers::homepage::homepage as index;
+pub use crate::handlers::homepage::index;
 
 pub use crate::handlers::audiobook::new_audiobook_form as add_audiobook;
