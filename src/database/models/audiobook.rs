@@ -43,6 +43,7 @@ pub struct AudiobookSearch {
 pub struct AudiobookCreateForm {
     pub name: String,
     pub description: String,
+    pub genre_name: String
 }
 
 #[derive(Debug, Clone)]

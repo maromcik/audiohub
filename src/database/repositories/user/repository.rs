@@ -17,7 +17,10 @@ use crate::database::common::{
 use crate::database::models::active_audiobook::ActiveAudiobook;
 
 use crate::database::models::bookmark::Bookmark;
-use crate::database::models::user::{AddActiveAudiobook, BookmarkOperation, RemoveActiveAudiobook, UpdateActiveAudiobook, User, UserCreate, UserDelete, UserGetById, UserGetByUsername, UserLogin, UserSearch, UserUpdate};
+use crate::database::models::user::{
+    AddActiveAudiobook, BookmarkOperation, RemoveActiveAudiobook, UpdateActiveAudiobook, User,
+    UserCreate, UserDelete, UserGetById, UserGetByUsername, UserLogin, UserSearch, UserUpdate,
+};
 use crate::error::AppError;
 
 fn generate_salt() -> SaltString {
@@ -205,8 +208,8 @@ impl DbReadOne<UserGetByUsername, User> for UserRepository {
             "#,
             params.username
         )
-            .fetch_optional(&self.pool_handler.pool)
-            .await?;
+        .fetch_optional(&self.pool_handler.pool)
+        .await?;
 
         let user = UserRepository::user_is_correct(maybe_user)?;
         Ok(user)

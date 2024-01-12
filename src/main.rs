@@ -1,16 +1,16 @@
 use crate::database::common::setup_pool;
 use crate::init::configure_webapp;
+use actix_cors::Cors;
+use actix_identity::IdentityMiddleware;
+use actix_session::config::CookieContentSecurity;
+use actix_session::{storage::CookieSessionStore, SessionMiddleware};
+use actix_web::cookie::SameSite;
+use actix_web::http::header;
+use actix_web::middleware::Logger;
 use actix_web::{cookie::Key, App, HttpServer};
 use env_logger::Env;
 use log::{info, warn};
 use std::env;
-use actix_cors::Cors;
-use actix_identity::IdentityMiddleware;
-use actix_session::{storage::CookieSessionStore, SessionMiddleware};
-use actix_session::config::CookieContentSecurity;
-use actix_web::cookie::SameSite;
-use actix_web::http::header;
-use actix_web::middleware::Logger;
 
 mod database;
 mod error;
@@ -33,29 +33,32 @@ async fn main() -> anyhow::Result<()> {
         warn!("failed loading .env file: {e}");
     };
     info!("starting server on {host}");
-    HttpServer::new(move || App::new()
-        .wrap(IdentityMiddleware::default())
-        .wrap(
-            SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
-                .cookie_same_site(SameSite::None)
-                .cookie_http_only(false)
-                .cookie_secure(false)
-                .cookie_content_security(CookieContentSecurity::Private)
-                .build())
-        .wrap(
-            Cors::default()
-                .allowed_origin(format!("http://{}", host).as_str())
-                .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "PATCH"])
-                .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
-                .allowed_header(header::CONTENT_TYPE)
-                .supports_credentials()
-                .max_age(3600),
-        )
-        .wrap(Logger::default())
-        .configure(configure_webapp(&pool)))
-        .bind(host2)?
-        .run()
-        .await?;
+    HttpServer::new(move || {
+        App::new()
+            .wrap(IdentityMiddleware::default())
+            .wrap(
+                SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
+                    .cookie_same_site(SameSite::None)
+                    .cookie_http_only(false)
+                    .cookie_secure(false)
+                    .cookie_content_security(CookieContentSecurity::Private)
+                    .build(),
+            )
+            .wrap(
+                Cors::default()
+                    .allowed_origin(format!("http://{}", host).as_str())
+                    .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "PATCH"])
+                    .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
+                    .allowed_header(header::CONTENT_TYPE)
+                    .supports_credentials()
+                    .max_age(3600),
+            )
+            .wrap(Logger::default())
+            .configure(configure_webapp(&pool))
+    })
+    .bind(host2)?
+    .run()
+    .await?;
     Ok(())
 }
 
