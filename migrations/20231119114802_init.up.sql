@@ -16,17 +16,6 @@ CREATE TABLE IF NOT EXISTS "User"
 );
 
 
-CREATE TABLE IF NOT EXISTS "Publisher"
-(
-    id           bigserial PRIMARY KEY,
-    ---------------------------------------------
-    name         text        NOT NULL,
-    created_at   timestamptz NOT NULL DEFAULT now(),
-    edited_at    timestamptz NOT NULL DEFAULT now(),
-    deleted_at   timestamptz
-);
-
-
 CREATE TABLE IF NOT EXISTS "Genre"
 (
     id           bigserial PRIMARY KEY,
@@ -43,7 +32,6 @@ CREATE TABLE IF NOT EXISTS "Audiobook"
 (
     id         bigserial PRIMARY KEY,
     ---------------------------------------------
-    publisher_id        bigserial       NOT NULL,
     genre_id            bigserial       NOT NULL,
     author_id           bigserial       NOT NULL,
     name                text            NOT NULL,
@@ -51,13 +39,14 @@ CREATE TABLE IF NOT EXISTS "Audiobook"
     price_cents         int             NOT NULL,
     length              interval        NOT NULL,
     file_path           text            NOT NULL,
+    thumbnail           text            NOT NULL,
+    description         text            NOT NULL,
     stream_count        bigint          NOT NULL,
     overall_rating      smallint        NOT NULL,
     created_at   timestamptz NOT NULL DEFAULT now(),
     edited_at    timestamptz NOT NULL DEFAULT now(),
     deleted_at   timestamptz,
 
-    FOREIGN KEY (publisher_id)      REFERENCES "Publisher" (id),
     FOREIGN KEY (genre_id)          REFERENCES "Genre" (id),
     FOREIGN KEY (author_id)      REFERENCES "User" (id)
 );
@@ -119,7 +108,6 @@ CREATE TABLE IF NOT EXISTS "Active_Audiobook"
 
 CREATE INDEX IF NOT EXISTS "Audiobook_author_id_idx" ON "Audiobook" (author_id);
 CREATE INDEX IF NOT EXISTS "Audiobook_genre_id_id_idx" ON "Audiobook" (genre_id);
-CREATE INDEX IF NOT EXISTS "Audiobook_publisher_id_id_idx" ON "Audiobook" (publisher_id);
 CREATE INDEX IF NOT EXISTS "Chapter_audiobook_id_idx" ON "Chapter" (audiobook_id);
 CREATE INDEX IF NOT EXISTS "Rating_audiobook_id_idx" ON "Rating" (audiobook_id);
 CREATE INDEX IF NOT EXISTS "Rating_userid_id_idx" ON "Rating" (user_id);

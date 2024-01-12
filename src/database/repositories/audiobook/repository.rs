@@ -102,20 +102,18 @@ impl DbReadMany<AudiobookSearch, Audiobook> for AudiobookRepository {
             WHERE
                 (name = $1 OR $1 IS NULL)
                 AND (author_id = $2 OR $2 IS NULL)
-                AND (publisher_id = $3 OR $3 IS NULL)
-                AND (genre_id = $4 OR $4 IS NULL)
-                AND (price_dollars >= $5 OR $5 IS NULL)
-                AND (price_dollars <= $6 OR $6 IS NULL)
-                AND (length >= $7 OR $7 IS NULL)
-                AND (length <= $8 OR $8 IS NULL)
-                AND (stream_count >= $9 OR $9 IS NULL)
-                AND (stream_count <= $10 OR $10 IS NULL)
-                AND (overall_rating >= $11 OR $11 IS NULL)
-                AND (overall_rating <= $12 OR $12 IS NULL)
+                AND (genre_id = $3 OR $3 IS NULL)
+                AND (price_dollars >= $4 OR $4 IS NULL)
+                AND (price_dollars <= $5 OR $5 IS NULL)
+                AND (length >= $6 OR $6 IS NULL)
+                AND (length <= $7 OR $7 IS NULL)
+                AND (stream_count >= $8 OR $8 IS NULL)
+                AND (stream_count <= $9 OR $9 IS NULL)
+                AND (overall_rating >= $10 OR $10 IS NULL)
+                AND (overall_rating <= $11 OR $11 IS NULL)
             "#,
             params.name,
             params.author_id,
-            params.publisher_id,
             params.genre_id,
             params.min_price_dollars,
             params.max_price_dollars,
@@ -138,20 +136,21 @@ impl DbCreate<AudiobookCreate, Audiobook> for AudiobookRepository {
         let book = sqlx::query_as!(
             Audiobook,
             r#"
-            INSERT INTO "Audiobook" (name, author_id, publisher_id, genre_id, price_dollars, price_cents, length, file_path, stream_count, overall_rating)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            INSERT INTO "Audiobook" (name, author_id, genre_id, price_dollars, price_cents, length, file_path, stream_count, overall_rating, thumbnail, description)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             RETURNING *
             "#,
             params.name,
             params.author_id,
-            params.publisher_id,
             params.genre_id,
             params.price_dollars,
             params.price_cents,
             params.length,
             params.file_path,
             params.stream_count,
-            params.overall_rating
+            params.overall_rating,
+            params.thumbnail,
+            params.description
         )
         .fetch_one(&self.pool_handler.pool)
         .await?;
@@ -183,21 +182,21 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
             SET
                 name = COALESCE($1, name),
                 author_id = COALESCE($2, author_id),
-                publisher_id = COALESCE($3, publisher_id),
-                genre_id = COALESCE($4, genre_id),
-                price_dollars = COALESCE($5, price_dollars),
-                price_cents = COALESCE($6, price_cents),
-                length = COALESCE($7, length),
-                file_path = COALESCE($8, file_path),
-                stream_count = COALESCE($9, stream_count),
-                overall_rating = COALESCE($10, overall_rating),
+                genre_id = COALESCE($3, genre_id),
+                price_dollars = COALESCE($4, price_dollars),
+                price_cents = COALESCE($5, price_cents),
+                length = COALESCE($6, length),
+                file_path = COALESCE($7, file_path),
+                stream_count = COALESCE($8, stream_count),
+                overall_rating = COALESCE($9, overall_rating),
+                thumbnail = COALESCE($10, thumbnail),
+                description = COALESCE($11, thumbnail),
                 edited_at = current_timestamp
-            WHERE id = $11
+            WHERE id = $12
             RETURNING *
             "#,
             params.name,
             params.author_id,
-            params.publisher_id,
             params.genre_id,
             params.price_dollars,
             params.price_cents,
@@ -205,6 +204,8 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
             params.file_path,
             params.stream_count,
             params.overall_rating,
+            params.thumbnail,
+            params.description,
             validated_audiobook.id
         )
         .fetch_all(transaction.as_mut())
