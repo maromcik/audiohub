@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS "Audiobook", "User", "Rating", "Active_Audiobook", "Genre", "Publisher", "Chapter", "Bookmark" CASCADE;
+DROP TABLE IF EXISTS "Audiobook", "User", "Rating", "Active_Audiobook", "Genre", "Chapter", "Bookmark" CASCADE;
