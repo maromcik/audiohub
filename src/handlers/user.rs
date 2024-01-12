@@ -20,7 +20,6 @@ use uuid::Uuid;
 pub async fn register(user_repo: web::Data<UserRepository>) -> Result<HttpResponse, AppError> {
     let template = RegistrationTemplate {};
     let body = template.render()?;
-
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
@@ -68,9 +67,9 @@ pub async fn add_user(
     let template = HomepageTemplate {};
     let body = template.render()?;
 
-    Ok(HttpResponse::Ok()
-        .content_type("text/html")
-        .body(user1.username))
+    Ok(HttpResponse::SeeOther()
+        .insert_header((LOCATION, "/user/login"))
+        .finish())
 }
 
 fn hash_password(
@@ -94,13 +93,14 @@ pub async fn login_user(
     form: web::Form<LoginUser>,
     mut user_repo: web::Data<UserRepository>,
 ) -> Result<HttpResponse, AppError> {
-    let user_login = UserLogin {
-        email: form.email.to_string(),
-        password_hash: form.password.to_string(),
-    };
-    //let db_user = user_repo.read_one(&user_login).await?;
 
-    //verify passwords
+    // let user_login = UserLogin {
+    //     email: form.email.to_string(),
+    //     password_hash: form.password.to_string(),
+    // };
+    // let db_user = user_repo.read_one(&user_login).await?;
+
+
     //login
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/"))
@@ -111,7 +111,7 @@ async fn validate_credentials() -> Result<Uuid, AppError>{
     todo!()
 }
 
-async fn verify_password_hash(expected_password_hash: String, password_candidate: String){
-
-    todo!()
+async fn verify_password_hash(expected_password_hash: String, password_candidate: String) -> bool{
+    let parsed_hash = PasswordHash::new(&expected_password_hash)?;
+    Pbkdf2.verify_password(password_candidate.to_bytes(), &parsed_hash).is_ok()
 }
