@@ -27,7 +27,11 @@
     <!-- Main Content -->
     <main class="flex-1 pl-64 p-10">
         <div id="content-area" class="flex flex-col items-center justify-center text-center">
-            <h2 class="text-3xl font-bold mb-6">Explore Audiobooks</h2>
+            {% if logged_in %}
+                <h2 class="text-3xl font-bold mb-6">Hello {{ username }} </h2>
+            {% else %}
+                <h2 class="text-3xl font-bold mb-6">Explore audiobooks </h2>
+            {% endif %}
             <p>Welcome to AudioHub, your number one source for audiobooks!</p>
             <button hx-get="/audiobook/new" hx-target="#content-area" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
                 Add audiobook
