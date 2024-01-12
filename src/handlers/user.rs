@@ -37,8 +37,8 @@ pub async fn register_user(
         email: form.email.to_string(),
         name: form.name.to_string(),
         surname: form.surname.to_string(),
-        bio: "".to_string(),
-        profile_picture: "".to_string(),
+        bio: String::new(),
+        profile_picture: String::new(),
         password: form.password.clone()
     };
 
