@@ -82,7 +82,6 @@ impl AudiobookCreate {
             overall_rating: *overall_rating,
             thumbnail: thumbnail.to_owned(),
             description: description.to_owned(),
-
         }
     }
 }
