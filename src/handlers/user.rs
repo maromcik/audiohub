@@ -9,7 +9,7 @@ use actix_web::http::header::LOCATION;
 pub use hmac;
 
 use crate::database::common::{DbCreate, DbReadOne};
-use crate::database::models::user::{UserCreate, UserLogin};
+use crate::database::models::user::{LoginUser, NewUserForm, UserCreate, UserLogin};
 use pbkdf2::{
     password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Pbkdf2,
@@ -30,17 +30,9 @@ pub async fn login(user_repo: web::Data<UserRepository>) -> Result<HttpResponse,
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
-#[derive(serde::Deserialize)]
-pub struct NewUserForm {
-    username: String,
-    email: String,
-    password: String,
-    name: String,
-    surname: String,
-}
 
 #[post("/register")]
-pub async fn add_user(
+pub async fn register_user(
     form: web::Form<NewUserForm>,
     mut user_repo: web::Data<UserRepository>,
 ) -> Result<HttpResponse, AppError> {
@@ -59,8 +51,8 @@ pub async fn add_user(
         password_salt: "".to_string(),
     };
 
-    let created_user = user_repo.create(&new_user).await?;
-    let user1 = user_repo
+    user_repo.create(&new_user).await?;
+    user_repo
         .read_one(&UserLogin::new(&form.email, &hashed_password.clone()))
         .await?;
 
@@ -69,6 +61,14 @@ pub async fn add_user(
 
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/user/login"))
+        .finish())
+}
+
+
+#[post("/login")]
+pub async fn login_user(user_repo: web::Data<UserRepository>, form: web::Form<LoginUser>) -> Result<HttpResponse, AppError> {
+    Ok(HttpResponse::SeeOther()
+        .insert_header((LOCATION, "/"))
         .finish())
 }
 
@@ -82,37 +82,11 @@ fn hash_password(
     Ok(password_hash)
 }
 
-#[derive(serde::Deserialize)]
-pub struct LoginUser {
-    email: String,
-    password: String,
-}
-
-#[post("/login")]
-pub async fn login_user(
-    form: web::Form<LoginUser>,
-    mut user_repo: web::Data<UserRepository>,
-) -> Result<HttpResponse, AppError> {
-
-    // let user_login = UserLogin {
-    //     email: form.email.to_string(),
-    //     password_hash: form.password.to_string(),
-    // };
-    // let db_user = user_repo.read_one(&user_login).await?;
-
-
-    //login
-    Ok(HttpResponse::SeeOther()
-        .insert_header((LOCATION, "/"))
-        .finish())
-}
-
-async fn validate_credentials() -> Result<Uuid, AppError>{
+async fn validate_credentials() -> Result<Uuid, AppError> {
     todo!()
 }
 
-async fn verify_password_hash(expected_password_hash: String, password_candidate: String) -> bool{
-    let parsed_hash = PasswordHash::new(&expected_password_hash);
-    false
-    // Pbkdf2.verify_password(password_candidate.to_bytes(), &parsed_hash).is_ok()
+fn verify_password_hash(expected_password_hash: &str, password_candidate: String) -> Result<bool, AppError> {
+    let parsed_hash = PasswordHash::new(expected_password_hash)?;
+    Ok(Pbkdf2.verify_password(&password_candidate.into_bytes(), &parsed_hash).is_ok())
 }

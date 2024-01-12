@@ -5,6 +5,7 @@ use actix_web::{HttpResponse, ResponseError};
 use askama::Template;
 use serde::Serialize;
 use std::fmt::{Debug, Display, Formatter};
+use pbkdf2::password_hash::{Error, PasswordHash, PasswordHasher};
 use thiserror::Error;
 
 /// User facing error type
@@ -74,6 +75,12 @@ impl From<DbError> for AppError {
 
             _ => Self::new(AppErrorKind::InternalServerError, &e.to_string()),
         }
+    }
+}
+
+impl From<Error> for AppError {
+    fn from(value: Error) -> Self {
+        AppError::new(AppErrorKind::InternalServerError, value.to_string().as_str())
     }
 }
 

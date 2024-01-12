@@ -31,6 +31,15 @@ pub struct UserCreate {
     pub password_salt: String,
 }
 
+#[derive(serde::Deserialize, Debug, Clone)]
+pub struct NewUserForm {
+    pub username: String,
+    pub email: String,
+    pub password: String,
+    pub name: String,
+    pub surname: String,
+}
+
 impl UserCreate {
     #[must_use]
     #[inline]
@@ -168,6 +177,12 @@ impl UserDelete {
 pub struct UserLogin {
     pub email: String,
     pub password_hash: String,
+}
+
+#[derive(serde::Deserialize, Debug, Clone)]
+pub struct LoginUser {
+    pub email: String,
+    pub password: String,
 }
 
 impl UserLogin {

@@ -29,7 +29,7 @@ async fn main() -> anyhow::Result<()> {
     info!("starting server on {host}");
     HttpServer::new(move || App::new()
         .wrap(IdentityMiddleware::default())
-        .wrap(SessionMiddleware::new(CookieSessionStore::default(), Key::generate().clone()))
+        .wrap(SessionMiddleware::new(CookieSessionStore::default(), Key::generate()))
         .configure(configure_webapp(&pool)))
         .bind(host)?
         .run()
