@@ -23,22 +23,19 @@ use crate::database::models::user::{
 };
 use crate::error::AppError;
 
-
 fn generate_salt() -> SaltString {
     SaltString::generate(&mut OsRng)
 }
 
-fn hash_password(
-    password: String,
-    salt: &SaltString,
-) -> Result<String, DbError> {
-    let password_hash = Pbkdf2
-        .hash_password(password.as_bytes(), salt)?
-        .to_string();
+fn hash_password(password: String, salt: &SaltString) -> Result<String, DbError> {
+    let password_hash = Pbkdf2.hash_password(password.as_bytes(), salt)?.to_string();
     Ok(password_hash)
 }
 
-fn verify_password_hash(expected_password_hash: &str, password_candidate: &str) -> Result<bool, DbError> {
+fn verify_password_hash(
+    expected_password_hash: &str,
+    password_candidate: &str,
+) -> Result<bool, DbError> {
     let parsed_hash = PasswordHash::new(expected_password_hash)?;
     let bytes = password_candidate.bytes().collect::<Vec<u8>>();
     Ok(Pbkdf2.verify_password(&bytes, &parsed_hash).is_ok())
@@ -163,7 +160,7 @@ impl DbReadOne<UserLogin, User> for UserRepository {
 
         let user = UserRepository::user_is_correct(user)?;
 
-        match UserRepository::verify_password(&user, &params.password)  {
+        match UserRepository::verify_password(&user, &params.password) {
             Ok(ret) => {
                 if ret {
                     return Ok(user);
@@ -172,9 +169,8 @@ impl DbReadOne<UserLogin, User> for UserRepository {
                     UserPasswordDoesNotMatch,
                 )))
             }
-            Err(e) => Err(e)
+            Err(e) => Err(e),
         }
-
     }
 }
 
@@ -258,13 +254,13 @@ impl DbUpdate<UserUpdate, User> for UserRepository {
         let user =
             UserRepository::get_user(UserGetById { id: params.id }, &mut transaction).await?;
         let validated_user = UserRepository::user_is_correct(user)?;
-        let (password, salt) = match &params.password  {
+        let (password, salt) = match &params.password {
             Some(p) => {
                 let salt = generate_salt();
                 let password_hash = hash_password(p.clone(), &salt)?;
                 (Some(password_hash), Some(salt.to_string()))
             }
-            None => (None, None)
+            None => (None, None),
         };
         let updated_users = sqlx::query_as!(
             User,

@@ -1,5 +1,5 @@
-use std::fmt::{Debug, Display, Formatter};
 use pbkdf2;
+use std::fmt::{Debug, Display, Formatter};
 
 use BusinessLogicErrorKind::*;
 
@@ -53,13 +53,10 @@ impl Display for BusinessLogicErrorKind {
                     f,
                     "The provided email and password combination is incorrect."
                 )
-            },
+            }
             UserPasswordVerificationFailed => {
-                write!(
-                    f,
-                    "Password verification failed."
-                )
-            },
+                write!(f, "Password verification failed.")
+            }
             RatingDoesNotExist => f.write_str(does_not_exist("rating").as_str()),
             RatingDeleted => f.write_str(deleted("rating").as_str()),
             RatingUpdateParametersEmpty => {
@@ -253,7 +250,10 @@ impl From<BusinessLogicError> for DbError {
 
 impl From<pbkdf2::password_hash::Error> for DbError {
     fn from(value: pbkdf2::password_hash::Error) -> Self {
-        Self::new(BusinessLogicError::new(UserPasswordVerificationFailed), value.to_string().as_str())
+        Self::new(
+            BusinessLogicError::new(UserPasswordVerificationFailed),
+            value.to_string().as_str(),
+        )
     }
 }
 

@@ -11,8 +11,8 @@
             crossorigin="anonymous"></script>
 </head>
 <body class="h-screen flex justify-center items-center bg-black">
-<div class="w-full h-full flex justify-center items-center bg-black">
-    <form hx-post="/user/register" hx-boost="true" class="bg-black shadow-lg border border-gray-800 rounded-lg p-5 flex flex-col items-center space-y-4">
+<div id="login-box" class="w-full h-full flex justify-center items-center bg-black">
+    <form method="post" action="/user/register" class="bg-black shadow-lg border border-gray-800 rounded-lg p-5 flex flex-col items-center space-y-4">
         <h2 class="text-white text-2xl mb-4">Welcome to AudioHub!</h2>
         <div class="flex flex-wrap justify-between w-full">
             <div class="flex flex-col space-y-2 w-full md:w-1/2 px-2">
