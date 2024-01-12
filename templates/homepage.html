@@ -3,29 +3,38 @@
 <head>
     <meta charset="utf-8" />
     <title>Homepage</title>
-    <link rel="stylesheet" href="../static/css/main.css">
+<!--    <link rel="stylesheet" href="../static/css/main.css">-->
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.4"
             integrity="sha384-zUfuhFKKZCbHTY6aRR46gxiqszMk5tcHjsVFxnUo8VMus4kHGVdIYVbOYYNlKmHV"
             crossorigin="anonymous"></script>
 </head>
-<body>
-<div class="container">
-    <div class="sidebar">
-        <a class="active" href="#home">Home</a>
-        <a href="#books">Books</a>
-        <a href="#genre">Genre</a>
-        <a href="#profile">Profile</a>
-    </div>
-    <div class="appbar">
-        <div class="title">
-            Homepage
-        </div>
-    </div>
+<body class="bg-black text-white">
+<div class="bg-blue-600 p-4 shadow-md fixed w-full z-10 top-0">
+    <h1 class="text-xl font-bold">AudioHub</h1>
+</div>
+<div class="flex pt-16"> <!-- Added padding-top (pt-16) to push the content below the top bar -->
+    <!-- Sidebar -->
+    <aside class="w-64 space-y-6 fixed inset-y-0 left-0 bg-gray-800 pt-16 pl-5 flex flex-col"> <!-- Adjusted positioning and padding -->
+        <a href="#home" class="text-white hover:text-blue-300">Home</a>
+        <a href="#new-releases" class="text-white hover:text-blue-300">New Releases</a>
+        <a href="#categories" class="text-white hover:text-blue-300">Categories</a>
+        <a href="#your-library" class="text-white hover:text-blue-300">Your Library</a>
+        <a href="#profile" class="text-white hover:text-blue-300">Profile</a>
+    </aside>
 
-    <div class="content" id="content">
-        Here is the content.
-    </div>
+    <!-- Main Content -->
+    <main class="flex-1 pl-64 p-10">
+        <div class="flex flex-col items-center justify-center text-center">
+            <h2 class="text-3xl font-bold mb-6">Explore Audiobooks</h2>
+            <p>Welcome to AudioHub, your number one source for audiobooks!</p>
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
+                Add audiobook
+            </button>
+        </div>
+        <!-- Other content here will retain the default alignment -->
+    </main>
 </div>
 </body>
 </html>

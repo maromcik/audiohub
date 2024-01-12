@@ -112,6 +112,7 @@ async fn validate_credentials() -> Result<Uuid, AppError>{
 }
 
 async fn verify_password_hash(expected_password_hash: String, password_candidate: String) -> bool{
-    let parsed_hash = PasswordHash::new(&expected_password_hash)?;
-    Pbkdf2.verify_password(password_candidate.to_bytes(), &parsed_hash).is_ok()
+    // let parsed_hash = PasswordHash::new(&expected_password_hash)?;
+    // Pbkdf2.verify_password(password_candidate.to_bytes(), &parsed_hash).is_ok()
+    todo!()
 }
