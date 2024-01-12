@@ -58,7 +58,7 @@ pub async fn login_user(
     let user = user_repo
         .read_one(&UserLogin::new(&form.email_or_username, &form.password))
         .await?;
-    Identity::login(&request.extensions(), user.email.clone())?;
+    Identity::login(&request.extensions(), user.username.clone())?;
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/"))
         .finish())
