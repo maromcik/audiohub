@@ -33,6 +33,8 @@
                 <h2 class="text-3xl font-bold mb-6">Explore audiobooks </h2>
             {% endif %}
             <p>Welcome to AudioHub, your number one source for audiobooks!</p>
+            <p>Username: {{ username }}</p>
+            <p>Logged in?: {{ logged_in }}</p>
             <button hx-get="/audiobook/new" hx-target="#content-area" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
                 Add audiobook
             </button>
