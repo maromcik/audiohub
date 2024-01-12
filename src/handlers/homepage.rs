@@ -1,6 +1,6 @@
-use actix_identity::Identity;
 use crate::error::AppError;
 use crate::templates::homepage_template::HomepageTemplate;
+use actix_identity::Identity;
 use actix_web::{get, web, HttpResponse};
 use askama::Template;
 
@@ -9,12 +9,12 @@ pub async fn homepage(user: Option<Identity>) -> Result<HttpResponse, AppError> 
     let template = match user {
         None => HomepageTemplate {
             username: "None".to_string(),
-            logged_in: false
+            logged_in: false,
         },
         Some(u) => HomepageTemplate {
             username: u.id()?,
-            logged_in: true
-        }
+            logged_in: true,
+        },
     };
     let body = template.render()?;
 

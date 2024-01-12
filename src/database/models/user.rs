@@ -173,7 +173,6 @@ pub struct UserLogin {
     pub password: String,
 }
 
-
 impl UserLogin {
     #[must_use]
     #[inline]

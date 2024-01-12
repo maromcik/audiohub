@@ -1,11 +1,11 @@
 use crate::database::common::error::{BusinessLogicErrorKind, DbError};
 use crate::templates::error::GenericError;
+use actix_identity;
 use actix_web::http::StatusCode;
 use actix_web::{HttpResponse, ResponseError};
 use askama::Template;
 use serde::Serialize;
 use std::fmt::{Debug, Display, Formatter};
-use actix_identity;
 use thiserror::Error;
 
 /// User facing error type
@@ -95,11 +95,10 @@ impl From<actix_identity::error::GetIdentityError> for AppError {
             // GetIdentityError::MissingIdentityError(_) => {}
             // GetIdentityError::SessionGetError(_) => {}
             // GetIdentityError::LostIdentityError(_) => {}
-            _ => Self::new(AppErrorKind::LoginError, value.to_string().as_str())
+            _ => Self::new(AppErrorKind::LoginError, value.to_string().as_str()),
         }
     }
 }
-
 
 impl Display for AppError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -120,9 +119,7 @@ impl ResponseError for AppError {
             AppErrorKind::TemplatingError
             | AppErrorKind::InternalServerError
             | AppErrorKind::PasswordHasherError
-            | AppErrorKind::LoginError => {
-                StatusCode::INTERNAL_SERVER_ERROR
-            }
+            | AppErrorKind::LoginError => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
