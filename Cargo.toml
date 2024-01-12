@@ -26,4 +26,4 @@ uuid = { version = "1.5.0", features = ["v4"] }
 pbkdf2 = { version = "0.12", features = ["simple"] }
 rand_core = { version = "0.6", features = ["std"] }
 actix-identity = "0.7.0"
-actix-session = { version = "0.9.0", features = ["redis-rs-session", "redis-actor-session"]}
+actix-session = { version = "0.9.0", features = ["redis-rs-session", "redis-actor-session", "cookie-session"]}

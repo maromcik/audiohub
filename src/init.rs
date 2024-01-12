@@ -5,7 +5,7 @@ use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::rating::repository::RatingRepository;
 use crate::database::repositories::user::repository::UserRepository;
-use crate::handlers::{create_user, index, user_login_page, user_register_page, login_user, add_audiobook};
+use crate::handlers::{user_register, index, user_login_page, user_register_page, user_login, add_audiobook};
 use actix_files::Files as ActixFiles;
 use actix_web::web;
 use actix_web::web::ServiceConfig;
@@ -21,9 +21,9 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let user_scope = web::scope("user")
         .app_data(web::Data::new(user_repository.clone()))
         .service(user_login_page)
-        .service(login_user)
+        .service(user_login)
         .service(user_register_page)
-        .service(create_user);
+        .service(user_register);
 
     let audiobook_scope =
         web::scope("audiobook").app_data(web::Data::new(audiobook_repository.clone()))

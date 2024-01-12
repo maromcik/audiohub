@@ -6,7 +6,7 @@ use env_logger::Env;
 use log::{info, warn};
 use std::env;
 use actix_identity::IdentityMiddleware;
-use actix_session::{storage::RedisSessionStore, SessionMiddleware};
+use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 
 mod database;
 mod error;
@@ -27,7 +27,10 @@ async fn main() -> anyhow::Result<()> {
         warn!("failed loading .env file: {e}");
     };
     info!("starting server on {host}");
-    HttpServer::new(move || App::new().configure(configure_webapp(&pool)))
+    HttpServer::new(move || App::new()
+        .wrap(IdentityMiddleware::default())
+        .wrap(SessionMiddleware::new(CookieSessionStore::default(), Key::generate()))
+        .configure(configure_webapp(&pool)))
         .bind(host)?
         .run()
         .await?;
