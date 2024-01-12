@@ -5,6 +5,7 @@ use actix_web::{HttpResponse, ResponseError};
 use askama::Template;
 use serde::Serialize;
 use std::fmt::{Debug, Display, Formatter};
+use actix_identity;
 use thiserror::Error;
 
 /// User facing error type
@@ -18,6 +19,10 @@ pub enum AppErrorKind {
     BadRequest,
     #[error("templating error")]
     TemplatingError,
+    #[error("login error")]
+    LoginError,
+    #[error("password hasher error")]
+    PasswordHasherError,
     #[error("conflict")]
     Conflict,
 }
@@ -77,6 +82,11 @@ impl From<DbError> for AppError {
     }
 }
 
+impl From<actix_identity::error::LoginError> for AppError {
+    fn from(value: actix_identity::error::LoginError) -> Self {
+        Self::new(AppErrorKind::LoginError, value.to_string().as_str())
+    }
+}
 
 impl Display for AppError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -94,7 +104,10 @@ impl ResponseError for AppError {
             AppErrorKind::BadRequest => StatusCode::BAD_REQUEST,
             AppErrorKind::NotFound => StatusCode::NOT_FOUND,
             AppErrorKind::Conflict => StatusCode::CONFLICT,
-            AppErrorKind::TemplatingError | AppErrorKind::InternalServerError => {
+            AppErrorKind::TemplatingError
+            | AppErrorKind::InternalServerError
+            | AppErrorKind::PasswordHasherError
+            | AppErrorKind::LoginError => {
                 StatusCode::INTERNAL_SERVER_ERROR
             }
         }

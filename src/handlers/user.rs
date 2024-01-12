@@ -11,7 +11,6 @@ use actix_web::http::header::LOCATION;
 use crate::database::common::{DbCreate, DbReadOne};
 use crate::database::models::user::{NewUserForm, UserCreate, UserLogin};
 
-use uuid::Uuid;
 
 #[get("/register")]
 pub async fn register() -> Result<HttpResponse, AppError> {
@@ -59,8 +58,8 @@ pub async fn register_user(
 
 #[post("/login")]
 pub async fn login_user(request: HttpRequest, user_repo: web::Data<UserRepository>, form: web::Form<UserLogin>) -> Result<HttpResponse, AppError> {
-    // let login = user_repo.read_one(&UserLogin::new("", ))
-    // let b = Identity::login(&request.extensions(), "User1".into());
+    let user = user_repo.read_one(&UserLogin::new(&form.email_or_username, &form.password)).await?;
+    Identity::login(&request.extensions(), user.email.clone())?;
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/"))
         .finish())
