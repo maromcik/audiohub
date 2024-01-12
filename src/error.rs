@@ -5,7 +5,6 @@ use actix_web::{HttpResponse, ResponseError};
 use askama::Template;
 use serde::Serialize;
 use std::fmt::{Debug, Display, Formatter};
-use pbkdf2::password_hash::{Error, PasswordHash, PasswordHasher};
 use thiserror::Error;
 
 /// User facing error type
@@ -78,11 +77,6 @@ impl From<DbError> for AppError {
     }
 }
 
-impl From<Error> for AppError {
-    fn from(value: Error) -> Self {
-        AppError::new(AppErrorKind::InternalServerError, value.to_string().as_str())
-    }
-}
 
 impl Display for AppError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

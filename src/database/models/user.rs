@@ -1,5 +1,6 @@
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
+use serde::Deserialize;
 use sqlx::postgres::types::PgInterval;
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
@@ -27,8 +28,7 @@ pub struct UserCreate {
     pub surname: String,
     pub bio: String,
     pub profile_picture: String,
-    pub password_hash: String,
-    pub password_salt: String,
+    pub password: String,
 }
 
 #[derive(serde::Deserialize, Debug, Clone)]
@@ -51,8 +51,6 @@ impl UserCreate {
         surname: &str,
         bio: &str,
         profile_picture: &str,
-        password_hash: &str,
-        password_salt: &str,
     ) -> Self {
         Self {
             username: username.to_owned(),
@@ -61,8 +59,6 @@ impl UserCreate {
             surname: surname.to_owned(),
             bio: bio.to_owned(),
             profile_picture: profile_picture.to_owned(),
-            password_hash: password_hash.to_owned(),
-            password_salt: password_salt.to_owned(),
         }
     }
 }
@@ -173,25 +169,20 @@ impl UserDelete {
 }
 
 /// Structure passed to the repository when trying to log in (read one == login)
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct UserLogin {
-    pub email: String,
-    pub password_hash: String,
-}
-
-#[derive(serde::Deserialize, Debug, Clone)]
-pub struct LoginUser {
-    pub email: String,
+    pub email_or_username: String,
     pub password: String,
 }
+
 
 impl UserLogin {
     #[must_use]
     #[inline]
     pub fn new(email: &str, password_hash: &str) -> Self {
         Self {
-            email: email.to_owned(),
-            password_hash: password_hash.to_owned(),
+            email_or_username: email.to_owned(),
+            password: password_hash.to_owned(),
         }
     }
 }

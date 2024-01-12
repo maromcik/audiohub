@@ -1,5 +1,8 @@
 use async_trait::async_trait;
 use chrono::Utc;
+use pbkdf2::password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString};
+use pbkdf2::Pbkdf2;
+use rand_core::OsRng;
 
 use sqlx::{Postgres, Transaction};
 
@@ -18,6 +21,27 @@ use crate::database::models::user::{
     AddActiveAudiobook, BookmarkOperation, RemoveActiveAudiobook, UpdateActiveAudiobook, User,
     UserCreate, UserDelete, UserGetById, UserLogin, UserSearch, UserUpdate,
 };
+use crate::error::AppError;
+
+
+fn generate_salt() -> SaltString {
+    SaltString::generate(&mut OsRng)
+}
+
+fn hash_password(
+    password: String,
+    salt: SaltString,
+) -> Result<String, DbError> {
+    let password_hash = Pbkdf2
+        .hash_password(password.as_bytes(), &salt)?
+        .to_string();
+    Ok(password_hash)
+}
+
+fn verify_password_hash(expected_password_hash: &str, password_candidate: String) -> Result<bool, DbError> {
+    let parsed_hash = PasswordHash::new(expected_password_hash)?;
+    Ok(Pbkdf2.verify_password(&password_candidate.into_bytes(), &parsed_hash).is_ok())
+}
 
 #[derive(Clone)]
 pub struct UserRepository {
@@ -76,6 +100,9 @@ impl UserRepository {
     }
 
     pub fn verify_password(given_password: &str, user_password: &str) -> bool {
+        let salt = SaltString::generate(&mut OsRng);
+        let hashed_password =
+            hash_password(form.password.to_string(), salt).unwrap_or_else(|_| "".to_string());
         given_password == user_password
     }
 }
@@ -127,16 +154,16 @@ impl DbReadOne<UserLogin, User> for UserRepository {
             User,
             r#"
             SELECT * FROM "User"
-            WHERE email = $1
+            WHERE email = $1 or username = $1
             "#,
-            params.email
+            params.email_or_username
         )
         .fetch_optional(&self.pool_handler.pool)
         .await?;
 
         let user = UserRepository::user_is_correct(user)?;
 
-        if UserRepository::verify_password(&params.password_hash, &user.password_hash) {
+        if UserRepository::verify_password(&params.password, &user.password_hash) {
             return Ok(user);
         }
 
