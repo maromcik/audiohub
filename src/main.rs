@@ -8,6 +8,7 @@ use std::env;
 use actix_cors::Cors;
 use actix_identity::IdentityMiddleware;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
+use actix_session::config::CookieContentSecurity;
 use actix_web::cookie::SameSite;
 use actix_web::http::header;
 use actix_web::middleware::Logger;
@@ -37,10 +38,11 @@ async fn main() -> anyhow::Result<()> {
         .wrap(IdentityMiddleware::default())
         .wrap(
             SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
-            .cookie_same_site(SameSite::None)
-            .cookie_http_only(true)
-            .cookie_secure(false)
-            .build())
+                .cookie_same_site(SameSite::None)
+                .cookie_http_only(true)
+                .cookie_secure(false)
+                .cookie_content_security(CookieContentSecurity::Private)
+                .build())
         .wrap(
             Cors::default()
                 .allowed_origin(format!("http://{}", host).as_str())
