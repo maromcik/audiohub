@@ -9,7 +9,6 @@ pub struct Audiobook {
     // --------------
     pub name: String,
     pub author_id: Id,
-    pub publisher_id: Id,
     pub genre_id: Id,
     pub price_dollars: i32,
     pub price_cents: i32,
@@ -17,6 +16,8 @@ pub struct Audiobook {
     pub file_path: String,
     pub stream_count: i64,
     pub overall_rating: i16,
+    pub thumbnail: String,
+    pub description: String,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
@@ -26,7 +27,6 @@ pub struct Audiobook {
 pub struct AudiobookSearch {
     pub name: Option<String>,
     pub author_id: Option<Id>,
-    pub publisher_id: Option<Id>,
     pub genre_id: Option<Id>,
     pub min_price_dollars: Option<i32>,
     pub max_price_dollars: Option<i32>,
@@ -42,7 +42,6 @@ pub struct AudiobookSearch {
 pub struct AudiobookCreate {
     pub name: String,
     pub author_id: Id,
-    pub publisher_id: Id,
     pub genre_id: Id,
     pub price_dollars: i32,
     pub price_cents: i32,
@@ -50,6 +49,8 @@ pub struct AudiobookCreate {
     pub file_path: String,
     pub stream_count: i64,
     pub overall_rating: i16,
+    pub thumbnail: String,
+    pub description: String,
 }
 
 impl AudiobookCreate {
@@ -59,7 +60,6 @@ impl AudiobookCreate {
     pub fn new(
         name: &str,
         author_id: &Id,
-        publisher_id: &Id,
         genre_id: &Id,
         price_dollars: &i32,
         price_cents: &i32,
@@ -67,11 +67,12 @@ impl AudiobookCreate {
         file_path: &str,
         stream_count: &i64,
         overall_rating: &i16,
+        thumbnail: &str,
+        description: &str,
     ) -> Self {
         Self {
             name: name.to_owned(),
             author_id: *author_id,
-            publisher_id: *publisher_id,
             genre_id: *genre_id,
             price_dollars: *price_dollars,
             price_cents: *price_cents,
@@ -79,6 +80,8 @@ impl AudiobookCreate {
             file_path: file_path.to_owned(),
             stream_count: *stream_count,
             overall_rating: *overall_rating,
+            thumbnail: thumbnail.to_owned(),
+            description: description.to_owned(),
         }
     }
 }
@@ -87,7 +90,6 @@ pub struct AudiobookUpdate {
     pub id: Id,
     pub name: Option<String>,
     pub author_id: Option<Id>,
-    pub publisher_id: Option<Id>,
     pub genre_id: Option<Id>,
     pub price_dollars: Option<i32>,
     pub price_cents: Option<i32>,
@@ -95,6 +97,8 @@ pub struct AudiobookUpdate {
     pub file_path: Option<String>,
     pub stream_count: Option<i64>,
     pub overall_rating: Option<i16>,
+    pub thumbnail: Option<String>,
+    pub description: Option<String>,
 }
 
 impl AudiobookUpdate {
@@ -104,7 +108,6 @@ impl AudiobookUpdate {
         id: &Id,
         name: Option<&str>,
         author_id: Option<&Id>,
-        publisher_id: Option<&Id>,
         genre_id: Option<&Id>,
         price_dollars: Option<&i32>,
         price_cents: Option<&i32>,
@@ -112,13 +115,14 @@ impl AudiobookUpdate {
         file_path: Option<&str>,
         stream_count: Option<&i64>,
         overall_rating: Option<&i16>,
+        thumbnail: Option<&str>,
+        description: Option<&str>,
     ) -> Self {
         let change_to_owned = |value: &str| Some(value.to_owned());
         Self {
             id: *id,
             name: name.and_then(change_to_owned),
             author_id: author_id.copied(),
-            publisher_id: publisher_id.copied(),
             genre_id: genre_id.copied(),
             price_dollars: price_dollars.copied(),
             price_cents: price_cents.copied(),
@@ -126,6 +130,8 @@ impl AudiobookUpdate {
             file_path: file_path.and_then(change_to_owned),
             stream_count: stream_count.copied(),
             overall_rating: overall_rating.copied(),
+            thumbnail: thumbnail.and_then(change_to_owned),
+            description: description.and_then(change_to_owned),
         }
     }
 
@@ -133,7 +139,6 @@ impl AudiobookUpdate {
     pub const fn update_fields_none(&self) -> bool {
         self.name.is_none()
             && self.author_id.is_none()
-            && self.publisher_id.is_none()
             && self.genre_id.is_none()
             && self.price_dollars.is_none()
             && self.price_cents.is_none()
@@ -141,6 +146,8 @@ impl AudiobookUpdate {
             && self.file_path.is_none()
             && self.stream_count.is_none()
             && self.overall_rating.is_none()
+            && self.description.is_none()
+            && self.thumbnail.is_none()
     }
 }
 
