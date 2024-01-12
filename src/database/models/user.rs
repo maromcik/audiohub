@@ -49,6 +49,7 @@ impl UserCreate {
         email: &str,
         name: &str,
         surname: &str,
+        password: &str,
         bio: &str,
         profile_picture: &str,
     ) -> Self {
@@ -57,6 +58,7 @@ impl UserCreate {
             email: email.to_owned(),
             name: name.to_owned(),
             surname: surname.to_owned(),
+            password: password.to_owned(),
             bio: bio.to_owned(),
             profile_picture: profile_picture.to_owned(),
         }
@@ -108,8 +110,7 @@ pub struct UserUpdate {
     pub surname: Option<String>,
     pub bio: Option<String>,
     pub profile_picture: Option<String>,
-    pub password_hash: Option<String>,
-    pub password_salt: Option<String>,
+    pub password: Option<String>,
 }
 
 impl UserUpdate {
@@ -125,7 +126,6 @@ impl UserUpdate {
         bio: Option<&str>,
         profile_picture: Option<&str>,
         password_hash: Option<&str>,
-        password_salt: Option<&str>,
     ) -> Self {
         let change_to_owned = |value: &str| Some(value.to_owned());
         Self {
@@ -136,8 +136,7 @@ impl UserUpdate {
             surname: surname.and_then(change_to_owned),
             bio: bio.and_then(change_to_owned),
             profile_picture: profile_picture.and_then(change_to_owned),
-            password_hash: password_hash.and_then(change_to_owned),
-            password_salt: password_salt.and_then(change_to_owned),
+            password: password_hash.and_then(change_to_owned),
         }
     }
 
@@ -149,8 +148,7 @@ impl UserUpdate {
             && self.surname.is_none()
             && self.bio.is_none()
             && self.profile_picture.is_none()
-            && self.password_hash.is_none()
-            && self.password_salt.is_none()
+            && self.password.is_none()
     }
 }
 
