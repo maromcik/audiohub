@@ -54,7 +54,6 @@ async fn main() -> anyhow::Result<()> {
         )
         .wrap(Logger::default())
         .configure(configure_webapp(&pool)))
-        .workers(1)
         .bind(host2)?
         .run()
         .await?;
