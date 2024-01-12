@@ -3,24 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
-    <link rel="stylesheet" href="../static/css/register.css">
+<!--    <link rel="stylesheet" href="../static/css/register.css">-->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.4"
             integrity="sha384-zUfuhFKKZCbHTY6aRR46gxiqszMk5tcHjsVFxnUo8VMus4kHGVdIYVbOYYNlKmHV"
             crossorigin="anonymous"></script>
 </head>
-<body>
-<div class="container">
-    <form action="/user/login" method="post" class="book-form">
-        <h2>AudioHub</h2>
-        <div class="form-content">
-            <div class="page">
-                <input type="text" name="email" placeholder="Email">
-                <input type="password" name="password" placeholder="Password">
-            </div>
+<body class="h-screen flex justify-center items-center bg-black">
+<div class="w-full h-full flex justify-center items-center bg-black">
+    <form action="/user/login" method="post" class="bg-black shadow-lg border border-gray-800 rounded-lg p-5 flex flex-col items-center">
+        <h2 class="text-white text-2xl mb-6">AudioHub</h2>
+        <div class="w-full mb-6 flex flex-col gap-2.5">
+            <input type="text" name="email" placeholder="Email" class="p-2.5 rounded border border-gray-400">
+            <input type="password" name="password" placeholder="Password" class="p-2.5 rounded border border-gray-400">
         </div>
-
-        <button type="submit" class="register-button">Login</button>
-        <p class="login-link">Are you new here? <a href="/user/register">Create an account</a>.</p>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded mb-2.5">Login</button>
+        <p class="text-white">Are you new here? <a href="/user/register" class="text-blue-600 hover:text-blue-400">Create an account</a>.</p>
     </form>
 </div>
 </body>
