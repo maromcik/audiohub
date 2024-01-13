@@ -61,7 +61,7 @@ pub async fn create_audiobook(
         &form.name,
         &user.id,
         &genre_id,
-        &20,
+        &0,
         &0,
         &PgInterval {
             months: 0,
