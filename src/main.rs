@@ -27,7 +27,7 @@ async fn main() -> anyhow::Result<()> {
     let pool = setup_pool(10_u32).await?;
     let host = parse_host();
     let host2 = host.clone();
-    let key = Key::generate();
+    let key = Key::from(&env::var("COOKIE_SESSION_KEY").unwrap_or_default().bytes().collect::<Vec<u8>>());
     env_logger::init_from_env(Env::default().default_filter_or("info"));
     if let Err(e) = dotenvy::dotenv() {
         warn!("failed loading .env file: {e}");
