@@ -10,7 +10,6 @@ use crate::forms::audiobook::{AudiobookCreateForm, AudiobookUploadForm};
 use crate::templates::audiobook::{AudiobookCreateFormTemplate, AudiobookUploadFormTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
-use actix_multipart::Multipart;
 use actix_session::Session;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, post, web, HttpResponse};
@@ -95,6 +94,7 @@ pub async fn upload_audiobook(
         uuid.clone(),
         form.thumbnail.file_name.unwrap_or_default()
     );
+
     let audiobook_path = format!(
         "./media/audiobook_{}_audio_{}",
         uuid.clone(),
@@ -105,22 +105,21 @@ pub async fn upload_audiobook(
     let Some(book_id) = session.get::<i64>("audiobook_create_id")? else {
         return Err(AppError::new(
             AppErrorKind::NotFound,
-            "Book could not be found in the active session",
+            "New book could not be found in the active session",
         ));
     };
 
     let Some(thumbnail_mime) = form.thumbnail.content_type else {
         return Err(AppError::new(
             AppErrorKind::FileError,
-            "No MIME type found",
+            "No thumbnail MIME type found",
         ));
     };
-
 
     let Some(audiobook_mime) = form.audio_file.content_type else {
         return Err(AppError::new(
             AppErrorKind::FileError,
-            "No MIME type found",
+            "No audiobook MIME type found",
         ));
     };
 
@@ -156,6 +155,14 @@ pub async fn upload_audiobook(
 
     audiobook_repo.update(&book_update).await?;
 
+    log::info!("saving a thumbnail to {thumbnail_path}");
+    if let Err(e) = form.thumbnail.file.persist(&thumbnail_path) {
+        return Err(AppError::new(
+            AppErrorKind::FileError,
+            e.to_string().as_str(),
+        ));
+    };
+
     log::info!("saving an audiobook to {audiobook_path}");
     if let Err(e) = form.audio_file.file.persist(&audiobook_path) {
         return Err(AppError::new(
@@ -164,13 +171,6 @@ pub async fn upload_audiobook(
         ));
     };
 
-    log::info!("saving a thumbnail to {thumbnail_path}");
-    if let Err(e) = form.thumbnail.file.persist(&thumbnail_path) {
-        return Err(AppError::new(
-            AppErrorKind::FileError,
-            e.to_string().as_str(),
-        ));
-    };
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/"))
         .finish())
