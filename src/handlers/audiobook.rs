@@ -7,6 +7,7 @@ use crate::error::{AppError, AppErrorKind};
 use crate::templates::audiobook::NewAudiobookForm;
 use actix_identity::Identity;
 use actix_web::{get, post, web, HttpResponse};
+use actix_web::http::header::LOCATION;
 use askama::Template;
 use sqlx::postgres::types::PgInterval;
 use crate::database::models::genre::{GenreGetById, GenreSearch};
@@ -58,5 +59,7 @@ pub async fn create_audiobook(
         "",
     );
     audiobook_repo.create(&book).await?;
-    Ok(HttpResponse::Ok().finish())
+    Ok(HttpResponse::SeeOther()
+        .insert_header((LOCATION, "/"))
+        .finish())
 }

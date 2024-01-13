@@ -27,6 +27,8 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
 
     let audiobook_scope = web::scope("audiobook")
         .app_data(web::Data::new(audiobook_repository.clone()))
+        .app_data(web::Data::new(user_repository.clone()))
+        .app_data(web::Data::new(genre_repository.clone()))
         .service(create_audiobook)
         .service(create_audiobook_form);
 
