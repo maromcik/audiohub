@@ -101,7 +101,6 @@ pub async fn upload_audiobook(
         form.audio_file.file_name.unwrap_or_default()
     );
 
-
     let Some(book_id) = session.get::<i64>("audiobook_create_id")? else {
         return Err(AppError::new(
             AppErrorKind::NotFound,
@@ -136,7 +135,6 @@ pub async fn upload_audiobook(
             "Invalid audiobook content type",
         ));
     }
-
 
     let book_update = AudiobookUpdate::new(
         &book_id,

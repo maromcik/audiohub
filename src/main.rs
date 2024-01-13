@@ -2,17 +2,17 @@ use crate::database::common::setup_pool;
 use crate::init::configure_webapp;
 use actix_cors::Cors;
 use actix_identity::IdentityMiddleware;
+use actix_multipart::form::MultipartFormConfig;
 use actix_session::config::CookieContentSecurity;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::cookie::SameSite;
 use actix_web::http::header;
 use actix_web::middleware::Logger;
-use actix_web::{cookie::Key, App, HttpServer, web};
+use actix_web::web::PayloadConfig;
+use actix_web::{cookie::Key, web, App, HttpServer};
 use env_logger::Env;
 use log::{info, warn};
 use std::env;
-use actix_multipart::form::MultipartFormConfig;
-use actix_web::web::PayloadConfig;
 
 mod database;
 mod error;
@@ -49,9 +49,11 @@ async fn main() -> anyhow::Result<()> {
 
     HttpServer::new(move || {
         App::new()
-            .app_data(MultipartFormConfig::default()
-                          .total_limit(16 * 1024 * 1024 * 1024)
-                          .memory_limit(16 * 1024 * 1024 * 1024))
+            .app_data(
+                MultipartFormConfig::default()
+                    .total_limit(16 * 1024 * 1024 * 1024)
+                    .memory_limit(16 * 1024 * 1024 * 1024),
+            )
             .app_data(PayloadConfig::new(16 * 1024 * 1024 * 1024))
             .wrap(IdentityMiddleware::default())
             .wrap(
@@ -74,9 +76,9 @@ async fn main() -> anyhow::Result<()> {
             .wrap(Logger::default())
             .configure(configure_webapp(&pool))
     })
-        .bind(host2)?
-        .run()
-        .await?;
+    .bind(host2)?
+    .run()
+    .await?;
     Ok(())
 }
 
