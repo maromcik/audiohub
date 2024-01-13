@@ -88,14 +88,16 @@ pub async fn upload_audiobook(
     audiobook_repo: web::Data<AudiobookRepository>,
     MultipartForm(form): MultipartForm<AudiobookUploadForm>,
 ) -> Result<HttpResponse, AppError> {
+    let uuid = Uuid::new_v4();
+
     let thumbnail_path = format!(
-        "./media/thumbnails/audiobook_thumbnail_{}_{}",
-        Uuid::new_v4(),
+        "./media/audiobook_{}_thumbnail_{}",
+        uuid.clone(),
         form.thumbnail.file_name.unwrap_or_default()
     );
     let audiobook_path = format!(
-        "./media/audiobooks/audiobook_thumbnail_{}_{}",
-        Uuid::new_v4(),
+        "./media/audiobook_{}_audio_{}",
+        uuid.clone(),
         form.audio_file.file_name.unwrap_or_default()
     );
 
@@ -106,6 +108,36 @@ pub async fn upload_audiobook(
             "Book could not be found in the active session",
         ));
     };
+
+    let Some(thumbnail_mime) = form.thumbnail.content_type else {
+        return Err(AppError::new(
+            AppErrorKind::FileError,
+            "No MIME type found",
+        ));
+    };
+
+
+    let Some(audiobook_mime) = form.audio_file.content_type else {
+        return Err(AppError::new(
+            AppErrorKind::FileError,
+            "No MIME type found",
+        ));
+    };
+
+    if !thumbnail_mime.to_string().starts_with("image/") {
+        return Err(AppError::new(
+            AppErrorKind::FileError,
+            "Invalid thumbnail content type",
+        ));
+    }
+
+    if !audiobook_mime.to_string().starts_with("audio/") {
+        return Err(AppError::new(
+            AppErrorKind::FileError,
+            "Invalid audiobook content type",
+        ));
+    }
+
 
     let book_update = AudiobookUpdate::new(
         &book_id,
@@ -121,6 +153,7 @@ pub async fn upload_audiobook(
         Some(thumbnail_path.as_str()),
         None,
     );
+
     audiobook_repo.update(&book_update).await?;
 
     log::info!("saving an audiobook to {audiobook_path}");
@@ -138,8 +171,6 @@ pub async fn upload_audiobook(
             e.to_string().as_str(),
         ));
     };
-    println!("MIME thumb: {:?}", form.thumbnail.content_type);
-    println!("MIME audio: {:?}", form.audio_file.content_type);
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/"))
         .finish())
