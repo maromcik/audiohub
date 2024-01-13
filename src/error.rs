@@ -6,7 +6,7 @@ use actix_web::{HttpResponse, ResponseError};
 use askama::Template;
 use serde::Serialize;
 use std::fmt::{Debug, Display, Formatter};
-use actix_multipart::form::tempfile;
+
 use thiserror::Error;
 
 /// User facing error type
@@ -110,7 +110,6 @@ impl From<actix_session::SessionGetError> for AppError {
         Self::new(AppErrorKind::SessionError, value.to_string().as_str())
     }
 }
-
 
 impl Display for AppError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

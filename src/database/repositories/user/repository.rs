@@ -22,7 +22,6 @@ use crate::database::models::user::{
     UserCreate, UserDelete, UserGetById, UserGetByUsername, UserLogin, UserSearch, UserUpdate,
 };
 
-
 fn generate_salt() -> SaltString {
     SaltString::generate(&mut OsRng)
 }

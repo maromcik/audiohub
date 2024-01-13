@@ -1,6 +1,5 @@
 #[cfg(test)]
 pub mod genre_repo_tests {
-    
 
     use sqlx::PgPool;
 

@@ -1,7 +1,6 @@
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 
-
 use sqlx::postgres::types::PgInterval;
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]

@@ -1,5 +1,5 @@
-use actix_multipart::form::MultipartForm;
 use actix_multipart::form::tempfile::TempFile;
+use actix_multipart::form::MultipartForm;
 use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]

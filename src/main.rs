@@ -24,7 +24,6 @@ const DEFAULT_PORT: &str = "8000";
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
-
     env::set_var("TMPDIR", "./tmp");
     let dir = env::temp_dir();
     println!("Temporary directory: {}", dir.display());

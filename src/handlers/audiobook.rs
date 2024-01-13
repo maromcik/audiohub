@@ -1,4 +1,3 @@
-use std::fs::File;
 use crate::database::common::{DbCreate, DbReadMany, DbReadOne, DbUpdate};
 use crate::database::models::audiobook::{AudiobookCreate, AudiobookUpdate};
 use crate::database::models::genre::GenreSearch;
@@ -12,11 +11,11 @@ use crate::templates::audiobook::{AudiobookCreateFormTemplate, AudiobookUploadFo
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_session::Session;
-use uuid::Uuid;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, post, web, HttpResponse};
 use askama::Template;
 use sqlx::postgres::types::PgInterval;
+use uuid::Uuid;
 
 #[get("/create")]
 pub async fn create_audiobook_form() -> Result<HttpResponse, AppError> {
@@ -88,12 +87,22 @@ pub async fn upload_audiobook(
     audiobook_repo: web::Data<AudiobookRepository>,
     MultipartForm(form): MultipartForm<AudiobookUploadForm>,
 ) -> Result<HttpResponse, AppError> {
-
-    let thumbnail_path = format!("./media/thumbnails/audiobook_thumbnail_{}_{}", Uuid::new_v4(), form.thumbnail.file_name.unwrap_or_default());
-    let audiobook_path = format!("./media/audiobooks/audiobook_thumbnail_{}_{}", Uuid::new_v4(), form.audio_file.file_name.unwrap_or_default());
+    let thumbnail_path = format!(
+        "./media/thumbnails/audiobook_thumbnail_{}_{}",
+        Uuid::new_v4(),
+        form.thumbnail.file_name.unwrap_or_default()
+    );
+    let audiobook_path = format!(
+        "./media/audiobooks/audiobook_thumbnail_{}_{}",
+        Uuid::new_v4(),
+        form.audio_file.file_name.unwrap_or_default()
+    );
 
     let Some(book_id) = session.get::<i64>("audiobook_create_id")? else {
-        return Err(AppError::new(AppErrorKind::NotFound, "Book could not be found in the active session"));
+        return Err(AppError::new(
+            AppErrorKind::NotFound,
+            "Book could not be found in the active session",
+        ));
     };
 
     let book_update = AudiobookUpdate::new(
@@ -108,18 +117,24 @@ pub async fn upload_audiobook(
         None,
         None,
         Some(thumbnail_path.as_str()),
-        None);
+        None,
+    );
     audiobook_repo.update(&book_update).await?;
-
 
     log::info!("saving an audiobook to {audiobook_path}");
     if let Err(e) = form.audio_file.file.persist(&thumbnail_path) {
-            return Err(AppError::new(AppErrorKind::FileError, e.to_string().as_str()));
+        return Err(AppError::new(
+            AppErrorKind::FileError,
+            e.to_string().as_str(),
+        ));
     };
 
     log::info!("saving a thumbnail to {thumbnail_path}");
     if let Err(e) = form.thumbnail.file.persist(&thumbnail_path) {
-        return Err(AppError::new(AppErrorKind::FileError, e.to_string().as_str()));
+        return Err(AppError::new(
+            AppErrorKind::FileError,
+            e.to_string().as_str(),
+        ));
     };
 
     Ok(HttpResponse::SeeOther()
