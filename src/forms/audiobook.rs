@@ -10,6 +10,8 @@ pub struct AudiobookCreateForm {
 }
 #[derive(Debug, MultipartForm)]
 pub struct AudiobookUploadForm {
-    #[multipart(rename = "file")]
+    #[multipart(rename = "thumbnail")]
     pub thumbnail: TempFile,
+    #[multipart(rename = "file")]
+    pub audio_file: TempFile,
 }

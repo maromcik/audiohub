@@ -78,7 +78,7 @@ pub async fn create_audiobook(
     let book = audiobook_repo.create(&book_crate).await?;
     session.insert("audiobook_create_id", book.id)?;
     Ok(HttpResponse::SeeOther()
-        .insert_header((LOCATION, "/"))
+        .insert_header((LOCATION, "/audiobook/upload"))
         .finish())
 }
 
@@ -89,12 +89,10 @@ pub async fn upload_audiobook(
     MultipartForm(form): MultipartForm<AudiobookUploadForm>,
 ) -> Result<HttpResponse, AppError> {
 
-    // let path = format!("./media/thumbnails/audiobook_thumbnail_{}_{}", Uuid::new_v4(), form.thumbnail.file_name.unwrap());
-    // log::info!("saving to {path}");
-    let path = format!("./media/thumbnails/audiobook_thumbnail_{}_{}", Uuid::new_v4(), form.thumbnail.file_name.unwrap());
-    log::info!("saving to {path}");
-    let res = form.thumbnail.file.persist(path);
-    match res {
+    let thumbnail_path = format!("./media/thumbnails/audiobook_thumbnail_{}_{}", Uuid::new_v4(), form.thumbnail.file_name.unwrap_or_default());
+    log::info!("saving a thumbnail to {thumbnail_path}");
+    let thumbnail_res = form.thumbnail.file.persist(&thumbnail_path);
+    match thumbnail_res {
         Ok(_) => {}
         Err(e) => {
             println!("Persist error {}", e);
@@ -102,6 +100,16 @@ pub async fn upload_audiobook(
         }
     };
 
+    let audiobook_path = format!("./media/audiobooks/audiobook_thumbnail_{}_{}", Uuid::new_v4(), form.audio_file.file_name.unwrap_or_default());
+    log::info!("saving an audiobook to {audiobook_path}");
+    let book_res = form.audio_file.file.persist(&thumbnail_path);
+    match book_res {
+        Ok(_) => {}
+        Err(e) => {
+            println!("Persist error {}", e);
+            return Err(AppError::new(AppErrorKind::FileError, e.to_string().as_str()));
+        }
+    };
 
     let Some(book_id) = session.get::<i64>("audiobook_create_id")? else {
         return Err(AppError::new(AppErrorKind::NotFound, "Book could not be found in the active session"));
@@ -114,10 +122,10 @@ pub async fn upload_audiobook(
         None,
         None,
         None,
+        Some(audiobook_path.as_str()),
         None,
         None,
-        None,
-        None,
+        Some(thumbnail_path.as_str()),
         None);
     let book = audiobook_repo.update(&book_update).await?;
     Ok(HttpResponse::SeeOther()
