@@ -50,9 +50,9 @@ async fn main() -> anyhow::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(MultipartFormConfig::default()
-                          .total_limit(8 * 1024 * 1024 * 1024) // 50 MB
-                          .memory_limit(8 * 1024 * 1024 * 1024))
-            .app_data(PayloadConfig::new(8 * 1024 * 1024 * 1024))
+                          .total_limit(16 * 1024 * 1024 * 1024)
+                          .memory_limit(16 * 1024 * 1024 * 1024))
+            .app_data(PayloadConfig::new(16 * 1024 * 1024 * 1024))
             .wrap(IdentityMiddleware::default())
             .wrap(
                 SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
