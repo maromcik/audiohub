@@ -24,10 +24,15 @@ const DEFAULT_PORT: &str = "8000";
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
-    // Create connection pool
+
+    env::set_var("TMPDIR", "./tmp");
+    let dir = env::temp_dir();
+    println!("Temporary directory: {}", dir.display());
+
     let pool = setup_pool(10_u32).await?;
     let host = parse_host();
     let host2 = host.clone();
+
     let key = Key::from(
         &env::var("COOKIE_SESSION_KEY")
             .unwrap_or_default()
@@ -39,6 +44,7 @@ async fn main() -> anyhow::Result<()> {
         warn!("failed loading .env file: {e}");
     };
     info!("starting server on {host}");
+
     HttpServer::new(move || {
         App::new()
             .wrap(IdentityMiddleware::default())

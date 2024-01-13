@@ -1,0 +1,22 @@
+<div class="container mx-auto p-6 bg-black">
+    <form method="post" action="/audiobook/upload" enctype="multipart/form-data"
+          class="bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <h2 class="block text-gray-300 text-xl font-bold mb-2">Upload New Audiobook</h2>
+
+
+        <div class="mb-4">
+            <label class="block text-gray-300 text-sm font-bold mb-2" for="picture">
+                Audiobook Picture
+            </label>
+            <input class="shadow appearance-none border rounded py-2 px-3 text-gray-300 leading-tight focus:outline-none focus:shadow-outline"
+                   id="picture" type="file" multiple name="file">
+        </div>
+
+        <div class="flex items-center justify-between">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    type="submit">
+                Add Audiobook
+            </button>
+        </div>
+    </form>
+</div>

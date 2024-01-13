@@ -10,6 +10,7 @@ use actix_files::Files as ActixFiles;
 use actix_web::web;
 use actix_web::web::ServiceConfig;
 use sqlx::PgPool;
+use crate::handlers::audiobook::{upload_audiobook, upload_audiobook_form};
 
 pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let user_repository = UserRepository::new(PoolHandler::new(pool.clone()));
@@ -30,7 +31,9 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .app_data(web::Data::new(user_repository.clone()))
         .app_data(web::Data::new(genre_repository.clone()))
         .service(create_audiobook)
-        .service(create_audiobook_form);
+        .service(upload_audiobook)
+        .service(create_audiobook_form)
+        .service(upload_audiobook_form);
 
     let chapter_scope = web::scope("chapter").app_data(web::Data::new(chapter_repository.clone()));
 

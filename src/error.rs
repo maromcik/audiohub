@@ -6,6 +6,7 @@ use actix_web::{HttpResponse, ResponseError};
 use askama::Template;
 use serde::Serialize;
 use std::fmt::{Debug, Display, Formatter};
+use actix_multipart::form::tempfile;
 use thiserror::Error;
 
 /// User facing error type
@@ -19,12 +20,16 @@ pub enum AppErrorKind {
     BadRequest,
     #[error("templating error")]
     TemplatingError,
-    #[error("login error")]
+    #[error("identity error")]
     IdentityError,
+    #[error("session error")]
+    SessionError,
     #[error("password hasher error")]
     PasswordHasherError,
     #[error("conflict")]
     Conflict,
+    #[error("file error")]
+    FileError,
 }
 
 impl From<askama::Error> for AppError {
@@ -90,15 +95,22 @@ impl From<actix_identity::error::LoginError> for AppError {
 
 impl From<actix_identity::error::GetIdentityError> for AppError {
     fn from(value: actix_identity::error::GetIdentityError) -> Self {
-        match value {
-            // GetIdentityError::SessionExpiryError(_) => {}
-            // GetIdentityError::MissingIdentityError(_) => {}
-            // GetIdentityError::SessionGetError(_) => {}
-            // GetIdentityError::LostIdentityError(_) => {}
-            _ => Self::new(AppErrorKind::IdentityError, value.to_string().as_str()),
-        }
+        Self::new(AppErrorKind::IdentityError, value.to_string().as_str())
     }
 }
+
+impl From<actix_session::SessionInsertError> for AppError {
+    fn from(value: actix_session::SessionInsertError) -> Self {
+        Self::new(AppErrorKind::SessionError, value.to_string().as_str())
+    }
+}
+
+impl From<actix_session::SessionGetError> for AppError {
+    fn from(value: actix_session::SessionGetError) -> Self {
+        Self::new(AppErrorKind::SessionError, value.to_string().as_str())
+    }
+}
+
 
 impl Display for AppError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -119,7 +131,9 @@ impl ResponseError for AppError {
             AppErrorKind::TemplatingError
             | AppErrorKind::InternalServerError
             | AppErrorKind::PasswordHasherError
-            | AppErrorKind::IdentityError => StatusCode::INTERNAL_SERVER_ERROR,
+            | AppErrorKind::IdentityError
+            | AppErrorKind::SessionError
+            | AppErrorKind::FileError => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
