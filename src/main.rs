@@ -47,6 +47,8 @@ async fn main() -> anyhow::Result<()> {
     };
     info!("starting server on {host}");
 
+    gst::init()?;
+
     HttpServer::new(move || {
         App::new()
             .app_data(
