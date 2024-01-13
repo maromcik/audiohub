@@ -109,7 +109,7 @@ pub async fn upload_audiobook(
         None,
         Some(thumbnail_path.as_str()),
         None);
-    let book = audiobook_repo.update(&book_update).await?;
+    audiobook_repo.update(&book_update).await?;
 
 
     log::info!("saving an audiobook to {audiobook_path}");
