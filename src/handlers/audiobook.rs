@@ -10,6 +10,7 @@ use crate::forms::audiobook::{AudiobookCreateForm, AudiobookUploadForm};
 use crate::templates::audiobook::{AudiobookCreateFormTemplate, AudiobookUploadFormTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
+use actix_multipart::Multipart;
 use actix_session::Session;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, post, web, HttpResponse};
@@ -98,6 +99,7 @@ pub async fn upload_audiobook(
         form.audio_file.file_name.unwrap_or_default()
     );
 
+
     let Some(book_id) = session.get::<i64>("audiobook_create_id")? else {
         return Err(AppError::new(
             AppErrorKind::NotFound,
@@ -122,7 +124,7 @@ pub async fn upload_audiobook(
     audiobook_repo.update(&book_update).await?;
 
     log::info!("saving an audiobook to {audiobook_path}");
-    if let Err(e) = form.audio_file.file.persist(&thumbnail_path) {
+    if let Err(e) = form.audio_file.file.persist(&audiobook_path) {
         return Err(AppError::new(
             AppErrorKind::FileError,
             e.to_string().as_str(),
@@ -136,7 +138,8 @@ pub async fn upload_audiobook(
             e.to_string().as_str(),
         ));
     };
-
+    println!("MIME thumb: {:?}", form.thumbnail.content_type);
+    println!("MIME audio: {:?}", form.audio_file.content_type);
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/"))
         .finish())

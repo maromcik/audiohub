@@ -7,10 +7,12 @@ use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::cookie::SameSite;
 use actix_web::http::header;
 use actix_web::middleware::Logger;
-use actix_web::{cookie::Key, App, HttpServer};
+use actix_web::{cookie::Key, App, HttpServer, web};
 use env_logger::Env;
 use log::{info, warn};
 use std::env;
+use actix_multipart::form::MultipartFormConfig;
+use actix_web::web::PayloadConfig;
 
 mod database;
 mod error;
@@ -18,6 +20,7 @@ mod forms;
 mod handlers;
 mod init;
 mod templates;
+mod utilities;
 
 const DEFAULT_HOSTNAME: &str = "localhost";
 const DEFAULT_PORT: &str = "8000";
@@ -46,6 +49,10 @@ async fn main() -> anyhow::Result<()> {
 
     HttpServer::new(move || {
         App::new()
+            .app_data(MultipartFormConfig::default()
+                          .total_limit(8 * 1024 * 1024 * 1024) // 50 MB
+                          .memory_limit(8 * 1024 * 1024 * 1024))
+            .app_data(PayloadConfig::new(8 * 1024 * 1024 * 1024))
             .wrap(IdentityMiddleware::default())
             .wrap(
                 SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
@@ -67,9 +74,9 @@ async fn main() -> anyhow::Result<()> {
             .wrap(Logger::default())
             .configure(configure_webapp(&pool))
     })
-    .bind(host2)?
-    .run()
-    .await?;
+        .bind(host2)?
+        .run()
+        .await?;
     Ok(())
 }
 
