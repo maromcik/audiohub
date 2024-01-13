@@ -9,7 +9,7 @@ use actix_web::cookie::SameSite;
 use actix_web::http::header;
 use actix_web::middleware::Logger;
 use actix_web::web::PayloadConfig;
-use actix_web::{cookie::Key, web, App, HttpServer};
+use actix_web::{cookie::Key, App, HttpServer};
 use env_logger::Env;
 use log::{info, warn};
 use std::env;
