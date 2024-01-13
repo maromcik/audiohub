@@ -90,30 +90,12 @@ pub async fn upload_audiobook(
 ) -> Result<HttpResponse, AppError> {
 
     let thumbnail_path = format!("./media/thumbnails/audiobook_thumbnail_{}_{}", Uuid::new_v4(), form.thumbnail.file_name.unwrap_or_default());
-    log::info!("saving a thumbnail to {thumbnail_path}");
-    let thumbnail_res = form.thumbnail.file.persist(&thumbnail_path);
-    match thumbnail_res {
-        Ok(_) => {}
-        Err(e) => {
-            println!("Persist error {}", e);
-            return Err(AppError::new(AppErrorKind::FileError, e.to_string().as_str()));
-        }
-    };
-
     let audiobook_path = format!("./media/audiobooks/audiobook_thumbnail_{}_{}", Uuid::new_v4(), form.audio_file.file_name.unwrap_or_default());
-    log::info!("saving an audiobook to {audiobook_path}");
-    let book_res = form.audio_file.file.persist(&thumbnail_path);
-    match book_res {
-        Ok(_) => {}
-        Err(e) => {
-            println!("Persist error {}", e);
-            return Err(AppError::new(AppErrorKind::FileError, e.to_string().as_str()));
-        }
-    };
 
     let Some(book_id) = session.get::<i64>("audiobook_create_id")? else {
         return Err(AppError::new(AppErrorKind::NotFound, "Book could not be found in the active session"));
     };
+
     let book_update = AudiobookUpdate::new(
         &book_id,
         None,
@@ -128,6 +110,18 @@ pub async fn upload_audiobook(
         Some(thumbnail_path.as_str()),
         None);
     let book = audiobook_repo.update(&book_update).await?;
+
+
+    log::info!("saving an audiobook to {audiobook_path}");
+    if let Err(e) = form.audio_file.file.persist(&thumbnail_path) {
+            return Err(AppError::new(AppErrorKind::FileError, e.to_string().as_str()));
+    };
+
+    log::info!("saving a thumbnail to {thumbnail_path}");
+    if let Err(e) = form.thumbnail.file.persist(&thumbnail_path) {
+        return Err(AppError::new(AppErrorKind::FileError, e.to_string().as_str()));
+    };
+
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/"))
         .finish())
