@@ -1,6 +1,6 @@
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
-use serde::Deserialize;
+
 
 use sqlx::postgres::types::PgInterval;
 

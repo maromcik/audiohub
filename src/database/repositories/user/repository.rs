@@ -21,7 +21,7 @@ use crate::database::models::user::{
     AddActiveAudiobook, BookmarkOperation, RemoveActiveAudiobook, UpdateActiveAudiobook, User,
     UserCreate, UserDelete, UserGetById, UserGetByUsername, UserLogin, UserSearch, UserUpdate,
 };
-use crate::error::AppError;
+
 
 fn generate_salt() -> SaltString {
     SaltString::generate(&mut OsRng)

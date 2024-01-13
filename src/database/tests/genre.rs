@@ -1,6 +1,6 @@
 #[cfg(test)]
 pub mod genre_repo_tests {
-    use std::sync::Arc;
+    
 
     use sqlx::PgPool;
 
