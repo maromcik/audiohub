@@ -39,13 +39,6 @@ pub struct AudiobookSearch {
     pub max_overall_rating: Option<i16>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
-pub struct AudiobookCreateForm {
-    pub name: String,
-    pub description: String,
-    pub genre_name: String
-}
-
 #[derive(Debug, Clone)]
 pub struct AudiobookCreate {
     pub name: String,

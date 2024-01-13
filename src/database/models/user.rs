@@ -31,15 +31,6 @@ pub struct UserCreate {
     pub password: String,
 }
 
-#[derive(serde::Deserialize, Debug, Clone)]
-pub struct NewUserForm {
-    pub username: String,
-    pub email: String,
-    pub password: String,
-    pub name: String,
-    pub surname: String,
-}
-
 impl UserCreate {
     #[must_use]
     #[inline]

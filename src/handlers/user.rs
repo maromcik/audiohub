@@ -7,7 +7,8 @@ use actix_web::{get, post, web, HttpMessage, HttpRequest, HttpResponse};
 use askama::Template;
 
 use crate::database::common::{DbCreate, DbReadOne};
-use crate::database::models::user::{NewUserForm, UserCreate, UserLogin};
+use crate::database::models::user::{UserCreate, UserLogin};
+use crate::forms::user::UserCreateForm;
 
 #[get("/register")]
 pub async fn register() -> Result<HttpResponse, AppError> {
@@ -25,7 +26,7 @@ pub async fn login() -> Result<HttpResponse, AppError> {
 
 #[post("/register")]
 pub async fn register_user(
-    form: web::Form<NewUserForm>,
+    form: web::Form<UserCreateForm>,
     user_repo: web::Data<UserRepository>,
 ) -> Result<HttpResponse, AppError> {
     let new_user = UserCreate {
