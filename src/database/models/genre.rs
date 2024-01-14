@@ -27,15 +27,15 @@ impl GenreCreate {
 
 #[derive(Debug, Clone)]
 pub struct GenreSearch {
-    pub name: String,
+    pub name: Option<String>,
 }
 
 impl GenreSearch {
     #[must_use]
     #[inline]
-    pub fn new(name: &str) -> Self {
+    pub fn new(name: Option<&str>) -> Self {
         Self {
-            name: name.to_owned(),
+            name: name.map(|n| n.to_owned()),
         }
     }
 }

@@ -1,7 +1,8 @@
 use std::fs::metadata;
+use std::ptr::null;
 use crate::database::common::{DbCreate, DbReadMany, DbReadOne, DbUpdate};
 use crate::database::models::audiobook::{AudiobookCreate, AudiobookGetById, AudiobookMetadataForm, AudiobookUpdate};
-use crate::database::models::genre::GenreSearch;
+use crate::database::models::genre::{GenreGetById, GenreSearch};
 use crate::database::models::user::{User, UserGetByUsername};
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
@@ -20,8 +21,13 @@ use uuid::Uuid;
 use crate::database::models::Id;
 
 #[get("/create")]
-pub async fn create_audiobook_form() -> Result<HttpResponse, AppError> {
-    let template = AudiobookCreateFormTemplate {};
+pub async fn create_audiobook_form(genre_repo: web::Data<GenreRepository>) -> Result<HttpResponse, AppError> {
+
+    let genres = genre_repo
+        .read_many(&GenreSearch::new(None))
+        .await?;
+
+    let template = AudiobookCreateFormTemplate { genres };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -43,17 +49,12 @@ pub async fn create_audiobook(
 ) -> Result<HttpResponse, AppError> {
     let user = get_user_from_identity(identity, user_repo).await?;
     let session_keys = AudiobookCreateSessionKeys::new(user.id);
-    let genre_id = match genre_repo
-        .read_many(&GenreSearch::new(&form.genre_name))
-        .await?
-        .first()
-    {
-        Some(g) => g.id,
-        None => 1,
-    };
+    let genre = genre_repo
+        .read_one(&GenreGetById::new(&form.genre_id))
+        .await?;
 
     session.insert(session_keys.name.as_str(), &form.name)?;
-    session.insert(session_keys.genre_id.as_str(), genre_id)?;
+    session.insert(session_keys.genre_id.as_str(), genre.id)?;
     session.insert(session_keys.description.as_str(), &form.description)?;
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/audiobook/upload"))
