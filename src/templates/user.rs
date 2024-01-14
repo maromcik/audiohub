@@ -6,4 +6,6 @@ pub struct RegistrationTemplate {}
 
 #[derive(Template)]
 #[template(path = "user/login.html")]
-pub struct LoginTemplate {}
+pub struct LoginTemplate {
+    pub message: String,
+}

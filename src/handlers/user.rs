@@ -19,7 +19,7 @@ pub async fn register() -> Result<HttpResponse, AppError> {
 
 #[get("/login")]
 pub async fn login() -> Result<HttpResponse, AppError> {
-    let template = LoginTemplate {};
+    let template = LoginTemplate { message: "".to_string()};
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -66,7 +66,9 @@ pub async fn login_user(
                 .finish())
         },
         Err(_) => {
-            Ok(HttpResponse::Ok().content_type("text/plain").body("Invalid username or password"))
+            let template = LoginTemplate { message: "".to_string()};
+            let body = template.render()?;
+            Ok(HttpResponse::Ok().content_type("text/html").body(body))
         }
     }
 }

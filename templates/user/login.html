@@ -10,10 +10,10 @@
 </head>
 <body class="h-screen flex justify-center items-center bg-black">
 <div id="login_box" class="w-full h-full flex justify-center items-center bg-black">
-    <form hx-post="/user/login" hx-target="#error-area" class="bg-black shadow-lg border border-gray-800 rounded-lg p-5 flex flex-col items-center">
+    <form action="/user/login" method="post" class="bg-black shadow-lg border border-gray-800 rounded-lg p-5 flex flex-col items-center">
         <h2 class="text-white text-2xl mb-6">AudioHub</h2>
         <div id="error-area" class="text-red-500 mb-3">
-
+            {{ message }}
         </div>
         <div class="w-full mb-6 flex flex-col gap-2.5">
             <input type="text" name="email_or_username" placeholder="Email or username" class="p-2.5 rounded border border-gray-400">
