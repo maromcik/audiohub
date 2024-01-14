@@ -1,8 +1,8 @@
-use crate::database::common::error::BusinessLogicErrorKind::{
+use crate::database::common::error::BackendErrorKind::{
     GenreDeleted, GenreDoesNotExist, GenreUpdateParametersEmpty,
 };
 use crate::database::common::error::{
-    BusinessLogicError, DbError, DbResultMultiple, DbResultSingle,
+    BackendError, DbError, DbResultMultiple, DbResultSingle,
 };
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
@@ -39,7 +39,7 @@ impl GenreRepository {
             return Ok(Some(genre));
         }
 
-        Err(DbError::from(BusinessLogicError::new(GenreDoesNotExist)))
+        Err(DbError::from(BackendError::new(GenreDoesNotExist)))
     }
 
     pub fn genre_is_correct(genre: Option<Genre>) -> DbResultSingle<Genre> {
@@ -47,10 +47,10 @@ impl GenreRepository {
             if genre.deleted_at.is_none() {
                 return Ok(genre);
             }
-            return Err(DbError::from(BusinessLogicError::new(GenreDeleted)));
+            return Err(DbError::from(BackendError::new(GenreDeleted)));
         }
 
-        Err(DbError::from(BusinessLogicError::new(GenreDoesNotExist)))
+        Err(DbError::from(BackendError::new(GenreDoesNotExist)))
     }
 }
 
@@ -130,7 +130,7 @@ impl DbCreate<GenreCreate, Genre> for GenreRepository {
 impl DbUpdate<GenreUpdate, Genre> for GenreRepository {
     async fn update(&self, params: &GenreUpdate) -> DbResultMultiple<Genre> {
         if params.update_fields_none() {
-            return Err(DbError::from(BusinessLogicError::new(
+            return Err(DbError::from(BackendError::new(
                 GenreUpdateParametersEmpty,
             )));
         }

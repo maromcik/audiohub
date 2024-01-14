@@ -1,8 +1,8 @@
-use crate::database::common::error::BusinessLogicErrorKind::{
+use crate::database::common::error::BackendErrorKind::{
     ChapterDeleted, ChapterDoesNotExist, RatingUpdateParametersEmpty,
 };
 use crate::database::common::error::{
-    BusinessLogicError, DbError, DbResultMultiple, DbResultSingle,
+    BackendError, DbError, DbResultMultiple, DbResultSingle,
 };
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
@@ -46,7 +46,7 @@ impl ChapterRepository {
             return Ok(Some(chapter));
         }
 
-        Err(DbError::from(BusinessLogicError::new(ChapterDoesNotExist)))
+        Err(DbError::from(BackendError::new(ChapterDoesNotExist)))
     }
 
     /// Function which retrieves all chapters for book with given id, usable within a transaction
@@ -133,10 +133,10 @@ impl ChapterRepository {
             if chapter.deleted_at.is_none() {
                 return Ok(chapter);
             }
-            return Err(DbError::from(BusinessLogicError::new(ChapterDeleted)));
+            return Err(DbError::from(BackendError::new(ChapterDeleted)));
         }
 
-        Err(DbError::from(BusinessLogicError::new(ChapterDoesNotExist)))
+        Err(DbError::from(BackendError::new(ChapterDoesNotExist)))
     }
 }
 
@@ -243,7 +243,7 @@ impl DbDelete<ChapterGetById, Chapter> for ChapterRepository {
 impl DbUpdate<ChapterUpdate, Chapter> for ChapterRepository {
     async fn update(&self, params: &ChapterUpdate) -> DbResultMultiple<Chapter> {
         if params.name.is_none() {
-            return Err(DbError::from(BusinessLogicError::new(
+            return Err(DbError::from(BackendError::new(
                 RatingUpdateParametersEmpty,
             )));
         }

@@ -1,10 +1,10 @@
 use pbkdf2;
 use std::fmt::{Debug, Display, Formatter};
 
-use BusinessLogicErrorKind::*;
+use BackendErrorKind::*;
 
 #[derive(Debug, Clone)]
-pub enum BusinessLogicErrorKind {
+pub enum BackendErrorKind {
     // User errors
     UserDoesNotExist,
     UserDeleted,
@@ -40,7 +40,7 @@ pub enum BusinessLogicErrorKind {
     ForeignKeyError,
 }
 
-impl Display for BusinessLogicErrorKind {
+impl Display for BackendErrorKind {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let does_not_exist = |name: &str| format!("The specified {name} does not exist!");
         let deleted = |name: &str| format!("The specified {name} has been deleted!");
@@ -122,15 +122,15 @@ impl Display for BusinessLogicErrorKind {
 /// Error type representing a Business Logic Error in the database layer ->
 /// usually a problem with missing records, insufficient rights for operation, and so on.
 #[derive(Clone)]
-pub struct BusinessLogicError {
-    pub error_kind: BusinessLogicErrorKind,
+pub struct BackendError {
+    pub error_kind: BackendErrorKind,
 }
 
-impl BusinessLogicError {
+impl BackendError {
     /// Business Logic Error constructor
     #[must_use]
     #[inline]
-    pub const fn new(error: BusinessLogicErrorKind) -> Self {
+    pub const fn new(error: BackendErrorKind) -> Self {
         Self { error_kind: error }
     }
 
@@ -140,13 +140,13 @@ impl BusinessLogicError {
     }
 }
 
-impl Display for BusinessLogicError {
+impl Display for BackendError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         self.fmt(f)
     }
 }
 
-impl Debug for BusinessLogicError {
+impl Debug for BackendError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         self.fmt(f)
     }
@@ -154,7 +154,7 @@ impl Debug for BusinessLogicError {
 
 #[derive(Clone)]
 pub struct DbError {
-    pub business_error: BusinessLogicError,
+    pub business_error: BackendError,
     description: String,
 }
 
@@ -164,7 +164,7 @@ impl DbError {
     /// Database Error constructor
     #[must_use]
     #[inline]
-    pub fn new(error: BusinessLogicError, description: &str) -> Self {
+    pub fn new(error: BackendError, description: &str) -> Self {
         Self {
             business_error: error,
             description: description.to_owned(),
@@ -207,24 +207,24 @@ impl From<sqlx::Error> for DbError {
         match value {
             sqlx::Error::Database(err) => match err.kind() {
                 sqlx::error::ErrorKind::ForeignKeyViolation => Self::new(
-                    BusinessLogicError::new(ForeignKeyError),
+                    BackendError::new(ForeignKeyError),
                     &format!("sqlx error: {err}"),
                 ),
                 sqlx::error::ErrorKind::UniqueViolation => Self::new(
-                    BusinessLogicError::new(UniqueConstraintError),
+                    BackendError::new(UniqueConstraintError),
                     &format!("sqlx error: {err}"),
                 ),
                 sqlx::error::ErrorKind::NotNullViolation => Self::new(
-                    BusinessLogicError::new(NotNullError),
+                    BackendError::new(NotNullError),
                     &format!("sqlx error: {err}"),
                 ),
                 _ => Self::new(
-                    BusinessLogicError::new(DatabaseError),
+                    BackendError::new(DatabaseError),
                     &format!("sqlx error: {err}"),
                 ),
             },
             _ => Self::new(
-                BusinessLogicError::new(DatabaseError),
+                BackendError::new(DatabaseError),
                 &format!("sqlx error: {value}"),
             ),
         }
@@ -235,15 +235,15 @@ impl From<sqlx::Error> for DbError {
 impl From<sqlx::migrate::MigrateError> for DbError {
     fn from(value: sqlx::migrate::MigrateError) -> Self {
         Self::new(
-            BusinessLogicError::new(MigrationError),
+            BackendError::new(MigrationError),
             &format!("Migration error: {value}"),
         )
     }
 }
 
 /// Conversion from business logic error
-impl From<BusinessLogicError> for DbError {
-    fn from(value: BusinessLogicError) -> Self {
+impl From<BackendError> for DbError {
+    fn from(value: BackendError) -> Self {
         Self::new(value.clone(), value.to_string().as_str())
     }
 }
@@ -251,7 +251,7 @@ impl From<BusinessLogicError> for DbError {
 impl From<pbkdf2::password_hash::Error> for DbError {
     fn from(value: pbkdf2::password_hash::Error) -> Self {
         Self::new(
-            BusinessLogicError::new(UserPasswordVerificationFailed),
+            BackendError::new(UserPasswordVerificationFailed),
             value.to_string().as_str(),
         )
     }
