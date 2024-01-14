@@ -61,38 +61,45 @@ impl AppError {
 impl From<DbError> for AppError {
     fn from(e: DbError) -> Self {
         match e.db_error_kind {
-            DbErrorKind::BackendError(backend_error) => {
-                match backend_error.error_kind {
-                    BackendErrorKind::UserUpdateParametersEmpty
-                    | BackendErrorKind::AudiobookUpdateParametersEmpty
-                    | BackendErrorKind::ChapterUpdateParametersEmpty
-                    | BackendErrorKind::RatingUpdateParametersEmpty
-                    | BackendErrorKind::AudiobookDeleted
-                    | BackendErrorKind::ChapterDeleted
-                    | BackendErrorKind::GenreDeleted
-                    | BackendErrorKind::RatingDeleted
-                    | BackendErrorKind::UserDeleted => Self::new(AppErrorKind::BadRequest, &backend_error.to_string()),
-
-                    BackendErrorKind::UserDoesNotExist
-                    | BackendErrorKind::AudiobookDoesNotExist
-                    | BackendErrorKind::ChapterDoesNotExist
-                    | BackendErrorKind::GenreDoesNotExist
-                    | BackendErrorKind::RatingDoesNotExist => Self::new(AppErrorKind::NotFound, &backend_error.to_string()),
-
-                    BackendErrorKind::UserPasswordDoesNotMatch
-                    | BackendErrorKind::UserPasswordVerificationFailed => Self::new(AppErrorKind::Unauthorized, &backend_error.to_string()),
-
-                    _ => Self::new(AppErrorKind::InternalServerError, &backend_error.to_string()),
+            DbErrorKind::BackendError(backend_error) => match backend_error.error_kind {
+                BackendErrorKind::UserUpdateParametersEmpty
+                | BackendErrorKind::AudiobookUpdateParametersEmpty
+                | BackendErrorKind::ChapterUpdateParametersEmpty
+                | BackendErrorKind::RatingUpdateParametersEmpty
+                | BackendErrorKind::AudiobookDeleted
+                | BackendErrorKind::ChapterDeleted
+                | BackendErrorKind::GenreDeleted
+                | BackendErrorKind::RatingDeleted
+                | BackendErrorKind::UserDeleted => {
+                    Self::new(AppErrorKind::BadRequest, &backend_error.to_string())
                 }
-            }
 
-            DbErrorKind::UniqueConstraintError => {
-                Self::new(AppErrorKind::Conflict, &e.to_string())
+                BackendErrorKind::UserDoesNotExist
+                | BackendErrorKind::AudiobookDoesNotExist
+                | BackendErrorKind::ChapterDoesNotExist
+                | BackendErrorKind::GenreDoesNotExist
+                | BackendErrorKind::RatingDoesNotExist => {
+                    Self::new(AppErrorKind::NotFound, &backend_error.to_string())
+                }
+
+                BackendErrorKind::UserPasswordDoesNotMatch
+                | BackendErrorKind::UserPasswordVerificationFailed => {
+                    Self::new(AppErrorKind::Unauthorized, &backend_error.to_string())
+                }
+
+                _ => Self::new(
+                    AppErrorKind::InternalServerError,
+                    &backend_error.to_string(),
+                ),
+            },
+
+            DbErrorKind::UniqueConstraintError => Self::new(AppErrorKind::Conflict, &e.to_string()),
+            DbErrorKind::DatabaseError | DbErrorKind::MigrationError => {
+                Self::new(AppErrorKind::InternalServerError, &e.to_string())
             }
-            DbErrorKind::DatabaseError
-            | DbErrorKind::MigrationError => Self::new(AppErrorKind::InternalServerError, &e.to_string()),
-            DbErrorKind::NotNullError
-            | DbErrorKind::ForeignKeyError => Self::new(AppErrorKind::BadRequest, &e.to_string())
+            DbErrorKind::NotNullError | DbErrorKind::ForeignKeyError => {
+                Self::new(AppErrorKind::BadRequest, &e.to_string())
+            }
         }
     }
 }

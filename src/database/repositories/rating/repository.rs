@@ -1,9 +1,7 @@
 use crate::database::common::error::BackendErrorKind::{
     RatingDeleted, RatingDoesNotExist, RatingUpdateParametersEmpty,
 };
-use crate::database::common::error::{
-    BackendError, DbError, DbResultMultiple, DbResultSingle,
-};
+use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };

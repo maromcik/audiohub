@@ -1,14 +1,14 @@
 use crate::database::common::error::BackendErrorKind::{
     ChapterDeleted, ChapterDoesNotExist, RatingUpdateParametersEmpty,
 };
-use crate::database::common::error::{
-    BackendError, DbError, DbResultMultiple, DbResultSingle,
-};
+use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::models::audiobook::AudiobookGetById;
-use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetByBookId, ChapterGetById, ChapterSearch, ChapterUpdate};
+use crate::database::models::chapter::{
+    Chapter, ChapterCreate, ChapterGetByBookId, ChapterGetById, ChapterSearch, ChapterUpdate,
+};
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
@@ -219,8 +219,8 @@ impl DbReadMany<ChapterGetByBookId, Chapter> for ChapterRepository {
             "#,
             params.audiobook_id,
         )
-            .fetch_all(&self.pool_handler.pool)
-            .await?;
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
         Ok(chapters)
     }
 }

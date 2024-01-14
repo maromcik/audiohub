@@ -1,9 +1,7 @@
 use crate::database::common::error::BackendErrorKind::{
     AudiobookDeleted, AudiobookDoesNotExist, AudiobookUpdateParametersEmpty,
 };
-use crate::database::common::error::{
-    BackendError, DbError, DbResultMultiple, DbResultSingle,
-};
+use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
@@ -40,9 +38,7 @@ impl AudiobookRepository {
             return Ok(Option::from(book));
         }
 
-        Err(DbError::from(BackendError::new(
-            AudiobookDoesNotExist,
-        )))
+        Err(DbError::from(BackendError::new(AudiobookDoesNotExist)))
     }
 
     pub fn audiobook_is_correct(audiobook: Option<Audiobook>) -> DbResultSingle<Audiobook> {
@@ -53,9 +49,7 @@ impl AudiobookRepository {
             return Err(DbError::from(BackendError::new(AudiobookDeleted)));
         }
 
-        Err(DbError::from(BackendError::new(
-            AudiobookDoesNotExist,
-        )))
+        Err(DbError::from(BackendError::new(AudiobookDoesNotExist)))
     }
 }
 

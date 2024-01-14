@@ -57,8 +57,8 @@ impl Display for BackendErrorKind {
                 write!(
                     f,
                     concat!(
-                    "The provided parameters for Rating update query are incorrect",
-                    " (no Rating field would be changed)."
+                        "The provided parameters for Rating update query are incorrect",
+                        " (no Rating field would be changed)."
                     )
                 )
             }
@@ -68,8 +68,8 @@ impl Display for BackendErrorKind {
                 write!(
                     f,
                     concat!(
-                    "The provided parameters for Chapter update query are incorrect",
-                    " (no Chapter field would be changed)."
+                        "The provided parameters for Chapter update query are incorrect",
+                        " (no Chapter field would be changed)."
                     )
                 )
             }
@@ -79,8 +79,8 @@ impl Display for BackendErrorKind {
                 write!(
                     f,
                     concat!(
-                    "The provided parameters for Audiobook update query are incorrect",
-                    " (no Audiobook field would be changed)."
+                        "The provided parameters for Audiobook update query are incorrect",
+                        " (no Audiobook field would be changed)."
                     )
                 )
             }
@@ -88,8 +88,8 @@ impl Display for BackendErrorKind {
                 write!(
                     f,
                     concat!(
-                    "The provided parameters for User update query are incorrect",
-                    " (no User field would be changed)."
+                        "The provided parameters for User update query are incorrect",
+                        " (no User field would be changed)."
                     )
                 )
             }
@@ -99,8 +99,8 @@ impl Display for BackendErrorKind {
                 write!(
                     f,
                     concat!(
-                    "The provided parameters for Genre update query are incorrect",
-                    " (no Genre field would be changed)."
+                        "The provided parameters for Genre update query are incorrect",
+                        " (no Genre field would be changed)."
                     )
                 )
             }
@@ -135,7 +135,7 @@ impl BackendError {
             | UserPasswordDoesNotMatch
             | UserUpdateParametersEmpty
             | UserPasswordVerificationFailed => true,
-                _ => false
+            _ => false,
         }
     }
 }
@@ -160,7 +160,6 @@ pub enum DbErrorKind {
     UniqueConstraintError,
     NotNullError,
     ForeignKeyError,
-
 }
 
 #[derive(Clone)]
@@ -189,7 +188,7 @@ impl DbError {
     pub fn get_backend_error(&self) -> Option<BackendError> {
         match &self.db_error_kind {
             DbErrorKind::BackendError(e) => Some(e.clone()),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -224,27 +223,19 @@ impl From<sqlx::Error> for DbError {
     fn from(value: sqlx::Error) -> Self {
         match value {
             sqlx::Error::Database(err) => match err.kind() {
-                sqlx::error::ErrorKind::ForeignKeyViolation => Self::new(
-                    DbErrorKind::ForeignKeyError,
-                    &format!("sqlx error: {err}"),
-                ),
+                sqlx::error::ErrorKind::ForeignKeyViolation => {
+                    Self::new(DbErrorKind::ForeignKeyError, &format!("sqlx error: {err}"))
+                }
                 sqlx::error::ErrorKind::UniqueViolation => Self::new(
                     DbErrorKind::UniqueConstraintError,
                     &format!("sqlx error: {err}"),
                 ),
-                sqlx::error::ErrorKind::NotNullViolation => Self::new(
-                    DbErrorKind::NotNullError,
-                    &format!("sqlx error: {err}"),
-                ),
-                _ => Self::new(
-                    DbErrorKind::DatabaseError,
-                    &format!("sqlx error: {err}"),
-                ),
+                sqlx::error::ErrorKind::NotNullViolation => {
+                    Self::new(DbErrorKind::NotNullError, &format!("sqlx error: {err}"))
+                }
+                _ => Self::new(DbErrorKind::DatabaseError, &format!("sqlx error: {err}")),
             },
-            _ => Self::new(
-                DbErrorKind::DatabaseError,
-                &format!("sqlx error: {value}"),
-            ),
+            _ => Self::new(DbErrorKind::DatabaseError, &format!("sqlx error: {value}")),
         }
     }
 }
@@ -262,7 +253,10 @@ impl From<sqlx::migrate::MigrateError> for DbError {
 /// Conversion from business logic error
 impl From<BackendError> for DbError {
     fn from(value: BackendError) -> Self {
-        Self::new(DbErrorKind::BackendError(value.clone()), value.to_string().as_str())
+        Self::new(
+            DbErrorKind::BackendError(value.clone()),
+            value.to_string().as_str(),
+        )
     }
 }
 

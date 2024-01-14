@@ -5,7 +5,7 @@ use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::rating::repository::RatingRepository;
 use crate::database::repositories::user::repository::UserRepository;
-use crate::handlers::{*};
+use crate::handlers::*;
 use actix_files::Files as ActixFiles;
 use actix_web::web;
 use actix_web::web::ServiceConfig;
@@ -43,8 +43,7 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let rating_scope = web::scope("rating").app_data(web::Data::new(rating_repository.clone()));
 
     Box::new(move |cfg: &mut ServiceConfig| {
-        cfg
-            .app_data(web::Data::new(user_repository.clone()))
+        cfg.app_data(web::Data::new(user_repository.clone()))
             .service(index)
             .service(user_scope)
             .service(genre_scope)

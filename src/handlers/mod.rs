@@ -1,7 +1,7 @@
 pub mod audiobook;
+pub mod chapter;
 pub mod homepage;
 pub mod user;
-pub mod chapter;
 mod utilities;
 
 pub use crate::handlers::user::login as user_login_page;

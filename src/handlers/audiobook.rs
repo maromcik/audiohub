@@ -1,15 +1,19 @@
-use std::fs::metadata;
-use std::ptr::null;
-use crate::database::common::{DbCreate, DbReadMany, DbReadOne, DbUpdate};
-use crate::database::models::audiobook::{AudiobookCreate, AudiobookGetById, AudiobookMetadataForm, AudiobookUpdate};
+use crate::database::common::{DbCreate, DbReadMany, DbReadOne};
+use crate::database::models::audiobook::{
+    AudiobookCreate, AudiobookGetById, AudiobookMetadataForm,
+};
 use crate::database::models::genre::{GenreGetById, GenreSearch};
-use crate::database::models::user::{User, UserGetById, UserGetByUsername};
+use crate::database::models::user::{User, UserGetById};
+use crate::database::models::Id;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::{AppError, AppErrorKind};
 use crate::forms::audiobook::{AudiobookCreateForm, AudiobookUploadForm};
-use crate::templates::audiobook::{AudiobookCreateFormTemplate, AudiobookDetailOwnerTemplate, AudiobookUploadFormTemplate};
+use crate::handlers::utilities::parse_user_id;
+use crate::templates::audiobook::{
+    AudiobookCreateFormTemplate, AudiobookDetailOwnerTemplate, AudiobookUploadFormTemplate,
+};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_session::Session;
@@ -18,15 +22,12 @@ use actix_web::{get, post, web, HttpResponse};
 use askama::Template;
 use sqlx::postgres::types::PgInterval;
 use uuid::Uuid;
-use crate::database::models::Id;
-use crate::handlers::utilities::parse_user_id;
 
 #[get("/create")]
-pub async fn create_audiobook_form(genre_repo: web::Data<GenreRepository>) -> Result<HttpResponse, AppError> {
-
-    let genres = genre_repo
-        .read_many(&GenreSearch::new(None))
-        .await?;
+pub async fn create_audiobook_form(
+    genre_repo: web::Data<GenreRepository>,
+) -> Result<HttpResponse, AppError> {
+    let genres = genre_repo.read_many(&GenreSearch::new(None)).await?;
 
     let template = AudiobookCreateFormTemplate { genres };
     let body = template.render()?;
@@ -130,7 +131,6 @@ pub async fn upload_audiobook(
     );
     let book = audiobook_repo.create(&book_crate).await?;
 
-
     log::info!("saving a thumbnail to {thumbnail_path}");
     if let Err(e) = form.thumbnail.file.persist(&thumbnail_path) {
         return Err(AppError::new(
@@ -157,17 +157,24 @@ pub async fn upload_audiobook(
         .finish())
 }
 
-
 #[get("/{id}/detail")]
-pub async fn get_audiobook(identity: Option<Identity>, audiobook_repo: web::Data<AudiobookRepository>, path: web::Path<(Id,)>) -> Result<HttpResponse, AppError> {
-    let audiobook = audiobook_repo.read_one(&AudiobookGetById::new(&path.into_inner().0)).await?;
+pub async fn get_audiobook(
+    _identity: Option<Identity>,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    path: web::Path<(Id,)>,
+) -> Result<HttpResponse, AppError> {
+    let audiobook = audiobook_repo
+        .read_one(&AudiobookGetById::new(&path.into_inner().0))
+        .await?;
     let template = AudiobookDetailOwnerTemplate { audiobook };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
-fn get_metadata_from_session(session: &Session, session_keys:&AudiobookCreateSessionKeys) -> Result<AudiobookMetadataForm, AppError> {
-
+fn get_metadata_from_session(
+    session: &Session,
+    session_keys: &AudiobookCreateSessionKeys,
+) -> Result<AudiobookMetadataForm, AppError> {
     let Some(name) = session.get::<String>(session_keys.name.as_str())? else {
         return Err(AppError::new(
             AppErrorKind::NotFound,
@@ -196,8 +203,10 @@ fn get_metadata_from_session(session: &Session, session_keys:&AudiobookCreateSes
     })
 }
 
-
-async fn get_user_from_identity(identity: Option<Identity>, user_repo: web::Data<UserRepository>) -> Result<User, AppError> {
+async fn get_user_from_identity(
+    identity: Option<Identity>,
+    user_repo: web::Data<UserRepository>,
+) -> Result<User, AppError> {
     let Some(u) = identity else {
         return Err(AppError::new(
             AppErrorKind::IdentityError,
@@ -209,11 +218,10 @@ async fn get_user_from_identity(identity: Option<Identity>, user_repo: web::Data
         .await?)
 }
 
-
 struct AudiobookCreateSessionKeys {
     name: String,
     description: String,
-    genre_id: String
+    genre_id: String,
 }
 
 impl AudiobookCreateSessionKeys {

@@ -164,9 +164,7 @@ impl DbReadOne<UserLogin, User> for UserRepository {
                 if ret {
                     return Ok(user);
                 }
-                Err(DbError::from(BackendError::new(
-                    UserPasswordDoesNotMatch,
-                )))
+                Err(DbError::from(BackendError::new(UserPasswordDoesNotMatch)))
             }
             Err(e) => Err(e),
         }
@@ -266,9 +264,7 @@ impl DbUpdate<UserUpdate, User> for UserRepository {
     /// Fails if the relevant update fields are all none
     async fn update(&self, params: &UserUpdate) -> DbResultMultiple<User> {
         if params.update_fields_none() {
-            return Err(DbError::from(BackendError::new(
-                UserUpdateParametersEmpty,
-            )));
+            return Err(DbError::from(BackendError::new(UserUpdateParametersEmpty)));
         }
         let mut transaction = self.pool_handler.pool.begin().await?;
         let user =

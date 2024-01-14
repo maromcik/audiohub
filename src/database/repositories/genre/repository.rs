@@ -1,9 +1,7 @@
 use crate::database::common::error::BackendErrorKind::{
     GenreDeleted, GenreDoesNotExist, GenreUpdateParametersEmpty,
 };
-use crate::database::common::error::{
-    BackendError, DbError, DbResultMultiple, DbResultSingle,
-};
+use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
@@ -130,9 +128,7 @@ impl DbCreate<GenreCreate, Genre> for GenreRepository {
 impl DbUpdate<GenreUpdate, Genre> for GenreRepository {
     async fn update(&self, params: &GenreUpdate) -> DbResultMultiple<Genre> {
         if params.update_fields_none() {
-            return Err(DbError::from(BackendError::new(
-                GenreUpdateParametersEmpty,
-            )));
+            return Err(DbError::from(BackendError::new(GenreUpdateParametersEmpty)));
         }
 
         let mut transaction = self.pool_handler.pool.begin().await?;
