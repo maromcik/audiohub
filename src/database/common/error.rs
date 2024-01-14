@@ -32,12 +32,6 @@ pub enum BackendErrorKind {
     GenreDeleted,
     GenreDoesNotExist,
     GenreUpdateParametersEmpty,
-
-    DatabaseError,
-    MigrationError,
-    UniqueConstraintError,
-    NotNullError,
-    ForeignKeyError,
 }
 
 impl Display for BackendErrorKind {
@@ -63,8 +57,8 @@ impl Display for BackendErrorKind {
                 write!(
                     f,
                     concat!(
-                        "The provided parameters for Rating update query are incorrect",
-                        " (no Rating field would be changed)."
+                    "The provided parameters for Rating update query are incorrect",
+                    " (no Rating field would be changed)."
                     )
                 )
             }
@@ -74,8 +68,8 @@ impl Display for BackendErrorKind {
                 write!(
                     f,
                     concat!(
-                        "The provided parameters for Chapter update query are incorrect",
-                        " (no Chapter field would be changed)."
+                    "The provided parameters for Chapter update query are incorrect",
+                    " (no Chapter field would be changed)."
                     )
                 )
             }
@@ -85,8 +79,8 @@ impl Display for BackendErrorKind {
                 write!(
                     f,
                     concat!(
-                        "The provided parameters for Audiobook update query are incorrect",
-                        " (no Audiobook field would be changed)."
+                    "The provided parameters for Audiobook update query are incorrect",
+                    " (no Audiobook field would be changed)."
                     )
                 )
             }
@@ -94,8 +88,8 @@ impl Display for BackendErrorKind {
                 write!(
                     f,
                     concat!(
-                        "The provided parameters for User update query are incorrect",
-                        " (no User field would be changed)."
+                    "The provided parameters for User update query are incorrect",
+                    " (no User field would be changed)."
                     )
                 )
             }
@@ -105,16 +99,11 @@ impl Display for BackendErrorKind {
                 write!(
                     f,
                     concat!(
-                        "The provided parameters for Genre update query are incorrect",
-                        " (no Genre field would be changed)."
+                    "The provided parameters for Genre update query are incorrect",
+                    " (no Genre field would be changed)."
                     )
                 )
             }
-            DatabaseError => write!(f, "Unknown database error occured"),
-            MigrationError => write!(f, "Unknown migration-related error occured"),
-            UniqueConstraintError => write!(f, "Duplicate value"),
-            NotNullError => write!(f, "Field cannot be null"),
-            ForeignKeyError => write!(f, "Related field error"),
         }
     }
 }
@@ -152,9 +141,20 @@ impl Debug for BackendError {
     }
 }
 
+#[derive(Debug, Clone)]
+pub enum DbErrorKind {
+    BackendError(BackendError),
+    DatabaseError,
+    MigrationError,
+    UniqueConstraintError,
+    NotNullError,
+    ForeignKeyError,
+
+}
+
 #[derive(Clone)]
 pub struct DbError {
-    pub business_error: BackendError,
+    pub db_error_kind: DbErrorKind,
     description: String,
 }
 
@@ -164,9 +164,9 @@ impl DbError {
     /// Database Error constructor
     #[must_use]
     #[inline]
-    pub fn new(error: BackendError, description: &str) -> Self {
+    pub fn new(error: DbErrorKind, description: &str) -> Self {
         Self {
-            business_error: error,
+            db_error_kind: error,
             description: description.to_owned(),
         }
     }
@@ -207,24 +207,24 @@ impl From<sqlx::Error> for DbError {
         match value {
             sqlx::Error::Database(err) => match err.kind() {
                 sqlx::error::ErrorKind::ForeignKeyViolation => Self::new(
-                    BackendError::new(ForeignKeyError),
+                    DbErrorKind::ForeignKeyError,
                     &format!("sqlx error: {err}"),
                 ),
                 sqlx::error::ErrorKind::UniqueViolation => Self::new(
-                    BackendError::new(UniqueConstraintError),
+                    DbErrorKind::UniqueConstraintError,
                     &format!("sqlx error: {err}"),
                 ),
                 sqlx::error::ErrorKind::NotNullViolation => Self::new(
-                    BackendError::new(NotNullError),
+                    DbErrorKind::NotNullError,
                     &format!("sqlx error: {err}"),
                 ),
                 _ => Self::new(
-                    BackendError::new(DatabaseError),
+                    DbErrorKind::DatabaseError,
                     &format!("sqlx error: {err}"),
                 ),
             },
             _ => Self::new(
-                BackendError::new(DatabaseError),
+                DbErrorKind::DatabaseError,
                 &format!("sqlx error: {value}"),
             ),
         }
@@ -235,7 +235,7 @@ impl From<sqlx::Error> for DbError {
 impl From<sqlx::migrate::MigrateError> for DbError {
     fn from(value: sqlx::migrate::MigrateError) -> Self {
         Self::new(
-            BackendError::new(MigrationError),
+            DbErrorKind::MigrationError,
             &format!("Migration error: {value}"),
         )
     }
@@ -244,14 +244,14 @@ impl From<sqlx::migrate::MigrateError> for DbError {
 /// Conversion from business logic error
 impl From<BackendError> for DbError {
     fn from(value: BackendError) -> Self {
-        Self::new(value.clone(), value.to_string().as_str())
+        Self::new(DbErrorKind::BackendError(value.clone()), value.to_string().as_str())
     }
 }
 
 impl From<pbkdf2::password_hash::Error> for DbError {
     fn from(value: pbkdf2::password_hash::Error) -> Self {
         Self::new(
-            BackendError::new(UserPasswordVerificationFailed),
+            DbErrorKind::BackendError(BackendError::new(UserPasswordVerificationFailed)),
             value.to_string().as_str(),
         )
     }

@@ -1,4 +1,4 @@
-use crate::database::common::error::{BackendErrorKind, DbError};
+use crate::database::common::error::{BackendErrorKind, DbError, DbErrorKind};
 use crate::templates::error::GenericError;
 use actix_identity;
 use actix_web::http::StatusCode;
@@ -30,6 +30,8 @@ pub enum AppErrorKind {
     Conflict,
     #[error("file error")]
     FileError,
+    #[error("unauthorized")]
+    Unauthorized,
 }
 
 impl From<askama::Error> for AppError {
@@ -40,7 +42,7 @@ impl From<askama::Error> for AppError {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct AppError {
-    pub error: AppErrorKind,
+    pub app_error_kind: AppErrorKind,
     pub message: String,
 }
 
@@ -49,7 +51,7 @@ impl AppError {
     #[inline]
     pub fn new(error: AppErrorKind, description: &str) -> Self {
         Self {
-            error,
+            app_error_kind: error,
             message: description.to_owned(),
         }
     }
@@ -57,32 +59,39 @@ impl AppError {
 
 impl From<DbError> for AppError {
     fn from(e: DbError) -> Self {
-        match e.business_error.error_kind {
-            BackendErrorKind::UserUpdateParametersEmpty
-            | BackendErrorKind::AudiobookUpdateParametersEmpty
-            | BackendErrorKind::ChapterUpdateParametersEmpty
-            | BackendErrorKind::RatingUpdateParametersEmpty
-            | BackendErrorKind::AudiobookDeleted
-            | BackendErrorKind::ChapterDeleted
-            | BackendErrorKind::GenreDeleted
-            | BackendErrorKind::RatingDeleted
-            | BackendErrorKind::UserDeleted => {
-                Self::new(AppErrorKind::BadRequest, &e.to_string())
+        match e.db_error_kind {
+            DbErrorKind::BackendError(backend_error) => {
+                match backend_error.error_kind {
+                    BackendErrorKind::UserUpdateParametersEmpty
+                    | BackendErrorKind::AudiobookUpdateParametersEmpty
+                    | BackendErrorKind::ChapterUpdateParametersEmpty
+                    | BackendErrorKind::RatingUpdateParametersEmpty
+                    | BackendErrorKind::AudiobookDeleted
+                    | BackendErrorKind::ChapterDeleted
+                    | BackendErrorKind::GenreDeleted
+                    | BackendErrorKind::RatingDeleted
+                    | BackendErrorKind::UserDeleted => Self::new(AppErrorKind::BadRequest, &backend_error.to_string()),
+
+                    BackendErrorKind::UserDoesNotExist
+                    | BackendErrorKind::AudiobookDoesNotExist
+                    | BackendErrorKind::ChapterDoesNotExist
+                    | BackendErrorKind::GenreDoesNotExist
+                    | BackendErrorKind::RatingDoesNotExist => Self::new(AppErrorKind::NotFound, &backend_error.to_string()),
+
+                    BackendErrorKind::UserPasswordDoesNotMatch
+                    | BackendErrorKind::UserPasswordVerificationFailed => Self::new(AppErrorKind::Unauthorized, &backend_error.to_string()),
+
+                    _ => Self::new(AppErrorKind::InternalServerError, &backend_error.to_string()),
+                }
             }
 
-            BackendErrorKind::UserDoesNotExist
-            | BackendErrorKind::AudiobookDoesNotExist
-            | BackendErrorKind::ChapterDoesNotExist
-            | BackendErrorKind::GenreDoesNotExist
-            | BackendErrorKind::RatingDoesNotExist => {
-                Self::new(AppErrorKind::NotFound, &e.to_string())
-            }
-
-            BackendErrorKind::UniqueConstraintError => {
+            DbErrorKind::UniqueConstraintError => {
                 Self::new(AppErrorKind::Conflict, &e.to_string())
             }
-
-            _ => Self::new(AppErrorKind::InternalServerError, &e.to_string()),
+            DbErrorKind::DatabaseError
+            | DbErrorKind::MigrationError => Self::new(AppErrorKind::InternalServerError, &e.to_string()),
+            DbErrorKind::NotNullError
+            | DbErrorKind::ForeignKeyError => Self::new(AppErrorKind::BadRequest, &e.to_string())
         }
     }
 }
@@ -116,17 +125,18 @@ impl Display for AppError {
         write!(
             f,
             "Error code: {}, Error message: {}",
-            self.error, self.message
+            self.app_error_kind, self.message
         )
     }
 }
 
 impl ResponseError for AppError {
     fn status_code(&self) -> StatusCode {
-        match self.error {
+        match self.app_error_kind {
             AppErrorKind::BadRequest => StatusCode::BAD_REQUEST,
             AppErrorKind::NotFound => StatusCode::NOT_FOUND,
             AppErrorKind::Conflict => StatusCode::CONFLICT,
+            AppErrorKind::Unauthorized => StatusCode::UNAUTHORIZED,
             AppErrorKind::TemplatingError
             | AppErrorKind::InternalServerError
             | AppErrorKind::PasswordHasherError
