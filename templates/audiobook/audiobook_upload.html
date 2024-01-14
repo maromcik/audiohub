@@ -1,5 +1,5 @@
 <div class="container mx-auto p-6 bg-black">
-    <form method="post" action="/audiobook/upload" enctype="multipart/form-data"
+    <form hx-post="/audiobook/upload" hx-target="#content-area" enctype="multipart/form-data"
           class="bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4">
         <h2 class="block text-gray-300 text-xl font-bold mb-2">Upload New Audiobook</h2>
 
