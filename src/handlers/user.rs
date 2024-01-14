@@ -66,7 +66,7 @@ pub async fn login_user(
                 .finish())
         },
         Err(_) => {
-            let template = LoginTemplate { message: "".to_string()};
+            let template = LoginTemplate { message: "Invalid username or password".to_string()};
             let body = template.render()?;
             Ok(HttpResponse::Ok().content_type("text/html").body(body))
         }
