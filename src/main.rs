@@ -29,7 +29,6 @@ const DEFAULT_PORT: &str = "8000";
 async fn main() -> anyhow::Result<()> {
     env::set_var("TMPDIR", "./media");
     let dir = env::temp_dir();
-    println!("Temporary directory: {}", dir.display());
 
     let pool = setup_pool(10_u32).await?;
     let host = parse_host();
