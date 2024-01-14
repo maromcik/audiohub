@@ -6,10 +6,10 @@ use rand_core::OsRng;
 
 use sqlx::{Postgres, Transaction};
 
-use crate::database::common::error::BusinessLogicErrorKind::{
+use crate::database::common::error::BackendErrorKind::{
     UserDeleted, UserDoesNotExist, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
 };
-use crate::database::common::error::{BusinessLogicError, DbError};
+use crate::database::common::error::{BackendError, DbError};
 use crate::database::common::error::{DbResultMultiple, DbResultSingle};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
@@ -74,7 +74,7 @@ impl UserRepository {
             return Ok(Option::from(user));
         }
 
-        Err(DbError::from(BusinessLogicError::new(UserDoesNotExist)))
+        Err(DbError::from(BackendError::new(UserDoesNotExist)))
     }
 
     /// Function which checks if the user is correct (existing and not deleted)
@@ -90,10 +90,10 @@ impl UserRepository {
             if user.deleted_at.is_none() {
                 return Ok(user);
             }
-            return Err(DbError::from(BusinessLogicError::new(UserDeleted)));
+            return Err(DbError::from(BackendError::new(UserDeleted)));
         }
 
-        Err(DbError::from(BusinessLogicError::new(UserDoesNotExist)))
+        Err(DbError::from(BackendError::new(UserDoesNotExist)))
     }
 
     pub fn verify_password(user: &User, given_password: &str) -> Result<bool, DbError> {
@@ -164,7 +164,7 @@ impl DbReadOne<UserLogin, User> for UserRepository {
                 if ret {
                     return Ok(user);
                 }
-                Err(DbError::from(BusinessLogicError::new(
+                Err(DbError::from(BackendError::new(
                     UserPasswordDoesNotMatch,
                 )))
             }
@@ -266,7 +266,7 @@ impl DbUpdate<UserUpdate, User> for UserRepository {
     /// Fails if the relevant update fields are all none
     async fn update(&self, params: &UserUpdate) -> DbResultMultiple<User> {
         if params.update_fields_none() {
-            return Err(DbError::from(BusinessLogicError::new(
+            return Err(DbError::from(BackendError::new(
                 UserUpdateParametersEmpty,
             )));
         }

@@ -1,8 +1,8 @@
-use crate::database::common::error::BusinessLogicErrorKind::{
+use crate::database::common::error::BackendErrorKind::{
     AudiobookDeleted, AudiobookDoesNotExist, AudiobookUpdateParametersEmpty,
 };
 use crate::database::common::error::{
-    BusinessLogicError, DbError, DbResultMultiple, DbResultSingle,
+    BackendError, DbError, DbResultMultiple, DbResultSingle,
 };
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
@@ -40,7 +40,7 @@ impl AudiobookRepository {
             return Ok(Option::from(book));
         }
 
-        Err(DbError::from(BusinessLogicError::new(
+        Err(DbError::from(BackendError::new(
             AudiobookDoesNotExist,
         )))
     }
@@ -50,10 +50,10 @@ impl AudiobookRepository {
             if audiobook.deleted_at.is_none() {
                 return Ok(audiobook);
             }
-            return Err(DbError::from(BusinessLogicError::new(AudiobookDeleted)));
+            return Err(DbError::from(BackendError::new(AudiobookDeleted)));
         }
 
-        Err(DbError::from(BusinessLogicError::new(
+        Err(DbError::from(BackendError::new(
             AudiobookDoesNotExist,
         )))
     }
@@ -159,7 +159,7 @@ impl DbCreate<AudiobookCreate, Audiobook> for AudiobookRepository {
 impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
     async fn update(&self, params: &AudiobookUpdate) -> DbResultMultiple<Audiobook> {
         if params.update_fields_none() {
-            return Err(DbError::from(BusinessLogicError::new(
+            return Err(DbError::from(BackendError::new(
                 AudiobookUpdateParametersEmpty,
             )));
         }

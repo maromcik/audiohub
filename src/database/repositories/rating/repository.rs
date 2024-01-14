@@ -1,8 +1,8 @@
-use crate::database::common::error::BusinessLogicErrorKind::{
+use crate::database::common::error::BackendErrorKind::{
     RatingDeleted, RatingDoesNotExist, RatingUpdateParametersEmpty,
 };
 use crate::database::common::error::{
-    BusinessLogicError, DbError, DbResultMultiple, DbResultSingle,
+    BackendError, DbError, DbResultMultiple, DbResultSingle,
 };
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
@@ -50,7 +50,7 @@ impl RatingRepository {
             return Ok(Some(rating));
         }
 
-        Err(DbError::from(BusinessLogicError::new(RatingDoesNotExist)))
+        Err(DbError::from(BackendError::new(RatingDoesNotExist)))
     }
 
     /// Function which retrieves all ratings of user with given id, usable within a transaction
@@ -167,10 +167,10 @@ impl RatingRepository {
             if rating.deleted_at.is_none() {
                 return Ok(rating);
             }
-            return Err(DbError::from(BusinessLogicError::new(RatingDeleted)));
+            return Err(DbError::from(BackendError::new(RatingDeleted)));
         }
 
-        Err(DbError::from(BusinessLogicError::new(RatingDoesNotExist)))
+        Err(DbError::from(BackendError::new(RatingDoesNotExist)))
     }
 }
 
@@ -256,7 +256,7 @@ impl DbDelete<RatingGetById, Rating> for RatingRepository {
             transaction.commit().await?;
             Ok(vec![rating])
         } else {
-            Err(DbError::from(BusinessLogicError::new(RatingDeleted)))
+            Err(DbError::from(BackendError::new(RatingDeleted)))
         }
     }
 }
@@ -265,7 +265,7 @@ impl DbDelete<RatingGetById, Rating> for RatingRepository {
 impl DbUpdate<RatingUpdate, Rating> for RatingRepository {
     async fn update(&self, params: &RatingUpdate) -> DbResultMultiple<Rating> {
         if params.review.is_none() {
-            return Err(DbError::from(BusinessLogicError::new(
+            return Err(DbError::from(BackendError::new(
                 RatingUpdateParametersEmpty,
             )));
         }

@@ -1,4 +1,4 @@
-use crate::database::common::error::{BusinessLogicErrorKind, DbError};
+use crate::database::common::error::{BackendErrorKind, DbError};
 use crate::templates::error::GenericError;
 use actix_identity;
 use actix_web::http::StatusCode;
@@ -58,27 +58,27 @@ impl AppError {
 impl From<DbError> for AppError {
     fn from(e: DbError) -> Self {
         match e.business_error.error_kind {
-            BusinessLogicErrorKind::UserUpdateParametersEmpty
-            | BusinessLogicErrorKind::AudiobookUpdateParametersEmpty
-            | BusinessLogicErrorKind::ChapterUpdateParametersEmpty
-            | BusinessLogicErrorKind::RatingUpdateParametersEmpty
-            | BusinessLogicErrorKind::AudiobookDeleted
-            | BusinessLogicErrorKind::ChapterDeleted
-            | BusinessLogicErrorKind::GenreDeleted
-            | BusinessLogicErrorKind::RatingDeleted
-            | BusinessLogicErrorKind::UserDeleted => {
+            BackendErrorKind::UserUpdateParametersEmpty
+            | BackendErrorKind::AudiobookUpdateParametersEmpty
+            | BackendErrorKind::ChapterUpdateParametersEmpty
+            | BackendErrorKind::RatingUpdateParametersEmpty
+            | BackendErrorKind::AudiobookDeleted
+            | BackendErrorKind::ChapterDeleted
+            | BackendErrorKind::GenreDeleted
+            | BackendErrorKind::RatingDeleted
+            | BackendErrorKind::UserDeleted => {
                 Self::new(AppErrorKind::BadRequest, &e.to_string())
             }
 
-            BusinessLogicErrorKind::UserDoesNotExist
-            | BusinessLogicErrorKind::AudiobookDoesNotExist
-            | BusinessLogicErrorKind::ChapterDoesNotExist
-            | BusinessLogicErrorKind::GenreDoesNotExist
-            | BusinessLogicErrorKind::RatingDoesNotExist => {
+            BackendErrorKind::UserDoesNotExist
+            | BackendErrorKind::AudiobookDoesNotExist
+            | BackendErrorKind::ChapterDoesNotExist
+            | BackendErrorKind::GenreDoesNotExist
+            | BackendErrorKind::RatingDoesNotExist => {
                 Self::new(AppErrorKind::NotFound, &e.to_string())
             }
 
-            BusinessLogicErrorKind::UniqueConstraintError => {
+            BackendErrorKind::UniqueConstraintError => {
                 Self::new(AppErrorKind::Conflict, &e.to_string())
             }
 
