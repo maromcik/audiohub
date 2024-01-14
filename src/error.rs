@@ -6,6 +6,7 @@ use actix_web::{HttpResponse, ResponseError};
 use askama::Template;
 use serde::Serialize;
 use std::fmt::{Debug, Display, Formatter};
+use std::num::ParseIntError;
 
 use thiserror::Error;
 
@@ -84,7 +85,7 @@ impl From<DbError> for AppError {
                     _ => Self::new(AppErrorKind::InternalServerError, &backend_error.to_string()),
                 }
             }
-    
+
             DbErrorKind::UniqueConstraintError => {
                 Self::new(AppErrorKind::Conflict, &e.to_string())
             }
@@ -117,6 +118,12 @@ impl From<actix_session::SessionInsertError> for AppError {
 impl From<actix_session::SessionGetError> for AppError {
     fn from(value: actix_session::SessionGetError) -> Self {
         Self::new(AppErrorKind::SessionError, value.to_string().as_str())
+    }
+}
+
+impl From<ParseIntError> for AppError {
+    fn from(_: ParseIntError) -> Self {
+        Self::new(AppErrorKind::IdentityError, "Invalid User ID")
     }
 }
 

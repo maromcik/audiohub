@@ -19,7 +19,6 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let rating_repository = RatingRepository::new(PoolHandler::new(pool.clone()));
 
     let user_scope = web::scope("user")
-        .app_data(web::Data::new(user_repository.clone()))
         .service(user_login_page)
         .service(user_login)
         .service(user_register_page)
@@ -27,7 +26,6 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
 
     let audiobook_scope = web::scope("audiobook")
         .app_data(web::Data::new(audiobook_repository.clone()))
-        .app_data(web::Data::new(user_repository.clone()))
         .app_data(web::Data::new(genre_repository.clone()))
         .service(create_audiobook)
         .service(upload_audiobook)
@@ -44,8 +42,9 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
 
     let rating_scope = web::scope("rating").app_data(web::Data::new(rating_repository.clone()));
 
-    Box::new(|cfg: &mut ServiceConfig| {
-        cfg // 8 GB
+    Box::new(move |cfg: &mut ServiceConfig| {
+        cfg
+            .app_data(web::Data::new(user_repository.clone()))
             .service(index)
             .service(user_scope)
             .service(genre_scope)

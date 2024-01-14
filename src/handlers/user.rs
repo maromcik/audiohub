@@ -58,7 +58,7 @@ pub async fn login_user(
 ) -> Result<HttpResponse, AppError> {
     match user_repo.read_one(&UserLogin::new(&form.email_or_username, &form.password)).await {
         Ok(user) => {
-            Identity::login(&request.extensions(), user.username.clone())?;
+            Identity::login(&request.extensions(), user.id.to_string())?;
             Ok(HttpResponse::SeeOther().insert_header((LOCATION, "/")).finish())
         }
         Err(db_error) => {

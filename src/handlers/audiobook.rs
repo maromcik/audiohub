@@ -3,7 +3,7 @@ use std::ptr::null;
 use crate::database::common::{DbCreate, DbReadMany, DbReadOne, DbUpdate};
 use crate::database::models::audiobook::{AudiobookCreate, AudiobookGetById, AudiobookMetadataForm, AudiobookUpdate};
 use crate::database::models::genre::{GenreGetById, GenreSearch};
-use crate::database::models::user::{User, UserGetByUsername};
+use crate::database::models::user::{User, UserGetById, UserGetByUsername};
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
@@ -19,6 +19,7 @@ use askama::Template;
 use sqlx::postgres::types::PgInterval;
 use uuid::Uuid;
 use crate::database::models::Id;
+use crate::handlers::utilities::parse_user_id;
 
 #[get("/create")]
 pub async fn create_audiobook_form(genre_repo: web::Data<GenreRepository>) -> Result<HttpResponse, AppError> {
@@ -200,11 +201,11 @@ async fn get_user_from_identity(identity: Option<Identity>, user_repo: web::Data
     let Some(u) = identity else {
         return Err(AppError::new(
             AppErrorKind::IdentityError,
-            "Invalid identity",
+            "User must be logged in to upload a book",
         ));
     };
     Ok(user_repo
-        .read_one(&UserGetByUsername::new(&u.id()?))
+        .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?)
 }
 
