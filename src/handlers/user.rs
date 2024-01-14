@@ -7,6 +7,7 @@ use actix_web::{get, post, web, HttpMessage, HttpRequest, HttpResponse};
 use askama::Template;
 
 use crate::database::common::{DbCreate, DbReadOne};
+use crate::database::common::error::{BackendError, BackendErrorKind, DbErrorKind};
 use crate::database::models::user::{UserCreate, UserLogin};
 use crate::forms::user::UserCreateForm;
 
@@ -19,7 +20,7 @@ pub async fn register() -> Result<HttpResponse, AppError> {
 
 #[get("/login")]
 pub async fn login() -> Result<HttpResponse, AppError> {
-    let template = LoginTemplate { message: "".to_string()};
+    let template = LoginTemplate { message: "".to_string() };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -55,20 +56,23 @@ pub async fn login_user(
     user_repo: web::Data<UserRepository>,
     form: web::Form<UserLogin>,
 ) -> Result<HttpResponse, AppError> {
-    match user_repo
-        .read_one(&UserLogin::new(&form.email_or_username, &form.password))
-        .await
-    {
+    match user_repo.read_one(&UserLogin::new(&form.email_or_username, &form.password)).await {
         Ok(user) => {
             Identity::login(&request.extensions(), user.username.clone())?;
-            Ok(HttpResponse::SeeOther()
-                .insert_header((LOCATION, "/"))
-                .finish())
-        },
-        Err(_) => {
-            let template = LoginTemplate { message: "Invalid username or password".to_string()};
-            let body = template.render()?;
-            Ok(HttpResponse::Ok().content_type("text/html").body(body))
+            Ok(HttpResponse::SeeOther().insert_header((LOCATION, "/")).finish())
+        }
+        Err(db_error) => {
+            let Some(backend_error) = db_error.get_backend_error() else {
+                return Err(AppError::from(db_error));
+            };
+
+            if backend_error.is_login_error() {
+                let template = LoginTemplate { message: backend_error.to_string() };
+                let body = template.render()?;
+                return Ok(HttpResponse::Ok().content_type("text/html").body(body))
+            }
+
+            Err(AppError::from(db_error))
         }
     }
 }

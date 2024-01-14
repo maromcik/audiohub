@@ -84,7 +84,7 @@ impl From<DbError> for AppError {
                     _ => Self::new(AppErrorKind::InternalServerError, &backend_error.to_string()),
                 }
             }
-
+    
             DbErrorKind::UniqueConstraintError => {
                 Self::new(AppErrorKind::Conflict, &e.to_string())
             }

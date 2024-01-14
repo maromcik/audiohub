@@ -125,7 +125,18 @@ impl BackendError {
 
     /// Formatted business logic error
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Business logic error: {}", self.error_kind)
+        write!(f, "Backend Error: {}", self.error_kind)
+    }
+
+    pub fn is_login_error(&self) -> bool {
+        match &self.error_kind {
+            UserDoesNotExist
+            | UserDeleted
+            | UserPasswordDoesNotMatch
+            | UserUpdateParametersEmpty
+            | UserPasswordVerificationFailed => true,
+                _ => false
+        }
     }
 }
 
@@ -173,6 +184,13 @@ impl DbError {
     /// Formatted database error
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "[Database Error] {}", self.description)
+    }
+
+    pub fn get_backend_error(&self) -> Option<BackendError> {
+        match &self.db_error_kind {
+            DbErrorKind::BackendError(e) => Some(e.clone()),
+            _ => None
+        }
     }
 }
 
