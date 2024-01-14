@@ -13,4 +13,5 @@ pub use crate::handlers::homepage::index;
 pub use crate::handlers::audiobook::create_audiobook;
 pub use crate::handlers::audiobook::create_audiobook_form;
 
-pub use crate::handlers::chapter::create_chapter_form;;
+pub use crate::handlers::chapter::create_chapter_form;
+pub use crate::handlers::chapter::get_chapters_by_book;

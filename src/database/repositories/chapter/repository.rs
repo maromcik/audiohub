@@ -8,9 +8,7 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::models::audiobook::AudiobookGetById;
-use crate::database::models::chapter::{
-    Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate,
-};
+use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetByBookId, ChapterGetById, ChapterSearch, ChapterUpdate};
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
@@ -206,6 +204,23 @@ impl DbReadMany<ChapterSearch, Chapter> for ChapterRepository {
         )
         .fetch_all(&self.pool_handler.pool)
         .await?;
+        Ok(chapters)
+    }
+}
+
+#[async_trait]
+impl DbReadMany<ChapterGetByBookId, Chapter> for ChapterRepository {
+    async fn read_many(&self, params: &ChapterGetByBookId) -> DbResultMultiple<Chapter> {
+        let chapters = sqlx::query_as!(
+            Chapter,
+            r#"
+            SELECT * FROM "Chapter"
+            WHERE audiobook_id = $1
+            "#,
+            params.audiobook_id,
+        )
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
         Ok(chapters)
     }
 }

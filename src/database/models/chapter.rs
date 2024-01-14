@@ -22,6 +22,11 @@ pub struct ChapterSearch {
     pub sequential_number: Option<i32>,
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct ChapterGetByBookId {
+    pub audiobook_id: Id,
+}
+
 #[derive(Debug, Clone)]
 pub struct ChapterCreate {
     pub name: String,
