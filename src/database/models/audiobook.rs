@@ -3,7 +3,6 @@ use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
 use sqlx::postgres::types::PgInterval;
-use crate::database::models::genre::GenreGetById;
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
 pub struct Audiobook {
@@ -22,6 +21,33 @@ pub struct Audiobook {
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
+}
+
+#[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
+pub struct AudiobookDetail {
+    pub id: Id,
+    // --------------
+    pub name_book: String,
+    pub author_id: Id,
+    pub genre_id: Id,
+    pub length: PgInterval,
+    pub file_path: String,
+    pub stream_count: i64,
+    pub like_count: i64,
+    pub overall_rating: i16,
+    pub thumbnail: String,
+    pub description: String,
+    pub created_at: DateTime<Utc>,
+    pub edited_at: DateTime<Utc>,
+
+    pub username: String,
+    pub email: String,
+    pub name_user: String,
+    pub surname: String,
+    pub bio: String,
+    pub profile_picture: String,
+
+    pub name_genre: String
 }
 
 #[derive(Debug, Clone)]
