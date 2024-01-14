@@ -44,6 +44,7 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
 
     Box::new(move |cfg: &mut ServiceConfig| {
         cfg.app_data(web::Data::new(user_repository.clone()))
+            .app_data(web::Data::new(audiobook_repository.clone()))
             .service(index)
             .service(user_scope)
             .service(genre_scope)

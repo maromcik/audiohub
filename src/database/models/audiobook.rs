@@ -3,6 +3,7 @@ use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
 use sqlx::postgres::types::PgInterval;
+use crate::database::models::genre::GenreGetById;
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
 pub struct Audiobook {
@@ -36,6 +37,36 @@ pub struct AudiobookSearch {
     pub max_like_count: Option<i64>,
     pub min_overall_rating: Option<i16>,
     pub max_overall_rating: Option<i16>,
+}
+
+impl AudiobookSearch {
+    #[must_use]
+    #[inline]
+    pub fn new(name: Option<&str>,
+        author_id: Option<Id>,
+        genre_id: Option<Id>,
+        min_length: Option<PgInterval>,
+        max_length: Option<PgInterval>,
+        min_stream_count: Option<i64>,
+        max_stream_count: Option<i64>,
+        min_like_count: Option<i64>,
+        max_like_count: Option<i64>,
+        min_overall_rating: Option<i16>,
+        max_overall_rating: Option<i16>,
+    ) -> Self {
+        Self {
+            name: name.map(|n| n.to_owned()),
+            author_id: author_id.map(|n| n.to_owned()),
+            genre_id: genre_id.map(|n| n.to_owned()),
+            min_length: min_length.map(|n| n.to_owned()),
+            max_length: max_length.map(|n| n.to_owned()),
+            min_stream_count: min_stream_count.map(|n| n.to_owned()),
+            max_stream_count: max_stream_count.map(|n| n.to_owned()),
+            min_like_count: min_like_count.map(|n| n.to_owned()),
+            max_like_count: max_like_count.map(|n| n.to_owned()),
+            min_overall_rating: min_overall_rating.map(|n| n.to_owned()),
+            max_overall_rating: max_overall_rating.map(|n| n.to_owned()) }
+    }
 }
 
 #[derive(Debug, Clone)]

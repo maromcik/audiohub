@@ -56,7 +56,11 @@
             <p>Welcome to AudioHub, your number one source for audiobooks!</p>
             <p>Username: {{ username }}</p>
             <P>Logged in?: {{ logged_in }}</P>
-            {% include "audiobook/audiobook_info.html" %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {% for audiobook in audiobooks %}
+                    {% include "audiobook/audiobook_info.html" %}
+                {% endfor %}
+            </div>
             <button hx-get="/audiobook/create" hx-target="#content-area" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
                 Add audiobook
             </button>
