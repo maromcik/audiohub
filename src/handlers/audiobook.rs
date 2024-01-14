@@ -172,6 +172,7 @@ pub async fn upload_audiobook(
             e.to_string().as_str(),
         ));
     };
+    session.remove("audiobook_create_id");
     let handler = format!("/audiobook/{}/detail", book.id);
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, handler))
