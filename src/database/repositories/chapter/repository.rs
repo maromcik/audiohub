@@ -197,16 +197,11 @@ impl DbReadMany<ChapterSearch, Chapter> for ChapterRepository {
             SELECT * FROM "Chapter"
             WHERE
                 (name = $1 OR $1 IS NULL)
-                AND (name = $1 OR $1 IS NULL)
                 AND (audiobook_id = $2 OR $2 IS NULL)
-                AND (length >= $3 OR $3 IS NULL)
-                AND (length <= $4 OR $4 IS NULL)
-                AND (sequential_number = $5 OR $5 IS NULL)
+                AND (sequential_number = $3 OR $3 IS NULL)
             "#,
             params.name,
             params.audiobook_id,
-            params.min_length,
-            params.max_length,
             params.sequential_number,
         )
         .fetch_all(&self.pool_handler.pool)

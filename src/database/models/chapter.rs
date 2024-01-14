@@ -1,5 +1,6 @@
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
+use serde::Deserialize;
 use sqlx::postgres::types::PgInterval;
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]
@@ -14,12 +15,10 @@ pub struct Chapter {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct ChapterSearch {
     pub name: Option<String>,
     pub audiobook_id: Option<Id>,
-    pub min_length: Option<PgInterval>,
-    pub max_length: Option<PgInterval>,
     pub sequential_number: Option<i32>,
 }
 
