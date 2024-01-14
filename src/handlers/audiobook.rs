@@ -1,7 +1,5 @@
 use crate::database::common::{DbCreate, DbReadMany, DbReadOne};
-use crate::database::models::audiobook::{
-    AudiobookCreate, AudiobookGetById, AudiobookMetadataForm,
-};
+use crate::database::models::audiobook::{AudiobookCreate, AudiobookGetById, AudiobookMetadataForm, AudiobookSearch};
 use crate::database::models::genre::{GenreGetById, GenreSearch};
 use crate::database::models::user::{User, UserGetById};
 use crate::database::models::Id;
@@ -12,7 +10,7 @@ use crate::error::{AppError, AppErrorKind};
 use crate::forms::audiobook::{AudiobookCreateForm, AudiobookUploadForm};
 use crate::handlers::utilities::parse_user_id;
 use crate::templates::audiobook::{
-    AudiobookCreateFormTemplate, AudiobookDetailOwnerTemplate, AudiobookUploadFormTemplate,
+    AudiobookCreateFormTemplate, AudiobookDetailOwnerTemplate, AudiobookUploadFormTemplate, NewReleasesTemplate
 };
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
@@ -22,6 +20,7 @@ use actix_web::{get, post, web, HttpResponse};
 use askama::Template;
 use sqlx::postgres::types::PgInterval;
 use uuid::Uuid;
+use crate::templates::index::IndexTemplate;
 
 #[get("/create")]
 pub async fn create_audiobook_form(
@@ -232,4 +231,18 @@ impl AudiobookCreateSessionKeys {
             genre_id: format!("audiobook_create_{}_genre_id", user_id),
         }
     }
+}
+
+#[get("/new-releases")]
+async fn new_releases(book_repo: web::Data<AudiobookRepository>) -> Result<HttpResponse, AppError> {
+    //add functionality for ordering audiobooks
+    let books = book_repo
+        .read_many(&AudiobookSearch::new(None, None, None,
+                                         None, None, None,
+                                         None, None, None,
+                                         None, None)).await?;
+
+    let template = NewReleasesTemplate{ audiobooks: books};
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }

@@ -17,7 +17,6 @@ pub async fn index(
     user_repo: web::Data<UserRepository>,
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
-
     let books = book_repo
         .read_many(&AudiobookSearch::new(None, None, None,
                                          None, None, None,
