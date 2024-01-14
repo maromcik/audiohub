@@ -55,11 +55,18 @@ pub async fn login_user(
     user_repo: web::Data<UserRepository>,
     form: web::Form<UserLogin>,
 ) -> Result<HttpResponse, AppError> {
-    let user = user_repo
+    match user_repo
         .read_one(&UserLogin::new(&form.email_or_username, &form.password))
-        .await?;
-    Identity::login(&request.extensions(), user.username.clone())?;
-    Ok(HttpResponse::SeeOther()
-        .insert_header((LOCATION, "/"))
-        .finish())
+        .await
+    {
+        Ok(user) => {
+            Identity::login(&request.extensions(), user.username.clone())?;
+            Ok(HttpResponse::SeeOther()
+                .insert_header((LOCATION, "/"))
+                .finish())
+        },
+        Err(_) => {
+            Ok(HttpResponse::Ok().content_type("text/plain").body("Invalid username or password"))
+        }
+    }
 }
