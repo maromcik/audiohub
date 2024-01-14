@@ -177,3 +177,11 @@ impl AudiobookGetById {
         Self { id: *id }
     }
 }
+
+
+#[derive(Debug, Clone)]
+pub struct AudiobookMetadataForm {
+    pub name: String,
+    pub description: String,
+    pub genre_id: Id,
+}

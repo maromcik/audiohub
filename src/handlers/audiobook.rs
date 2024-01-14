@@ -1,7 +1,8 @@
+use std::fs::metadata;
 use crate::database::common::{DbCreate, DbReadMany, DbReadOne, DbUpdate};
-use crate::database::models::audiobook::{AudiobookCreate, AudiobookGetById, AudiobookUpdate};
+use crate::database::models::audiobook::{AudiobookCreate, AudiobookGetById, AudiobookMetadataForm, AudiobookUpdate};
 use crate::database::models::genre::GenreSearch;
-use crate::database::models::user::UserGetByUsername;
+use crate::database::models::user::{User, UserGetByUsername};
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
@@ -36,20 +37,12 @@ pub async fn upload_audiobook_form() -> Result<HttpResponse, AppError> {
 pub async fn create_audiobook(
     identity: Option<Identity>,
     session: Session,
-    audiobook_repo: web::Data<AudiobookRepository>,
     genre_repo: web::Data<GenreRepository>,
     user_repo: web::Data<UserRepository>,
     form: web::Form<AudiobookCreateForm>,
 ) -> Result<HttpResponse, AppError> {
-    let Some(u) = identity else {
-        return Err(AppError::new(
-            AppErrorKind::IdentityError,
-            "Invalid identity",
-        ));
-    };
-    let user = user_repo
-        .read_one(&UserGetByUsername::new(&u.id()?))
-        .await?;
+    let user = get_user_from_identity(identity, user_repo).await?;
+    let session_keys = AudiobookCreateSessionKeys::new(user.id);
     let genre_id = match genre_repo
         .read_many(&GenreSearch::new(&form.genre_name))
         .await?
@@ -58,25 +51,10 @@ pub async fn create_audiobook(
         Some(g) => g.id,
         None => 1,
     };
-    let book_crate = AudiobookCreate::new(
-        &form.name,
-        &user.id,
-        &genre_id,
-        &0,
-        &0,
-        &PgInterval {
-            months: 0,
-            days: 0,
-            microseconds: 0,
-        },
-        "",
-        &0,
-        &0,
-        "",
-        "",
-    );
-    let book = audiobook_repo.create(&book_crate).await?;
-    session.insert("audiobook_create_id", book.id)?;
+
+    session.insert(session_keys.name.as_str(), &form.name)?;
+    session.insert(session_keys.genre_id.as_str(), genre_id)?;
+    session.insert(session_keys.description.as_str(), &form.description)?;
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/audiobook/upload"))
         .finish())
@@ -84,12 +62,15 @@ pub async fn create_audiobook(
 
 #[post("/upload")]
 pub async fn upload_audiobook(
+    identity: Option<Identity>,
     session: Session,
+    user_repo: web::Data<UserRepository>,
     audiobook_repo: web::Data<AudiobookRepository>,
     MultipartForm(form): MultipartForm<AudiobookUploadForm>,
 ) -> Result<HttpResponse, AppError> {
     let uuid = Uuid::new_v4();
-
+    let user = get_user_from_identity(identity, user_repo).await?;
+    let session_keys = AudiobookCreateSessionKeys::new(user.id);
     let thumbnail_path = format!(
         "./media/audiobook_{}_thumbnail_{}",
         uuid.clone(),
@@ -101,13 +82,6 @@ pub async fn upload_audiobook(
         uuid.clone(),
         form.audio_file.file_name.unwrap_or_default()
     );
-
-    let Some(book_id) = session.get::<i64>("audiobook_create_id")? else {
-        return Err(AppError::new(
-            AppErrorKind::NotFound,
-            "New book could not be found in the active session",
-        ));
-    };
 
     let Some(thumbnail_mime) = form.thumbnail.content_type else {
         return Err(AppError::new(
@@ -137,25 +111,27 @@ pub async fn upload_audiobook(
         ));
     }
 
-    let book_update = AudiobookUpdate::new(
-        &book_id,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        Some(audiobook_path.as_str()),
-        None,
-        None,
-        Some(thumbnail_path.as_str()),
-        None,
-    );
+    let metadata = get_metadata_from_session(&session, &session_keys)?;
 
-    let updated_books = audiobook_repo.update(&book_update).await?;
-    let Some(book) = updated_books.first() else {
-        return Err(AppError::new(AppErrorKind::NotFound, "No books updated"));
-    };
+    let book_crate = AudiobookCreate::new(
+        &metadata.name,
+        &user.id,
+        &metadata.genre_id,
+        &0,
+        &0,
+        &PgInterval {
+            months: 0,
+            days: 0,
+            microseconds: 0,
+        },
+        &audiobook_path,
+        &0,
+        &0,
+        &thumbnail_path,
+        &metadata.description,
+    );
+    let book = audiobook_repo.create(&book_crate).await?;
+
 
     log::info!("saving a thumbnail to {thumbnail_path}");
     if let Err(e) = form.thumbnail.file.persist(&thumbnail_path) {
@@ -172,7 +148,11 @@ pub async fn upload_audiobook(
             e.to_string().as_str(),
         ));
     };
-    session.remove("audiobook_create_id");
+
+    session.remove(session_keys.name.as_str());
+    session.remove(session_keys.description.as_str());
+    session.remove(session_keys.genre_id.as_str());
+
     let handler = format!("/audiobook/{}/detail", book.id);
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, handler))
@@ -186,4 +166,64 @@ pub async fn get_audiobook(identity: Option<Identity>, audiobook_repo: web::Data
     let template = AudiobookDetailOwnerTemplate { audiobook };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+fn get_metadata_from_session(session: &Session, session_keys:&AudiobookCreateSessionKeys) -> Result<AudiobookMetadataForm, AppError> {
+
+    let Some(name) = session.get::<String>(session_keys.name.as_str())? else {
+        return Err(AppError::new(
+            AppErrorKind::NotFound,
+            "New book could not be found in the active session",
+        ));
+    };
+
+    let Some(genre_id) = session.get::<i64>(session_keys.genre_id.as_str())? else {
+        return Err(AppError::new(
+            AppErrorKind::NotFound,
+            "New book could not be found in the active session",
+        ));
+    };
+
+    let Some(description) = session.get::<String>(session_keys.description.as_str())? else {
+        return Err(AppError::new(
+            AppErrorKind::NotFound,
+            "New book could not be found in the active session",
+        ));
+    };
+
+    Ok(AudiobookMetadataForm {
+        name,
+        description,
+        genre_id,
+    })
+}
+
+
+async fn get_user_from_identity(identity: Option<Identity>, user_repo: web::Data<UserRepository>) -> Result<User, AppError> {
+    let Some(u) = identity else {
+        return Err(AppError::new(
+            AppErrorKind::IdentityError,
+            "Invalid identity",
+        ));
+    };
+    Ok(user_repo
+        .read_one(&UserGetByUsername::new(&u.id()?))
+        .await?)
+}
+
+
+struct AudiobookCreateSessionKeys {
+    name: String,
+    description: String,
+    genre_id: String
+}
+
+impl AudiobookCreateSessionKeys {
+    fn new(user_id: Id) -> Self {
+        Self {
+            name: format!("audiobook_create_{}_name", user_id),
+            description: format!("audiobook_create_{}_description", user_id),
+            genre_id: format!("audiobook_create_{}_genre_id", user_id),
+        }
+    }
 }
