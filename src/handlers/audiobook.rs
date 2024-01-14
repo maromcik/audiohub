@@ -117,16 +117,12 @@ pub async fn upload_audiobook(
         &metadata.name,
         &user.id,
         &metadata.genre_id,
-        &0,
-        &0,
         &PgInterval {
             months: 0,
             days: 0,
             microseconds: 0,
         },
         &audiobook_path,
-        &0,
-        &0,
         &thumbnail_path,
         &metadata.description,
     );
