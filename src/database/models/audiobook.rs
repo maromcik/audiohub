@@ -118,6 +118,76 @@ impl AudiobookSearch {
             max_overall_rating: None,
         }
     }
+
+    pub fn search_by_author_id(author_id: Option<Id>) -> Self {
+        Self {
+            name: None,
+            genre_name: None,
+            author_name: None,
+            author_id: author_id.map(|n| n.to_owned()),
+            genre_id: None,
+            min_length: None,
+            max_length: None,
+            min_stream_count: None,
+            max_stream_count: None,
+            min_like_count: None,
+            max_like_count: None,
+            min_overall_rating: None,
+            max_overall_rating: None,
+        }
+    }
+
+    pub fn search_by_book_name(name: Option<&str>) -> Self {
+        Self {
+            name: name.map(|n| n.to_owned()),
+            genre_name: None,
+            author_name: None,
+            author_id: None,
+            genre_id: None,
+            min_length: None,
+            max_length: None,
+            min_stream_count: None,
+            max_stream_count: None,
+            min_like_count: None,
+            max_like_count: None,
+            min_overall_rating: None,
+            max_overall_rating: None,
+        }
+    }
+    pub fn search_by_genre_name(name: Option<&str>) -> Self {
+        Self {
+            name: name.map(|n| n.to_owned()),
+            genre_name: None,
+            author_name: None,
+            author_id: None,
+            genre_id: None,
+            min_length: None,
+            max_length: None,
+            min_stream_count: None,
+            max_stream_count: None,
+            min_like_count: None,
+            max_like_count: None,
+            min_overall_rating: None,
+            max_overall_rating: None,
+        }
+    }
+    pub fn search_by_author_name(name: Option<&str>) -> Self {
+        Self {
+            name: None,
+            genre_name: None,
+            author_name: name.map(|n| n.to_owned()),
+            author_id: None,
+            genre_id: None,
+            min_length: None,
+            max_length: None,
+            min_stream_count: None,
+            max_stream_count: None,
+            min_like_count: None,
+            max_like_count: None,
+            min_overall_rating: None,
+            max_overall_rating: None,
+        }
+    }
 }
 
     #[derive(Debug, Clone)]
