@@ -1,8 +1,8 @@
-use crate::database::common::error::{BackendErrorKind, DbError, DbErrorKind};
+use crate::database::common::error::{BackendError, BackendErrorKind, DbError, DbErrorKind};
 use crate::templates::error::GenericError;
 use actix_identity;
 use actix_web::http::StatusCode;
-use actix_web::{HttpResponse, ResponseError};
+use actix_web::{App, HttpResponse, ResponseError};
 use askama::Template;
 use serde::Serialize;
 use std::fmt::{Debug, Display, Formatter};
@@ -58,10 +58,10 @@ impl AppError {
     }
 }
 
-impl From<DbError> for AppError {
-    fn from(e: DbError) -> Self {
-        match e.db_error_kind {
-            DbErrorKind::BackendError(backend_error) => match backend_error.error_kind {
+
+impl From<BackendError> for AppError {
+    fn from(value: BackendError) -> Self {
+        match value.error_kind {
                 BackendErrorKind::UserUpdateParametersEmpty
                 | BackendErrorKind::AudiobookUpdateParametersEmpty
                 | BackendErrorKind::ChapterUpdateParametersEmpty
@@ -71,7 +71,7 @@ impl From<DbError> for AppError {
                 | BackendErrorKind::GenreDeleted
                 | BackendErrorKind::RatingDeleted
                 | BackendErrorKind::UserDeleted => {
-                    Self::new(AppErrorKind::BadRequest, &backend_error.to_string())
+                    Self::new(AppErrorKind::BadRequest, value.to_string().as_str())
                 }
 
                 BackendErrorKind::UserDoesNotExist
@@ -79,20 +79,24 @@ impl From<DbError> for AppError {
                 | BackendErrorKind::ChapterDoesNotExist
                 | BackendErrorKind::GenreDoesNotExist
                 | BackendErrorKind::RatingDoesNotExist => {
-                    Self::new(AppErrorKind::NotFound, &backend_error.to_string())
+                    Self::new(AppErrorKind::NotFound, value.to_string().as_str())
                 }
 
                 BackendErrorKind::UserPasswordDoesNotMatch
+                | BackendErrorKind::UnauthorizedOperation
                 | BackendErrorKind::UserPasswordVerificationFailed => {
-                    Self::new(AppErrorKind::Unauthorized, &backend_error.to_string())
+                    Self::new(AppErrorKind::Unauthorized, value.to_string().as_str())
                 }
 
-                _ => Self::new(
-                    AppErrorKind::InternalServerError,
-                    &backend_error.to_string(),
-                ),
-            },
+                _ => Self::new(AppErrorKind::InternalServerError, value.to_string().as_str())
+            }
+    }
+}
 
+impl From<DbError> for AppError {
+    fn from(e: DbError) -> Self {
+        match e.db_error_kind {
+            DbErrorKind::BackendError(backend_error) => AppError::from(backend_error),
             DbErrorKind::UniqueConstraintError => Self::new(AppErrorKind::Conflict, &e.to_string()),
             DbErrorKind::DatabaseError | DbErrorKind::MigrationError => {
                 Self::new(AppErrorKind::InternalServerError, &e.to_string())
