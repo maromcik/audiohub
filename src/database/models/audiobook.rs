@@ -313,6 +313,18 @@ impl AudiobookGetById {
     }
 }
 
+#[derive(Deserialize, Debug, Clone)]
+pub struct AudiobookGetByIdJoin {
+    pub id: Id,
+}
+
+impl AudiobookGetByIdJoin {
+    #[must_use]
+    #[inline]
+    pub const fn new(id: &Id) -> Self {
+        Self { id: *id }
+    }
+}
 #[derive(Debug, Clone)]
 pub struct AudiobookMetadataForm {
     pub name: String,

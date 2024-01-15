@@ -9,10 +9,7 @@ use async_trait::async_trait;
 
 use sqlx::{Postgres, Transaction};
 
-use crate::database::models::audiobook::{
-    Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookGetById,
-    AudiobookSearch, AudiobookUpdate,
-};
+use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookGetById, AudiobookGetByIdJoin, AudiobookSearch, AudiobookUpdate};
 
 #[derive(Clone)]
 pub struct AudiobookRepository {
@@ -68,8 +65,6 @@ impl DbRepository for AudiobookRepository {
 
 #[async_trait]
 impl DbReadOne<AudiobookGetById, Audiobook> for AudiobookRepository {
-    /// Login the user with provided parameters, if the user does not exist, is deleted or the
-    /// passwords don't match, return the error about combination of email/password not working
     async fn read_one(&self, params: &AudiobookGetById) -> DbResultSingle<Audiobook> {
         let maybe_audiobook = sqlx::query_as!(
             Audiobook,
@@ -85,6 +80,62 @@ impl DbReadOne<AudiobookGetById, Audiobook> for AudiobookRepository {
         let audiobook = AudiobookRepository::audiobook_is_correct(maybe_audiobook)?;
         Ok(audiobook)
     }
+
+}
+
+#[async_trait]
+impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
+    async fn read_one(&self, params: &AudiobookGetByIdJoin) -> DbResultSingle<AudiobookDetail> {
+        let maybe_audiobook = sqlx::query_as!(
+            AudiobookDetail,
+            r#"
+            SELECT
+                a.id,
+                a.name,
+                a.description,
+                a.length,
+                a.file_path,
+                a.thumbnail,
+                a.overall_rating,
+                a.stream_count,
+                a.like_count,
+                a.created_at,
+                a.edited_at,
+
+                a.author_id,
+                u.name AS author_name,
+                u.surname,
+                u.username,
+                u.email,
+                u.profile_picture,
+                u.bio,
+
+                a.genre_id,
+                g.name AS genre_name
+
+            FROM
+                "User" AS u
+                    INNER JOIN
+                "Audiobook" AS a
+                    ON a.author_id = u.id
+                    INNER JOIN
+                "Genre" AS g
+                    ON a.genre_id = g.id
+            WHERE
+                a.deleted_at IS NULL
+                AND a.id = $1
+            "#,
+            params.id
+        )
+            .fetch_optional(&self.pool_handler.pool)
+            .await?;
+
+        match maybe_audiobook {
+            None => Err(DbError::from(BackendError::new(AudiobookDoesNotExist))),
+            Some(audiobook) => Ok(audiobook)
+        }
+    }
+
 }
 
 // #[async_trait]
