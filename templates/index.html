@@ -11,13 +11,15 @@
             crossorigin="anonymous"></script>
 </head>
 <body class="bg-black text-white">
-<div class="bg-blue-600 p-4 shadow-md fixed w-full z-10 top-0">
-<!--    <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">-->
-<!--        <ul class="navbar-nav flex-grow-1">-->
-            <a href="/"><h1 class="text-xl font-bold">AudioHub</h1></a>
-            <a href="/user/login" class="bg-white-500 hover:bg-grey-700 text-white font-bold py-2 px-4 rounded mt-4">Log out</a>
-<!--        </ul>-->
-<!--    </div>-->
+<div class="bg-blue-600 p-4 flex shadow-md fixed w-full z-10 top-0 justify-between">
+    <a href="/" class="text-xl text-white font-bold">AudioHub</h1></a>
+    <div>
+        <a href="/user/login" class="flex items-center text-white hover:text-blue-300">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+            </svg>
+            Log out</a>
+    </div>
 </div>
 <div class="flex pt-16">
     <!-- Sidebar -->
@@ -52,7 +54,7 @@
 
     <!-- Main Content -->
     <main class="flex-1 pl-64 p-10">
-        <div id="add_book" class="flex justify-end">
+        <div id="add_book" class="flex justify-end px-5">
             <button hx-get="/audiobook/create" hx-target="#content-area" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
                 Add audiobook
             </button>
