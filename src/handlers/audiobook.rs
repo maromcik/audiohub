@@ -8,7 +8,7 @@ use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::{AppError, AppErrorKind};
 use crate::forms::audiobook::{AudiobookCreateForm, AudiobookUploadForm};
-use crate::handlers::utilities::parse_user_id;
+use crate::handlers::utilities::{AudiobookCreateSessionKeys, get_metadata_from_session, get_user_from_identity, parse_user_id};
 use crate::templates::audiobook::{
     AudiobookCreateFormTemplate, AudiobookDetailOwnerTemplate, AudiobookUploadFormTemplate, NewReleasesTemplate
 };
@@ -171,68 +171,6 @@ pub async fn get_audiobook(
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
-fn get_metadata_from_session(
-    session: &Session,
-    session_keys: &AudiobookCreateSessionKeys,
-) -> Result<AudiobookMetadataForm, AppError> {
-    let Some(name) = session.get::<String>(session_keys.name.as_str())? else {
-        return Err(AppError::new(
-            AppErrorKind::NotFound,
-            "New book could not be found in the active session",
-        ));
-    };
-
-    let Some(genre_id) = session.get::<i64>(session_keys.genre_id.as_str())? else {
-        return Err(AppError::new(
-            AppErrorKind::NotFound,
-            "New book could not be found in the active session",
-        ));
-    };
-
-    let Some(description) = session.get::<String>(session_keys.description.as_str())? else {
-        return Err(AppError::new(
-            AppErrorKind::NotFound,
-            "New book could not be found in the active session",
-        ));
-    };
-
-    Ok(AudiobookMetadataForm {
-        name,
-        description,
-        genre_id,
-    })
-}
-
-async fn get_user_from_identity(
-    identity: Option<Identity>,
-    user_repo: web::Data<UserRepository>,
-) -> Result<User, AppError> {
-    let Some(u) = identity else {
-        return Err(AppError::new(
-            AppErrorKind::IdentityError,
-            "User must be logged in to upload a book",
-        ));
-    };
-    Ok(user_repo
-        .read_one(&UserGetById::new(&parse_user_id(u)?))
-        .await?)
-}
-
-struct AudiobookCreateSessionKeys {
-    name: String,
-    description: String,
-    genre_id: String,
-}
-
-impl AudiobookCreateSessionKeys {
-    fn new(user_id: Id) -> Self {
-        Self {
-            name: format!("audiobook_create_{}_name", user_id),
-            description: format!("audiobook_create_{}_description", user_id),
-            genre_id: format!("audiobook_create_{}_genre_id", user_id),
-        }
-    }
-}
 
 #[get("/new-releases")]
 async fn new_releases(book_repo: web::Data<AudiobookRepository>) -> Result<HttpResponse, AppError> {
