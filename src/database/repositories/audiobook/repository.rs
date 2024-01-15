@@ -84,87 +84,15 @@ impl DbReadOne<AudiobookGetById, Audiobook> for AudiobookRepository {
     }
 }
 
-#[async_trait]
-impl DbReadMany<AudiobookSearch, Audiobook> for AudiobookRepository {
-    async fn read_many(&self, params: &AudiobookSearch) -> DbResultMultiple<Audiobook> {
-        let audiobooks = sqlx::query_as!(
-            Audiobook,
-            r#"
-            SELECT * FROM "Audiobook"
-            WHERE
-                (name = $1 OR $1 IS NULL)
-                AND (author_id = $2 OR $2 IS NULL)
-                AND (genre_id = $3 OR $3 IS NULL)
-                AND (like_count >= $4 OR $4 IS NULL)
-                AND (like_count <= $5 OR $5 IS NULL)
-                AND (length >= $6 OR $6 IS NULL)
-                AND (length <= $7 OR $7 IS NULL)
-                AND (stream_count >= $8 OR $8 IS NULL)
-                AND (stream_count <= $9 OR $9 IS NULL)
-                AND (overall_rating >= $10 OR $10 IS NULL)
-                AND (overall_rating <= $11 OR $11 IS NULL)
-            "#,
-            params.name,
-            params.author_id,
-            params.genre_id,
-            params.min_like_count,
-            params.max_like_count,
-            params.min_length,
-            params.max_length,
-            params.min_stream_count,
-            params.max_stream_count,
-            params.min_overall_rating,
-            params.max_overall_rating,
-        )
-        .fetch_all(&self.pool_handler.pool)
-        .await?;
-        Ok(audiobooks)
-    }
-}
-
 // #[async_trait]
 // impl DbReadMany<AudiobookSearch, Audiobook> for AudiobookRepository {
-//     async fn read_many(&self, params: &AudiobookSearch) -> DbResultMultiple<AudiobookDetail> {
+//     async fn read_many(&self, params: &AudiobookSearch) -> DbResultMultiple<Audiobook> {
 //         let audiobooks = sqlx::query_as!(
-//             AudiobookDetail,
+//             Audiobook,
 //             r#"
-//             SELECT
-//                 a.id,
-//                 a.name AS "name_book",
-//                 a.description,
-//                 a.length,
-//                 a.file_path,
-//                 a.thumbnail,
-//                 a.overall_rating,
-//                 a.stream_count,
-//                 a.like_count,
-//                 a.created_at,
-//                 a.edited_at,
-//
-//                 a.author_id,
-//                 u.name AS "name_user",
-//                 u.surname,
-//                 u.username,
-//                 u.email,
-//                 u.profile_picture,
-//                 u.bio,
-//
-//                 a.genre_id,
-//                 g.name AS "name_genre"
-//
-//             FROM
-//                 "User" AS u
-//                     INNER JOIN
-//                 "Audiobook" AS a
-//                     ON a.author_id = u.id
-//                     INNER JOIN
-//                 "Genre" AS g
-//                     ON a.genre_id = g.id
+//             SELECT * FROM "Audiobook"
 //             WHERE
-//                 a.deleted_at IS NULL
-//                 AND u.deleted_at IS NULL
-//                 AND g.deleted_at IS NULL
-//                 AND (name = $1 OR $1 IS NULL)
+//                 (name = $1 OR $1 IS NULL)
 //                 AND (author_id = $2 OR $2 IS NULL)
 //                 AND (genre_id = $3 OR $3 IS NULL)
 //                 AND (like_count >= $4 OR $4 IS NULL)
@@ -175,9 +103,6 @@ impl DbReadMany<AudiobookSearch, Audiobook> for AudiobookRepository {
 //                 AND (stream_count <= $9 OR $9 IS NULL)
 //                 AND (overall_rating >= $10 OR $10 IS NULL)
 //                 AND (overall_rating <= $11 OR $11 IS NULL)
-//             ORDER BY
-//                 a.created_at
-//                     DESC;
 //             "#,
 //             params.name,
 //             params.author_id,
@@ -191,11 +116,90 @@ impl DbReadMany<AudiobookSearch, Audiobook> for AudiobookRepository {
 //             params.min_overall_rating,
 //             params.max_overall_rating,
 //         )
-//             .fetch_all(&self.pool_handler.pool)
-//             .await?;
+//         .fetch_all(&self.pool_handler.pool)
+//         .await?;
 //         Ok(audiobooks)
 //     }
 // }
+
+#[async_trait]
+impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
+    async fn read_many(&self, params: &AudiobookSearch) -> DbResultMultiple<AudiobookDetail> {
+        let audiobooks = sqlx::query_as!(
+            AudiobookDetail,
+            r#"
+            SELECT
+                a.id,
+                a.name,
+                a.description,
+                a.length,
+                a.file_path,
+                a.thumbnail,
+                a.overall_rating,
+                a.stream_count,
+                a.like_count,
+                a.created_at,
+                a.edited_at,
+
+                a.author_id,
+                u.name AS author_name,
+                u.surname,
+                u.username,
+                u.email,
+                u.profile_picture,
+                u.bio,
+
+                a.genre_id,
+                g.name AS genre_name
+
+            FROM
+                "User" AS u
+                    INNER JOIN
+                "Audiobook" AS a
+                    ON a.author_id = u.id
+                    INNER JOIN
+                "Genre" AS g
+                    ON a.genre_id = g.id
+            WHERE
+                a.deleted_at IS NULL
+                AND u.deleted_at IS NULL
+                AND g.deleted_at IS NULL
+                AND (a.name = $1 OR $1 IS NULL)
+                AND (author_id = $2 OR $2 IS NULL)
+                AND (genre_id = $3 OR $3 IS NULL)
+                AND (like_count >= $4 OR $4 IS NULL)
+                AND (like_count <= $5 OR $5 IS NULL)
+                AND (length >= $6 OR $6 IS NULL)
+                AND (length <= $7 OR $7 IS NULL)
+                AND (stream_count >= $8 OR $8 IS NULL)
+                AND (stream_count <= $9 OR $9 IS NULL)
+                AND (overall_rating >= $10 OR $10 IS NULL)
+                AND (overall_rating <= $11 OR $11 IS NULL)
+                AND (u.name = $12 OR $12 IS NULL)
+                AND (g.name = $13 OR $13 IS NULL)
+            ORDER BY
+                a.created_at
+                    DESC;
+            "#,
+            params.name,
+            params.author_id,
+            params.genre_id,
+            params.min_like_count,
+            params.max_like_count,
+            params.min_length,
+            params.max_length,
+            params.min_stream_count,
+            params.max_stream_count,
+            params.min_overall_rating,
+            params.max_overall_rating,
+            params.author_name,
+            params.genre_name
+        )
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
+        Ok(audiobooks)
+    }
+}
 
 #[async_trait]
 impl DbCreate<AudiobookCreate, Audiobook> for AudiobookRepository {

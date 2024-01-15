@@ -21,7 +21,7 @@ pub async fn index(
         .read_many(&AudiobookSearch::new(None, None, None,
                                          None, None, None,
                                          None, None, None,
-                                         None, None)).await?;
+                                         None, None, None, None)).await?;
 
     let template = match identity {
         None => IndexTemplate {

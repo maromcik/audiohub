@@ -27,7 +27,7 @@ pub struct Audiobook {
 pub struct AudiobookDetail {
     pub id: Id,
     // --------------
-    pub name_book: String,
+    pub name: String,
     pub author_id: Id,
     pub genre_id: Id,
     pub length: PgInterval,
@@ -42,17 +42,19 @@ pub struct AudiobookDetail {
 
     pub username: String,
     pub email: String,
-    pub name_user: String,
+    pub author_name: String,
     pub surname: String,
     pub bio: String,
     pub profile_picture: String,
 
-    pub name_genre: String
+    pub genre_name: String
 }
 
 #[derive(Debug, Clone)]
 pub struct AudiobookSearch {
     pub name: Option<String>,
+    pub author_name: Option<String>,
+    pub genre_name: Option<String>,
     pub author_id: Option<Id>,
     pub genre_id: Option<Id>,
     pub min_length: Option<PgInterval>,
@@ -68,9 +70,12 @@ pub struct AudiobookSearch {
 impl AudiobookSearch {
     #[must_use]
     #[inline]
-    pub fn new(name: Option<&str>,
+    pub fn new(
+        name: Option<&str>,
         author_id: Option<Id>,
+        author_name: Option<&str>,
         genre_id: Option<Id>,
+        genre_name: Option<&str>,
         min_length: Option<PgInterval>,
         max_length: Option<PgInterval>,
         min_stream_count: Option<i64>,
@@ -82,6 +87,8 @@ impl AudiobookSearch {
     ) -> Self {
         Self {
             name: name.map(|n| n.to_owned()),
+            genre_name: name.map(|n| n.to_owned()),
+            author_name: name.map(|n| n.to_owned()),
             author_id: author_id.map(|n| n.to_owned()),
             genre_id: genre_id.map(|n| n.to_owned()),
             min_length: min_length.map(|n| n.to_owned()),

@@ -1,4 +1,4 @@
-use crate::database::models::audiobook::Audiobook;
+use crate::database::models::audiobook::{Audiobook, AudiobookDetail};
 use crate::database::models::genre::Genre;
 use askama::Template;
 
@@ -21,5 +21,5 @@ pub struct AudiobookDetailOwnerTemplate {
 #[derive(Template)]
 #[template(path = "audiobook/new_releases.html")]
 pub struct NewReleasesTemplate {
-    pub audiobooks: Vec<Audiobook>,
+    pub audiobooks: Vec<AudiobookDetail>,
 }

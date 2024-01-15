@@ -18,6 +18,7 @@ use actix_session::Session;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, post, web, HttpResponse};
 use askama::Template;
+use sqlx::encode::IsNull::No;
 use sqlx::postgres::types::PgInterval;
 use uuid::Uuid;
 use crate::templates::index::IndexTemplate;
@@ -240,7 +241,7 @@ async fn new_releases(book_repo: web::Data<AudiobookRepository>) -> Result<HttpR
         .read_many(&AudiobookSearch::new(None, None, None,
                                          None, None, None,
                                          None, None, None,
-                                         None, None)).await?;
+                                         None, None, None, None)).await?;
 
     let template = NewReleasesTemplate{ audiobooks: books};
     let body = template.render()?;
