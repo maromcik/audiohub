@@ -24,20 +24,23 @@ use askama::Template;
 
 use sqlx::postgres::types::PgInterval;
 use uuid::Uuid;
+use crate::authorized;
 
 #[get("/create")]
 pub async fn create_audiobook_form(
+    identity: Option<Identity>,
     genre_repo: web::Data<GenreRepository>,
 ) -> Result<HttpResponse, AppError> {
+    authorized!(identity);
     let genres = genre_repo.read_many(&GenreSearch::new(None)).await?;
-
     let template = AudiobookCreateFormTemplate { genres };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
 #[get("/upload")]
-pub async fn upload_audiobook_form() -> Result<HttpResponse, AppError> {
+pub async fn upload_audiobook_form(identity: Option<Identity>) -> Result<HttpResponse, AppError> {
+    authorized!(identity);
     let template = AudiobookUploadFormTemplate {};
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -51,7 +54,8 @@ pub async fn create_audiobook(
     user_repo: web::Data<UserRepository>,
     form: web::Form<AudiobookCreateForm>,
 ) -> Result<HttpResponse, AppError> {
-    let user = get_user_from_identity(identity, user_repo).await?;
+    let u = authorized!(identity);
+    let user = get_user_from_identity(u, user_repo).await?;
     let session_keys = AudiobookCreateSessionKeys::new(user.id);
     let genre = genre_repo
         .read_one(&GenreGetById::new(&form.genre_id))
@@ -74,7 +78,8 @@ pub async fn upload_audiobook(
     MultipartForm(form): MultipartForm<AudiobookUploadForm>,
 ) -> Result<HttpResponse, AppError> {
     let uuid = Uuid::new_v4();
-    let user = get_user_from_identity(identity, user_repo).await?;
+    let u = authorized!(identity);
+    let user = get_user_from_identity(u, user_repo).await?;
     let session_keys = AudiobookCreateSessionKeys::new(user.id);
     let thumbnail_path = format!(
         "./media/audiobook_{}_thumbnail_{}",
@@ -161,10 +166,11 @@ pub async fn upload_audiobook(
 
 #[get("/{id}/detail")]
 pub async fn get_audiobook(
-    _identity: Option<Identity>,
+    identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
+    authorized!(identity);
     let audiobook = audiobook_repo
         .read_one(&AudiobookGetById::new(&path.into_inner().0))
         .await?;
@@ -174,8 +180,9 @@ pub async fn get_audiobook(
 }
 
 #[get("/releases")]
-async fn releases(book_repo: web::Data<AudiobookRepository>) -> Result<HttpResponse, AppError> {
+async fn releases(identity: Option<Identity>, book_repo: web::Data<AudiobookRepository>) -> Result<HttpResponse, AppError> {
     //add functionality for ordering audiobooks
+    authorized!(identity);
     let books = book_repo
         .read_many(&AudiobookSearch::default())
         .await?;

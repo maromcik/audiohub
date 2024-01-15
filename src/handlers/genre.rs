@@ -1,3 +1,4 @@
+use actix_identity::Identity;
 use actix_web::{get, HttpResponse, web};
 use crate::database::common::{DbReadMany, DbReadOne};
 use crate::database::models::genre::{GenreGetById, GenreSearch};
@@ -7,11 +8,14 @@ use crate::templates::genre::AllGenresTemplate;
 use askama::Template;
 use crate::database::models::audiobook::AudiobookSearch;
 use crate::database::models::Id;
+use actix_web::http::header::LOCATION;
+use crate::authorized;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::templates::audiobook::AudiobooksByGenreTemplate;
 
 #[get("/")]
-async fn get_genres(genre_repo: web::Data<GenreRepository>) -> Result<HttpResponse, AppError> {
+async fn get_genres(identity: Option<Identity>, genre_repo: web::Data<GenreRepository>) -> Result<HttpResponse, AppError> {
+    authorized!(identity);
     //get all genres
     let genres = genre_repo.read_many(&GenreSearch::new(None)).await?;
 
@@ -22,9 +26,11 @@ async fn get_genres(genre_repo: web::Data<GenreRepository>) -> Result<HttpRespon
 
 #[get("/{id}")]
 async fn get_audiobooks_by_genre(
+    identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
     genre_repo: web::Data<GenreRepository>,
     path: web::Path<(Id,)>) -> Result<HttpResponse, AppError> {
+    authorized!(identity);
     let genre_id = path.into_inner().0;
     let book_search = AudiobookSearch::search_by_genre_id(Some(genre_id));
     let books = audiobook_repo

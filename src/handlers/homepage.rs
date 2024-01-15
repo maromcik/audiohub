@@ -19,12 +19,14 @@ pub async fn index(
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
+
     let books = book_repo
         .read_many(&AudiobookSearch::default())
         .await?;
     let user = user_repo
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
+
     let template = IndexTemplate {
         username: user.name,
         logged_in: true,
@@ -41,27 +43,21 @@ pub async fn index_content(
     user_repo: web::Data<UserRepository>,
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
+    let u = authorized!(identity);
+
     let books = book_repo
         .read_many(&AudiobookSearch::default())
         .await?;
+    let user = user_repo
+        .read_one(&UserGetById::new(&parse_user_id(u)?))
+        .await?;
 
-    let template = match identity {
-        None => IndexContentTemplate {
-            username: "None".to_string(),
-            logged_in: false,
-            audiobooks: books,
-        },
-        Some(u) => {
-            let user = user_repo
-                .read_one(&UserGetById::new(&parse_user_id(u)?))
-                .await?;
-            IndexContentTemplate {
-                username: user.name,
-                logged_in: true,
-                audiobooks: books,
-            }
-        }
+    let template = IndexContentTemplate {
+        username: user.name,
+        logged_in: true,
+        audiobooks: books,
     };
+
     let body = template.render()?;
 
     Ok(HttpResponse::Ok().content_type("text/html").body(body))

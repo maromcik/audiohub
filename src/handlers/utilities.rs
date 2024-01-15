@@ -56,18 +56,10 @@ pub fn get_metadata_from_session(
 }
 
 pub async fn get_user_from_identity(
-    identity: Option<Identity>,
+    identity: Identity,
     user_repo: web::Data<UserRepository>,
 ) -> Result<User, AppError> {
-    let Some(u) = identity else {
-        return Err(AppError::new(
-            AppErrorKind::IdentityError,
-            "User must be logged in to upload a book",
-        ));
-    };
-    Ok(user_repo
-        .read_one(&UserGetById::new(&parse_user_id(u)?))
-        .await?)
+    Ok(user_repo.read_one(&UserGetById::new(&parse_user_id(identity)?)).await?)
 }
 
 pub struct AudiobookCreateSessionKeys {
