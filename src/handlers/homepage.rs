@@ -5,10 +5,12 @@ use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
 use crate::handlers::utilities::parse_user_id;
+use actix_web::http::header::LOCATION;
 use crate::templates::index::{IndexTemplate, IndexContentTemplate};
 use actix_identity::Identity;
 use actix_web::{get, web, HttpResponse};
 use askama::Template;
+use crate::authorized;
 
 #[get("/")]
 pub async fn index(
@@ -16,26 +18,17 @@ pub async fn index(
     user_repo: web::Data<UserRepository>,
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
+    let u = authorized!(identity);
     let books = book_repo
         .read_many(&AudiobookSearch::default())
         .await?;
-
-    let template = match identity {
-        None => IndexTemplate {
-            username: "None".to_string(),
-            logged_in: false,
-            audiobooks: books,
-        },
-        Some(u) => {
-            let user = user_repo
-                .read_one(&UserGetById::new(&parse_user_id(u)?))
-                .await?;
-            IndexTemplate {
-                username: user.name,
-                logged_in: true,
-                audiobooks: books,
-            }
-        }
+    let user = user_repo
+        .read_one(&UserGetById::new(&parse_user_id(u)?))
+        .await?;
+    let template = IndexTemplate {
+        username: user.name,
+        logged_in: true,
+        audiobooks: books,
     };
     let body = template.render()?;
 
