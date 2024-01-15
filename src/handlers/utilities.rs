@@ -6,10 +6,21 @@ use crate::database::repositories::user::repository::UserRepository;
 use crate::error::{AppError, AppErrorKind};
 use actix_identity::Identity;
 use actix_session::Session;
-use actix_web::web;
+use actix_web::{HttpResponse, web};
+use actix_web::http::header::LOCATION;
 
 pub fn parse_user_id(identity: Identity) -> Result<Id, AppError> {
     Ok(identity.id()?.parse::<i64>()?)
+}
+
+pub fn is_unauthorized(identity: Option<Identity>) -> bool {
+    identity.is_none()
+}
+
+pub fn redirect_login() -> HttpResponse {
+    HttpResponse::SeeOther()
+        .insert_header((LOCATION, "/user/login"))
+        .finish()
 }
 
 pub fn get_metadata_from_session(
@@ -73,4 +84,18 @@ impl AudiobookCreateSessionKeys {
             genre_id: format!("audiobook_create_{}_genre_id", user_id),
         }
     }
+}
+
+
+#[macro_export]
+macro_rules! authorized {
+    ($e:expr) => {
+        match $e {
+            None => {
+                return Ok(HttpResponse::SeeOther()
+        .insert_header((LOCATION, "/user/login"))
+        .finish()); }
+            Some(v) => {v}
+        }
+    };
 }
