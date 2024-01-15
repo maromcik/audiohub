@@ -20,7 +20,7 @@ async fn get_genres(
 ) -> Result<HttpResponse, AppError> {
     authorized!(identity);
     //get all genres
-    let genres = genre_repo.read_many(&GenreSearch::new(None)).await?;
+    let genres = genre_repo.read_many(&GenreSearch::default()).await?;
 
     let template = AllGenresTemplate { genres };
     let body = template.render()?;
