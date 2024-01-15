@@ -28,3 +28,7 @@ YOU UPLOADED THIS BOOK
 <div hx-get="/chapter/audiobook/{{ audiobook.id }}" hx-trigger="load" hx-swap="afterend">
     Chapters
 </div>
+
+<form hx-get="/chapter/create/audiobook/{{ audiobook.id }}" hx-swap="afterend">
+    <button type="submit">Add chapter</button>
+</form>

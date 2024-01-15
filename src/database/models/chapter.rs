@@ -35,6 +35,22 @@ pub struct ChapterCreate {
     pub sequential_number: i32,
 }
 
+impl ChapterCreate {
+    pub fn new(
+        name: &str,
+        audiobook_id: &Id,
+        length: &PgInterval,
+        sequential_number: &i32
+    ) -> Self {
+        Self {
+            name: name.to_owned(),
+            audiobook_id: *audiobook_id,
+            length: length.to_owned(),
+            sequential_number: *sequential_number,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct ChapterUpdate {
     pub id: Id,
