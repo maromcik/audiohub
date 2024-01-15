@@ -118,6 +118,7 @@ impl AudiobookSearch {
             max_overall_rating: None,
         }
     }
+}
 
     #[derive(Debug, Clone)]
     pub struct AudiobookCreate {

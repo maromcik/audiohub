@@ -17,9 +17,7 @@ pub async fn index(
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
     let books = book_repo
-        .read_many(&AudiobookSearch::new(
-            None, None, None, None, None, None, None, None, None, None, None, None, None,
-        ))
+        .read_many(&AudiobookSearch::default())
         .await?;
 
     let template = match identity {
@@ -51,9 +49,7 @@ pub async fn index_content(
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
     let books = book_repo
-        .read_many(&AudiobookSearch::new(
-            None, None, None, None, None, None, None, None, None, None, None, None, None,
-        ))
+        .read_many(&AudiobookSearch::default())
         .await?;
 
     let template = match identity {
