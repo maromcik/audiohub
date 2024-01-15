@@ -42,7 +42,9 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
 
     let genre_scope = web::scope("genre")
         .app_data(web::Data::new(genre_repository.clone()))
-        .service(get_genres);
+        .app_data(web::Data::new(audiobook_repository.clone()))
+        .service(get_genres)
+        .service(get_audiobooks_by_genre);
 
     let rating_scope = web::scope("rating").app_data(web::Data::new(rating_repository.clone()));
 
