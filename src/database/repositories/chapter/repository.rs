@@ -216,6 +216,7 @@ impl DbReadMany<ChapterGetByBookId, Chapter> for ChapterRepository {
             r#"
             SELECT * FROM "Chapter"
             WHERE audiobook_id = $1
+            ORDER BY sequential_number
             "#,
             params.audiobook_id,
         )

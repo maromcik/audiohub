@@ -7,6 +7,6 @@ pub struct ChapterCreateFormTemplate {}
 
 #[derive(Template)]
 #[template(path = "chapter/chapters_all.html")]
-pub struct ChaptersAllTemplate {
+pub struct ChaptersByAudiobookTemplate {
     pub chapters: Vec<Chapter>,
 }

@@ -3,7 +3,7 @@ use crate::database::common::DbReadMany;
 use crate::database::models::chapter::ChapterGetByBookId;
 use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::error::AppError;
-use crate::templates::chapter::{ChapterCreateFormTemplate, ChaptersAllTemplate};
+use crate::templates::chapter::{ChapterCreateFormTemplate, ChaptersByAudiobookTemplate};
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, web, HttpResponse};
@@ -29,7 +29,7 @@ pub async fn get_chapters_by_book(
             audiobook_id: params.audiobook_id,
         })
         .await?;
-    let template = ChaptersAllTemplate { chapters };
+    let template = ChaptersByAudiobookTemplate { chapters };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
