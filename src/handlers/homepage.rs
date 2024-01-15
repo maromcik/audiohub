@@ -1,5 +1,7 @@
-use crate::database::common::{DbCreate, DbReadMany, DbReadOne};
+use crate::database::common::{DbReadMany, DbReadOne};
+use crate::database::models::audiobook::AudiobookSearch;
 use crate::database::models::user::UserGetById;
+use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
 use crate::handlers::utilities::parse_user_id;
@@ -7,9 +9,6 @@ use crate::templates::index::IndexTemplate;
 use actix_identity::Identity;
 use actix_web::{get, web, HttpResponse};
 use askama::Template;
-use crate::database::models::audiobook::AudiobookSearch;
-use crate::database::repositories::audiobook::repository::AudiobookRepository;
-
 
 #[get("/")]
 pub async fn index(
@@ -18,10 +17,10 @@ pub async fn index(
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
     let books = book_repo
-        .read_many(&AudiobookSearch::new(None, None, None,
-                                         None, None, None,
-                                         None, None, None,
-                                         None, None, None, None)).await?;
+        .read_many(&AudiobookSearch::new(
+            None, None, None, None, None, None, None, None, None, None, None, None, None,
+        ))
+        .await?;
 
     let template = match identity {
         None => IndexTemplate {

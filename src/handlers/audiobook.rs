@@ -1,16 +1,19 @@
 use crate::database::common::{DbCreate, DbReadMany, DbReadOne};
-use crate::database::models::audiobook::{AudiobookCreate, AudiobookGetById, AudiobookMetadataForm, AudiobookSearch};
+use crate::database::models::audiobook::{AudiobookCreate, AudiobookGetById, AudiobookSearch};
 use crate::database::models::genre::{GenreGetById, GenreSearch};
-use crate::database::models::user::{User, UserGetById};
+
 use crate::database::models::Id;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::{AppError, AppErrorKind};
 use crate::forms::audiobook::{AudiobookCreateForm, AudiobookUploadForm};
-use crate::handlers::utilities::{AudiobookCreateSessionKeys, get_metadata_from_session, get_user_from_identity, parse_user_id};
+use crate::handlers::utilities::{
+    get_metadata_from_session, get_user_from_identity, AudiobookCreateSessionKeys,
+};
 use crate::templates::audiobook::{
-    AudiobookCreateFormTemplate, AudiobookDetailOwnerTemplate, AudiobookUploadFormTemplate, NewReleasesTemplate
+    AudiobookCreateFormTemplate, AudiobookDetailOwnerTemplate, AudiobookUploadFormTemplate,
+    NewReleasesTemplate,
 };
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
@@ -18,10 +21,9 @@ use actix_session::Session;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, post, web, HttpResponse};
 use askama::Template;
-use sqlx::encode::IsNull::No;
+
 use sqlx::postgres::types::PgInterval;
 use uuid::Uuid;
-use crate::templates::index::IndexTemplate;
 
 #[get("/create")]
 pub async fn create_audiobook_form(
@@ -171,17 +173,16 @@ pub async fn get_audiobook(
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
-
 #[get("/new-releases")]
 async fn new_releases(book_repo: web::Data<AudiobookRepository>) -> Result<HttpResponse, AppError> {
     //add functionality for ordering audiobooks
     let books = book_repo
-        .read_many(&AudiobookSearch::new(None, None, None,
-                                         None, None, None,
-                                         None, None, None,
-                                         None, None, None, None)).await?;
+        .read_many(&AudiobookSearch::new(
+            None, None, None, None, None, None, None, None, None, None, None, None, None,
+        ))
+        .await?;
 
-    let template = NewReleasesTemplate{ audiobooks: books};
+    let template = NewReleasesTemplate { audiobooks: books };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }

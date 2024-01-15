@@ -9,7 +9,10 @@ use async_trait::async_trait;
 
 use sqlx::{Postgres, Transaction};
 
-use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookGetById, AudiobookSearch, AudiobookUpdate};
+use crate::database::models::audiobook::{
+    Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookGetById,
+    AudiobookSearch, AudiobookUpdate,
+};
 
 #[derive(Clone)]
 pub struct AudiobookRepository {
@@ -195,8 +198,8 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
             params.author_name,
             params.genre_name
         )
-            .fetch_all(&self.pool_handler.pool)
-            .await?;
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
         Ok(audiobooks)
     }
 }

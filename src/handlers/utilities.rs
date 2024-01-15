@@ -1,12 +1,12 @@
+use crate::database::common::DbReadOne;
+use crate::database::models::audiobook::AudiobookMetadataForm;
+use crate::database::models::user::{User, UserGetById};
 use crate::database::models::Id;
+use crate::database::repositories::user::repository::UserRepository;
 use crate::error::{AppError, AppErrorKind};
 use actix_identity::Identity;
 use actix_session::Session;
 use actix_web::web;
-use crate::database::common::DbReadOne;
-use crate::database::models::audiobook::AudiobookMetadataForm;
-use crate::database::models::user::{User, UserGetById};
-use crate::database::repositories::user::repository::UserRepository;
 
 pub fn parse_user_id(identity: Identity) -> Result<Id, AppError> {
     Ok(identity.id()?.parse::<i64>()?)
@@ -54,7 +54,9 @@ pub async fn get_user_from_identity(
             "User must be logged in to upload a book",
         ));
     };
-    Ok(user_repo.read_one(&UserGetById::new(&parse_user_id(u)?)).await?)
+    Ok(user_repo
+        .read_one(&UserGetById::new(&parse_user_id(u)?))
+        .await?)
 }
 
 pub struct AudiobookCreateSessionKeys {

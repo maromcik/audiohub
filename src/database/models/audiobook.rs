@@ -47,7 +47,7 @@ pub struct AudiobookDetail {
     pub bio: String,
     pub profile_picture: String,
 
-    pub genre_name: String
+    pub genre_name: String,
 }
 
 #[derive(Debug, Clone)]
@@ -73,9 +73,9 @@ impl AudiobookSearch {
     pub fn new(
         name: Option<&str>,
         author_id: Option<Id>,
-        author_name: Option<&str>,
+        _author_name: Option<&str>,
         genre_id: Option<Id>,
-        genre_name: Option<&str>,
+        _genre_name: Option<&str>,
         min_length: Option<PgInterval>,
         max_length: Option<PgInterval>,
         min_stream_count: Option<i64>,
@@ -98,7 +98,8 @@ impl AudiobookSearch {
             min_like_count: min_like_count.map(|n| n.to_owned()),
             max_like_count: max_like_count.map(|n| n.to_owned()),
             min_overall_rating: min_overall_rating.map(|n| n.to_owned()),
-            max_overall_rating: max_overall_rating.map(|n| n.to_owned()) }
+            max_overall_rating: max_overall_rating.map(|n| n.to_owned()),
+        }
     }
 }
 
