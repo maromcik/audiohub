@@ -3,8 +3,9 @@
         <div class="px-4 py-2">
             <div class="text-center">
                 <img class="w-48 h-48 object-cover" src="{{ audiobook.thumbnail }}" alt="Audiobook Image">
-<!--            <img class="w-48 h-48 object-cover" src="https://play-lh.googleusercontent.com/_tslXR7zUXgzpiZI9t70ywHqWAxwMi8LLSfx8Ab4Mq4NUTHMjFNxVMwTM1G0Q-XNU80" alt="Audiobook Image">-->
-                <div class="font-bold text-lg text-white mb-2">{{ audiobook.name }}</div>
+                <div class="font-bold text-lg text-white mb-2">
+                    <a hx-get="/audiobook/{{ audiobook.id }}/detail" hx-swap="outerHTML" hx-target="#content-area"> {{ audiobook.name }}</a>
+                </div>
                 <p class="text-gray-300 text-sm">
                     Description: {{ audiobook.description }}
                 </p>

@@ -1,0 +1,23 @@
+YOU DID NOT UPLOAD THIS BOOK
+<p class="text-gray-300 text-sm">
+    Name: {{ audiobook.name }}
+</p>
+<p class="text-gray-300 text-sm">
+    Genre name: {{ audiobook.genre_name }}
+</p>
+<p class="text-gray-300 text-sm">
+    Author name: {{ audiobook.author_name }}
+</p>
+<img class="w-48 h-48 object-cover" src="{{ audiobook.thumbnail }}" alt="Audiobook Image">
+<div class="font-bold text-lg text-white mb-2">
+    <a href="/audiobook/{{ audiobook.id }}/detail"> {{ audiobook.name }}</a>
+</div>
+<p class="text-gray-300 text-sm">
+    Description: {{ audiobook.description }}
+</p>
+<p class="text-gray-300 text-sm">
+    Likes: {{ audiobook.like_count }}
+</p>
+<p class="text-gray-300 text-sm">
+    Streams: {{ audiobook.stream_count }}
+</p>
