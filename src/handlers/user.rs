@@ -1,3 +1,4 @@
+use std::convert::identity;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
 use crate::templates::user::{LoginTemplate, RegistrationTemplate};
@@ -84,4 +85,14 @@ pub async fn login_user(
             Err(AppError::from(db_error))
         }
     }
+}
+
+#[post("/logout")]
+pub async fn logout_user(identity: Option<Identity>) -> Result<HttpResponse, AppError> {
+    if let Some(u) = identity {
+        u.logout();
+    }
+    Ok(HttpResponse::SeeOther()
+        .insert_header((LOCATION, "/user/login"))
+        .finish())
 }
