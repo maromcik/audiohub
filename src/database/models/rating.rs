@@ -13,7 +13,7 @@ pub struct Rating {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct RatingSearch {
     pub audiobook_id: Option<Id>,
     pub user_id: Option<Id>,

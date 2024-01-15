@@ -25,7 +25,7 @@ impl GenreCreate {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct GenreSearch {
     pub name: Option<String>,
 }

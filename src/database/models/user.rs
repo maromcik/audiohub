@@ -56,7 +56,7 @@ impl UserCreate {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct UserSearch {
     pub username: Option<String>,
     pub email: Option<String>,

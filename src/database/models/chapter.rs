@@ -15,7 +15,7 @@ pub struct Chapter {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Default)]
 pub struct ChapterSearch {
     pub name: Option<String>,
     pub audiobook_id: Option<Id>,
