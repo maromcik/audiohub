@@ -6,7 +6,7 @@ use askama::Template;
 pub struct ChapterCreateFormTemplate {}
 
 #[derive(Template)]
-#[template(path = "chapter/chapters_all.html")]
+#[template(path = "chapter/chapters_by_audiobook.html")]
 pub struct ChaptersByAudiobookTemplate {
     pub chapters: Vec<Chapter>,
 }

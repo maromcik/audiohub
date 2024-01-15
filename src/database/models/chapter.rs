@@ -23,7 +23,7 @@ pub struct ChapterSearch {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct ChapterGetByBookId {
+pub struct ChaptersGetByBookId {
     pub audiobook_id: Id,
 }
 
