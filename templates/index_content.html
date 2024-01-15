@@ -1,0 +1,13 @@
+{% if logged_in %}
+<h2 class="text-3xl font-bold mb-6">Hello {{ username }} </h2>
+{% else %}
+<h2 class="text-3xl font-bold mb-6">Explore audiobooks </h2>
+{% endif %}
+<p>Welcome to AudioHub, your number one source for audiobooks!</p>
+<p>Username: {{ username }}</p>
+<P>Logged in?: {{ logged_in }}</P>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    {% for audiobook in audiobooks %}
+    {% include "audiobook/audiobook_info.html" %}
+    {% endfor %}
+</div>

@@ -39,7 +39,9 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(create_chapter_form)
         .service(get_chapters_by_book);
 
-    let genre_scope = web::scope("genre").app_data(web::Data::new(genre_repository.clone()));
+    let genre_scope = web::scope("genre")
+        .app_data(web::Data::new(genre_repository.clone()))
+        .service(get_genres);
 
     let rating_scope = web::scope("rating").app_data(web::Data::new(rating_repository.clone()));
 
@@ -47,6 +49,7 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         cfg.app_data(web::Data::new(user_repository.clone()))
             .app_data(web::Data::new(audiobook_repository.clone()))
             .service(index)
+            .service(index_content)
             .service(user_scope)
             .service(genre_scope)
             .service(audiobook_scope)

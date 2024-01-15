@@ -95,7 +95,7 @@ impl DbReadMany<GenreSearch, Genre> for GenreRepository {
             SELECT * FROM "Genre"
             WHERE
                 (name = $1 OR $1 IS NULL)
-            "#,
+            ORDER BY name"#,
             params.name
         )
         .fetch_all(&self.pool_handler.pool)
