@@ -41,12 +41,16 @@ async fn main() -> anyhow::Result<()> {
             .collect::<Vec<u8>>(),
     );
     env_logger::init_from_env(Env::default().default_filter_or("info"));
+
+    let use_secure_cookie = env::var("USE_SECURE_COOKIE").unwrap_or("false".to_string()).parse::<bool>()?;
+    info!("USE_SECURE_COOKIE: {}", use_secure_cookie);
+
+    gst::init()?;
+
     if let Err(e) = dotenvy::dotenv() {
         warn!("failed loading .env file: {e}");
     };
     info!("starting server on {host}");
-
-    gst::init()?;
 
     HttpServer::new(move || {
         App::new()
@@ -61,7 +65,7 @@ async fn main() -> anyhow::Result<()> {
                 SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
                     .cookie_same_site(SameSite::None)
                     .cookie_http_only(false)
-                    .cookie_secure(false)
+                    .cookie_secure(use_secure_cookie)
                     .cookie_content_security(CookieContentSecurity::Private)
                     .build(),
             )
