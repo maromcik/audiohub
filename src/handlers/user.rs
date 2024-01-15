@@ -3,8 +3,9 @@ use crate::error::AppError;
 use crate::templates::user::{LoginTemplate, RegistrationTemplate};
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
-use actix_web::{get, post, web, HttpMessage, HttpRequest, HttpResponse};
+use actix_web::http::StatusCode;
 use actix_web::web::Redirect;
+use actix_web::{get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use askama::Template;
 
 use crate::database::common::{DbCreate, DbReadOne};
@@ -32,7 +33,7 @@ pub async fn login() -> Result<HttpResponse, AppError> {
 pub async fn register_user(
     form: web::Form<UserCreateForm>,
     user_repo: web::Data<UserRepository>,
-) -> Result<HttpResponse, AppError> {
+) -> Result<impl Responder, AppError> {
     let new_user = UserCreate {
         username: form.username.to_string(),
         email: form.email.to_string(),
@@ -47,10 +48,7 @@ pub async fn register_user(
     user_repo
         .read_one(&UserLogin::new(&form.email, &form.password))
         .await?;
-
-    Ok(HttpResponse::SeeOther()
-        .insert_header((LOCATION, "/user/login"))
-        .finish())
+    Ok(Redirect::to("/user/login").using_status_code(StatusCode::FOUND))
 }
 
 #[post("/login")]
@@ -58,7 +56,7 @@ pub async fn login_user(
     request: HttpRequest,
     user_repo: web::Data<UserRepository>,
     form: web::Form<UserLogin>,
-) -> Result<HttpResponse, AppError> {
+) -> Result<impl Responder, AppError> {
     match user_repo
         .read_one(&UserLogin::new(&form.email_or_username, &form.password))
         .await
@@ -88,9 +86,9 @@ pub async fn login_user(
 }
 
 #[get("/logout")]
-pub async fn logout_user(identity: Option<Identity>) -> Result<Redirect, AppError> {
+pub async fn logout_user(identity: Option<Identity>) -> Result<impl Responder, AppError> {
     if let Some(u) = identity {
         u.logout();
     }
-    Ok(Redirect::to("/user/login"))
+    Ok(Redirect::to("/user/login").using_status_code(StatusCode::FOUND))
 }

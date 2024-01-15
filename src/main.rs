@@ -42,7 +42,9 @@ async fn main() -> anyhow::Result<()> {
     );
     env_logger::init_from_env(Env::default().default_filter_or("info"));
 
-    let use_secure_cookie = env::var("USE_SECURE_COOKIE").unwrap_or("false".to_string()).parse::<bool>()?;
+    let use_secure_cookie = env::var("USE_SECURE_COOKIE")
+        .unwrap_or("false".to_string())
+        .parse::<bool>()?;
     info!("USE_SECURE_COOKIE: {}", use_secure_cookie);
 
     gst::init()?;

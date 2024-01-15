@@ -1,13 +1,13 @@
-use actix_identity::Identity;
+use crate::authorized;
 use crate::database::common::DbReadMany;
 use crate::database::models::chapter::ChapterGetByBookId;
 use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::error::AppError;
 use crate::templates::chapter::{ChapterCreateFormTemplate, ChaptersAllTemplate};
+use actix_identity::Identity;
+use actix_web::http::header::LOCATION;
 use actix_web::{get, web, HttpResponse};
 use askama::Template;
-use actix_web::http::header::LOCATION;
-use crate::authorized;
 
 #[get("/create")]
 pub async fn create_chapter_form(identity: Option<Identity>) -> Result<HttpResponse, AppError> {

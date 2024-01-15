@@ -22,9 +22,9 @@ use actix_web::http::header::LOCATION;
 use actix_web::{get, post, web, HttpResponse};
 use askama::Template;
 
+use crate::authorized;
 use sqlx::postgres::types::PgInterval;
 use uuid::Uuid;
-use crate::authorized;
 
 #[get("/create")]
 pub async fn create_audiobook_form(
@@ -180,12 +180,13 @@ pub async fn get_audiobook(
 }
 
 #[get("/releases")]
-async fn releases(identity: Option<Identity>, book_repo: web::Data<AudiobookRepository>) -> Result<HttpResponse, AppError> {
+async fn releases(
+    identity: Option<Identity>,
+    book_repo: web::Data<AudiobookRepository>,
+) -> Result<HttpResponse, AppError> {
     //add functionality for ordering audiobooks
     authorized!(identity);
-    let books = book_repo
-        .read_many(&AudiobookSearch::default())
-        .await?;
+    let books = book_repo.read_many(&AudiobookSearch::default()).await?;
 
     let template = NewReleasesTemplate { audiobooks: books };
     let body = template.render()?;

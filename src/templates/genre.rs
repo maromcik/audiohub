@@ -1,5 +1,5 @@
-use askama::Template;
 use crate::database::models::genre::Genre;
+use askama::Template;
 
 #[derive(Template)]
 #[template(path = "genre/genres.html")]

@@ -6,8 +6,8 @@ use crate::database::repositories::user::repository::UserRepository;
 use crate::error::{AppError, AppErrorKind};
 use actix_identity::Identity;
 use actix_session::Session;
-use actix_web::{HttpResponse, web};
 use actix_web::http::header::LOCATION;
+use actix_web::{web, HttpResponse};
 
 pub fn parse_user_id(identity: Identity) -> Result<Id, AppError> {
     Ok(identity.id()?.parse::<i64>()?)
@@ -59,7 +59,9 @@ pub async fn get_user_from_identity(
     identity: Identity,
     user_repo: web::Data<UserRepository>,
 ) -> Result<User, AppError> {
-    Ok(user_repo.read_one(&UserGetById::new(&parse_user_id(identity)?)).await?)
+    Ok(user_repo
+        .read_one(&UserGetById::new(&parse_user_id(identity)?))
+        .await?)
 }
 
 pub struct AudiobookCreateSessionKeys {
@@ -78,16 +80,16 @@ impl AudiobookCreateSessionKeys {
     }
 }
 
-
 #[macro_export]
 macro_rules! authorized {
     ($e:expr) => {
         match $e {
             None => {
                 return Ok(HttpResponse::SeeOther()
-        .insert_header((LOCATION, "/user/login"))
-        .finish()); }
-            Some(v) => {v}
+                    .insert_header((LOCATION, "/user/login"))
+                    .finish());
+            }
+            Some(v) => v,
         }
     };
 }

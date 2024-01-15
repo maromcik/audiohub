@@ -1,9 +1,9 @@
 pub mod audiobook;
 pub mod chapter;
+pub mod genre;
 pub mod homepage;
 pub mod user;
 mod utilities;
-pub mod genre;
 
 pub use crate::handlers::user::login as user_login_page;
 pub use crate::handlers::user::login_user as user_login;
@@ -24,5 +24,5 @@ pub use crate::handlers::audiobook::upload_audiobook_form;
 pub use crate::handlers::chapter::create_chapter_form;
 pub use crate::handlers::chapter::get_chapters_by_book;
 
-pub use crate::handlers::genre::get_genres;
 pub use crate::handlers::genre::get_audiobooks_by_genre;
+pub use crate::handlers::genre::get_genres;
