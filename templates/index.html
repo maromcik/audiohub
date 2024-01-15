@@ -12,7 +12,12 @@
 </head>
 <body class="bg-black text-white">
 <div class="bg-blue-600 p-4 shadow-md fixed w-full z-10 top-0">
-    <h1 class="text-xl font-bold">AudioHub</h1>
+<!--    <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">-->
+<!--        <ul class="navbar-nav flex-grow-1">-->
+            <a href="/"><h1 class="text-xl font-bold">AudioHub</h1></a>
+            <a href="/user/login" class="bg-white-500 hover:bg-grey-700 text-white font-bold py-2 px-4 rounded mt-4">Log out</a>
+<!--        </ul>-->
+<!--    </div>-->
 </div>
 <div class="flex pt-16">
     <!-- Sidebar -->
@@ -57,10 +62,6 @@
         </div>
         <!-- Other content here will retain the default alignment -->
     </main>
-
-    <<button hx-post="/user/logout" hx-target="#content-area" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
-    Logout
-</button>
 </div>
 </body>
 </html>
