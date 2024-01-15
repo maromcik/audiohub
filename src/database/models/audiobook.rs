@@ -50,7 +50,7 @@ pub struct AudiobookDetail {
     pub genre_name: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct AudiobookSearch {
     pub name: Option<String>,
     pub author_name: Option<String>,

@@ -177,9 +177,7 @@ pub async fn get_audiobook(
 async fn releases(book_repo: web::Data<AudiobookRepository>) -> Result<HttpResponse, AppError> {
     //add functionality for ordering audiobooks
     let books = book_repo
-        .read_many(&AudiobookSearch::new(
-            None, None, None, None, None, None, None, None, None, None, None, None, None,
-        ))
+        .read_many(&AudiobookSearch::default())
         .await?;
 
     let template = NewReleasesTemplate { audiobooks: books };
