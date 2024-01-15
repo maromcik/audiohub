@@ -32,6 +32,8 @@ pub enum BackendErrorKind {
     GenreDeleted,
     GenreDoesNotExist,
     GenreUpdateParametersEmpty,
+
+    UnauthorizedOperation
 }
 
 impl Display for BackendErrorKind {
@@ -101,6 +103,13 @@ impl Display for BackendErrorKind {
                     concat!(
                         "The provided parameters for Genre update query are incorrect",
                         " (no Genre field would be changed)."
+                    )
+                )
+            }
+            UnauthorizedOperation => {
+                write!(
+                    f,
+                    concat!("You are not permitted to execute this operation!"
                     )
                 )
             }
