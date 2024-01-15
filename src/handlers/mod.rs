@@ -25,3 +25,4 @@ pub use crate::handlers::chapter::create_chapter_form;
 pub use crate::handlers::chapter::get_chapters_by_book;
 
 pub use crate::handlers::genre::get_genres;
+pub use crate::handlers::genre::get_audiobooks_by_genre;

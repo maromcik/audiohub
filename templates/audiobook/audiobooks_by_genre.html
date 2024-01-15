@@ -1,0 +1,6 @@
+<h2 class="text-3xl font-bold mb-6"> {{ genre_name }} </h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    {% for audiobook in audiobooks %}
+    {% include "audiobook/audiobook_info.html" %}
+    {% endfor %}
+</div>

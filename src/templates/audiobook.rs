@@ -23,3 +23,10 @@ pub struct AudiobookDetailOwnerTemplate {
 pub struct NewReleasesTemplate {
     pub audiobooks: Vec<AudiobookDetail>,
 }
+
+#[derive(Template)]
+#[template(path = "audiobook/audiobooks_by_genre.html")]
+pub struct AudiobooksByGenreTemplate {
+    pub audiobooks: Vec<AudiobookDetail>,
+    pub genre_name: String,
+}
