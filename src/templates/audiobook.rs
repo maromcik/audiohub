@@ -19,7 +19,7 @@ pub struct AudiobookDetailOwnerTemplate {
 }
 
 #[derive(Template)]
-#[template(path = "audiobook/new_releases.html")]
+#[template(path = "audiobook/releases.html")]
 pub struct NewReleasesTemplate {
     pub audiobooks: Vec<AudiobookDetail>,
 }

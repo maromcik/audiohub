@@ -173,8 +173,8 @@ pub async fn get_audiobook(
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
-#[get("/new-releases")]
-async fn new_releases(book_repo: web::Data<AudiobookRepository>) -> Result<HttpResponse, AppError> {
+#[get("/releases")]
+async fn releases(book_repo: web::Data<AudiobookRepository>) -> Result<HttpResponse, AppError> {
     //add functionality for ordering audiobooks
     let books = book_repo
         .read_many(&AudiobookSearch::new(
