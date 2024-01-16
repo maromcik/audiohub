@@ -4,7 +4,7 @@
             <div class="text-center">
                 <img class="w-48 h-48 object-cover" src="{{ audiobook.thumbnail }}" alt="Audiobook Image">
                 <div class="font-bold text-lg text-white mb-2">
-                    <a hx-get="/audiobook/{{ audiobook.id }}/detail" hx-swap="outerHTML" hx-target="#content-area"> {{ audiobook.name }}</a>
+                    <a hx-get="/audiobook/{{ audiobook.id }}/detail" hx-target="#content-area"> {{ audiobook.name }}</a>
                 </div>
                 <p class="text-gray-300 text-sm">
                     Description: {{ audiobook.description }}
