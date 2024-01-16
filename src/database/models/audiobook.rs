@@ -3,6 +3,7 @@ use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
 use sqlx::postgres::types::PgInterval;
+use crate::database::common::query_parameters::DbQueryParams;
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
 pub struct Audiobook {
@@ -65,6 +66,7 @@ pub struct AudiobookSearch {
     pub max_like_count: Option<i64>,
     pub min_overall_rating: Option<i16>,
     pub max_overall_rating: Option<i16>,
+    pub query_params: Option<DbQueryParams>
 }
 
 impl AudiobookSearch {
@@ -84,6 +86,7 @@ impl AudiobookSearch {
         max_like_count: Option<i64>,
         min_overall_rating: Option<i16>,
         max_overall_rating: Option<i16>,
+        query_params: Option<DbQueryParams>
     ) -> Self {
         Self {
             name: name.map(|n| n.to_owned()),
@@ -99,6 +102,7 @@ impl AudiobookSearch {
             max_like_count: max_like_count.map(|n| n.to_owned()),
             min_overall_rating: min_overall_rating.map(|n| n.to_owned()),
             max_overall_rating: max_overall_rating.map(|n| n.to_owned()),
+            query_params
         }
     }
     pub fn search_by_genre_id(genre_id: Option<Id>) -> Self {
@@ -116,6 +120,7 @@ impl AudiobookSearch {
             max_like_count: None,
             min_overall_rating: None,
             max_overall_rating: None,
+            query_params: None
         }
     }
 
@@ -134,6 +139,7 @@ impl AudiobookSearch {
             max_like_count: None,
             min_overall_rating: None,
             max_overall_rating: None,
+            query_params: None
         }
     }
 
@@ -152,6 +158,7 @@ impl AudiobookSearch {
             max_like_count: None,
             min_overall_rating: None,
             max_overall_rating: None,
+            query_params: None
         }
     }
     pub fn search_by_genre_name(name: Option<&str>) -> Self {
@@ -169,6 +176,7 @@ impl AudiobookSearch {
             max_like_count: None,
             min_overall_rating: None,
             max_overall_rating: None,
+            query_params: None
         }
     }
     pub fn search_by_author_name(name: Option<&str>) -> Self {
@@ -186,6 +194,7 @@ impl AudiobookSearch {
             max_like_count: None,
             min_overall_rating: None,
             max_overall_rating: None,
+            query_params: None
         }
     }
 }

@@ -1,4 +1,5 @@
 pub use repository::*;
-pub(crate) mod error;
+pub mod error;
 pub mod repository;
 pub mod utilities;
+pub mod query_parameters;
