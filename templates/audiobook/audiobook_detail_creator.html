@@ -1,34 +1,40 @@
-YOU UPLOADED THIS BOOK
-<p class="text-gray-300 text-sm">
-    Name: {{ audiobook.name }}
-</p>
-<p class="text-gray-300 text-sm">
-    Genre name: {{ audiobook.genre_name }}
-</p>
-<p class="text-gray-300 text-sm">
-    Author name: {{ audiobook.author_name }}
-</p>
-<img class="w-48 h-48 object-cover" src="{{ audiobook.thumbnail }}" alt="Audiobook Image">
-<div class="font-bold text-lg text-white mb-2">
-    <a href="/audiobook/{{ audiobook.id }}/detail"> {{ audiobook.name }}</a>
-</div>
-<p class="text-gray-300 text-sm">
-    Description: {{ audiobook.description }}
-</p>
-<p class="text-gray-300 text-sm">
-    Likes: {{ audiobook.like_count }}
-</p>
-<p class="text-gray-300 text-sm">
-    Streams: {{ audiobook.stream_count }}
-</p>
+<div class="container mx-auto p-4 bg-black flex justify-center">
+    <div class="w-full min-h-96 md:w-1/2 lg:w-1/2 xl:w-1/2 2xl:w-1/2 max-w-2xl rounded overflow-hidden shadow-lg bg-gray-800 flex flex-col items-center">
+    YOU UPLOADED THIS BOOK
+            <p class="text-gray-300 text-sm">
+                Name: {{ audiobook.name }}
+            </p>
+            <p class="text-gray-300 text-sm">
+                Genre name: {{ audiobook.genre_name }}
+            </p>
+            <p class="text-gray-300 text-sm">
+                Author name: {{ audiobook.author_name }}
+            </p>
+            <img class="w-48 h-48 object-cover" src="{{ audiobook.thumbnail }}" alt="Audiobook Image">
+            <div class="font-bold text-lg text-white mb-2">
+                <a href="/audiobook/{{ audiobook.id }}/detail"> {{ audiobook.name }}</a>
+            </div>
+            <p class="text-gray-300 text-sm">
+                Description: {{ audiobook.description }}
+            </p>
+            <p class="text-gray-300 text-sm">
+                Likes: {{ audiobook.like_count }}
+            </p>
+            <p class="text-gray-300 text-sm">
+                Streams: {{ audiobook.stream_count }}
+            </p>
 
 
-<a href="/audiobook/{{ audiobook.id }}/delete">Delete Audiobook</a>
+            <a href="/audiobook/{{ audiobook.id }}/delete">Delete Audiobook</a>
 
-<div hx-get="/chapter/audiobook/{{ audiobook.id }}" hx-trigger="load" hx-swap="afterend">
-    Chapters
-</div>
+            <div hx-get="/chapter/audiobook/{{ audiobook.id }}" hx-trigger="load" hx-swap="afterend">
+                Chapters
+            </div>
 
-<form hx-get="/chapter/create/audiobook/{{ audiobook.id }}" hx-swap="afterend">
-    <button type="submit">Add chapter</button>
-</form>
+            <form hx-get="/chapter/create/audiobook/{{ audiobook.id }}" hx-swap="afterend">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
+                    Add new chapter
+                </button>
+            </form>
+        </div>
+    </div>
