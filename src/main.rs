@@ -20,8 +20,6 @@ mod forms;
 mod handlers;
 mod init;
 mod templates;
-mod utilities;
-
 const DEFAULT_HOSTNAME: &str = "localhost";
 const DEFAULT_PORT: &str = "8000";
 
