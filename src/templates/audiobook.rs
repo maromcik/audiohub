@@ -1,6 +1,7 @@
 use crate::database::models::audiobook::{Audiobook, AudiobookDetail};
 use crate::database::models::genre::Genre;
 use askama::Template;
+use crate::database::models::chapter::Chapter;
 
 #[derive(Template)]
 #[template(path = "audiobook/audiobook_create.html")]
@@ -16,12 +17,14 @@ pub struct AudiobookUploadFormTemplate {}
 #[template(path = "audiobook/audiobook_detail_creator.html")]
 pub struct AudiobookDetailCreatorTemplate {
     pub audiobook: AudiobookDetail,
+    pub chapters: Vec<Chapter>,
 }
 
 #[derive(Template)]
 #[template(path = "audiobook/audiobook_detail_visitor.html")]
 pub struct AudiobookDetailVisitorTemplate {
     pub audiobook: AudiobookDetail,
+    pub chapters: Vec<Chapter>,
 }
 
 #[derive(Template)]
