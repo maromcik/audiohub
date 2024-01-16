@@ -36,7 +36,7 @@ async fn get_audiobooks_by_genre(
 ) -> Result<HttpResponse, AppError> {
     authorized!(identity);
     let genre_id = path.into_inner().0;
-    let book_search = AudiobookSearch::search_by_genre_id(Some(genre_id));
+    let book_search = AudiobookSearch::search_by_genre_id(genre_id);
     let books = audiobook_repo.read_many(&book_search).await?;
 
     let genre = genre_repo.read_one(&GenreGetById::new(&genre_id)).await?;

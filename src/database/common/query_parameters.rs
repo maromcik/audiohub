@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display, Formatter};
 
 
-#[derive(Clone, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct DbQueryParams {
     pub order: Option<DbOrderColumn>,
     pub limit: Option<i64>,
@@ -9,7 +9,7 @@ pub struct DbQueryParams {
 }
 
 impl DbQueryParams {
-    fn new(
+    pub fn new(
         order: Option<DbOrderColumn>,
         limit: Option<i64>,
         offset: Option<i64>
@@ -21,26 +21,43 @@ impl DbQueryParams {
         }
     }
 
-    fn limit(limit: i64, offset: i64) -> Self {
+    pub fn limit(limit: i64, offset: i64) -> Self {
         Self {
             order: None,
             limit: Some(limit),
             offset: Some(offset)
         }
     }
+
+    pub fn order(order: DbOrderColumn) -> Self {
+        Self {
+            order: Some(order),
+            limit: None,
+            offset: None,
+        }
+    }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct DbOrderColumn {
     pub column: String,
     pub order: DbOrder
+}
+
+impl DbOrderColumn {
+    pub fn new(column: &str, order: DbOrder) -> Self {
+        Self {
+            column: column.to_owned(),
+            order
+        }
+    }
 }
 
 impl Default for DbOrderColumn {
     fn default() -> Self {
         Self {
             column: "created_at".to_string(),
-            order: DbOrder::Asc
+            order: DbOrder::Desc
         }
     }
 }
