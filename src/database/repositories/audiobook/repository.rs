@@ -233,7 +233,6 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
 
         let query_params = generate_query_param_string(&params.query_params);
         query.push_str(query_params.as_str());
-        println!("QUERYYYYYYYYYY: {}", query);
         let audiobooks = sqlx::query_as::<_, AudiobookDetail>(query.as_str())
             .bind(&params.name)
             .bind(params.author_id)
