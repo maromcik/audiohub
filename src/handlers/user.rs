@@ -14,8 +14,8 @@ use crate::authorized;
 
 use crate::database::common::{DbCreate, DbReadOne, DbUpdate};
 
-use crate::database::models::user::{UserCreate, UserGetById, UserLogin, UserUpdate};
-use crate::forms::user::{ProfilePictureUploadForm, UserCreateForm, UserUpdateForm};
+use crate::database::models::user::{UserCreate, UserGetById, UserLogin, UserUpdate, UserUpdatePassword};
+use crate::forms::user::{ProfilePictureUploadForm, UserCreateForm, UserUpdateForm, UserUpdatePasswordForm};
 
 use crate::handlers::utilities::{get_user_from_identity, parse_user_id, remove_file, save_file, validate_file};
 
@@ -147,11 +147,12 @@ pub async fn user_manage(identity: Option<Identity>, user_repo: web::Data<UserRe
 }
 
 #[post("/manage/password")]
-pub async fn user_manage_password(identity: Option<Identity>) -> Result<impl Responder, AppError> {
-    authorized!(identity);
-    let template = UserManagePasswordTemplate { };
-    let body = template.render()?;
-    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+pub async fn user_manage_password(identity: Option<Identity>, user_repo: web::Data<UserRepository>, form: web::Form<UserUpdatePasswordForm>,) -> Result<impl Responder, AppError> {
+    let u = authorized!(identity);
+    user_repo.update_password(&UserUpdatePassword::new(&parse_user_id(u)?, &form.old_password, &form.new_password)).await?;
+    Ok(HttpResponse::SeeOther()
+        .insert_header((LOCATION, "/"))
+        .finish())
 }
 
 #[post("/manage/picture")]
