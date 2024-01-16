@@ -1,17 +1,22 @@
 use crate::database::repositories::user::repository::UserRepository;
-use crate::error::AppError;
-use crate::templates::user::{LoginTemplate, RegistrationTemplate};
+use crate::error::{AppError, AppErrorKind};
+use crate::templates::user::{LoginTemplate, RegistrationTemplate, UserManagePasswordTemplate, UserManageProfilePictureFormTemplate, UserManageProfileTemplate};
 use actix_identity::Identity;
+use actix_multipart::form::MultipartForm;
 use actix_web::http::header::LOCATION;
 use actix_web::http::StatusCode;
 use actix_web::web::Redirect;
 use actix_web::{get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use askama::Template;
+use uuid::Uuid;
+use crate::authorized;
 
 use crate::database::common::{DbCreate, DbReadOne};
 
-use crate::database::models::user::{UserCreate, UserLogin};
-use crate::forms::user::UserCreateForm;
+use crate::database::models::user::{UserCreate, UserGetById, UserLogin};
+use crate::forms::audiobook::AudiobookUploadForm;
+use crate::forms::user::{ProfilePictureUploadForm, UserCreateForm, UserUpdateForm};
+use crate::handlers::utilities::parse_user_id;
 
 #[get("/register")]
 pub async fn register() -> Result<HttpResponse, AppError> {
@@ -50,9 +55,6 @@ pub async fn register_user(
     };
 
     user_repo.create(&new_user).await?;
-    user_repo
-        .read_one(&UserLogin::new(&form.email, &form.password))
-        .await?;
     Ok(Redirect::to("/user/login").using_status_code(StatusCode::FOUND))
 }
 
@@ -96,4 +98,54 @@ pub async fn logout_user(identity: Option<Identity>) -> Result<impl Responder, A
         u.logout();
     }
     Ok(Redirect::to("/user/login").using_status_code(StatusCode::FOUND))
+}
+
+#[get("/manage")]
+pub async fn user_manage_form(identity: Option<Identity>, user_repo: web::Data<UserRepository>) -> Result<impl Responder, AppError> {
+    let u = authorized!(identity);
+    let user = user_repo.read_one(&UserGetById::new(&parse_user_id(u)?)).await?;
+    let template = UserManageProfileTemplate { user };
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+#[get("/manage/password")]
+pub async fn user_manage_password_form(identity: Option<Identity>) -> Result<impl Responder, AppError> {
+    authorized!(identity);
+    let template = UserManagePasswordTemplate { };
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+#[get("/manage/picture")]
+pub async fn user_manage_picture_form(identity: Option<Identity>) -> Result<impl Responder, AppError> {
+    authorized!(identity);
+    let template = UserManageProfilePictureFormTemplate { };
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+#[post("/manage")]
+pub async fn user_manage(identity: Option<Identity>, user_repo: web::Data<UserRepository>, form: web::Form<UserUpdateForm>,) -> Result<impl Responder, AppError> {
+    let u = authorized!(identity);
+    let user = user_repo.read_one(&UserGetById::new(&parse_user_id(u)?)).await?;
+    let template = UserManageProfileTemplate { user };
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+#[post("/manage/password")]
+pub async fn user_manage_password(identity: Option<Identity>) -> Result<impl Responder, AppError> {
+    authorized!(identity);
+    let template = UserManagePasswordTemplate { };
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+#[post("/manage/picture")]
+pub async fn user_manage_picture(identity: Option<Identity>, MultipartForm(form): MultipartForm<ProfilePictureUploadForm>,) -> Result<impl Responder, AppError> {
+    authorized!(identity);
+    let template = UserManageProfilePictureFormTemplate { };
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
