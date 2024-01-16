@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display, Formatter};
 
 
-#[derive(Clone, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct DbQueryParams {
     pub order: Option<DbOrderColumn>,
     pub limit: Option<i64>,
@@ -30,7 +30,7 @@ impl DbQueryParams {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct DbOrderColumn {
     pub column: String,
     pub order: DbOrder

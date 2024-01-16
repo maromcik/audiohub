@@ -1,3 +1,4 @@
+use std::ops::Add;
 use crate::database::common::error::BackendErrorKind::{
     AudiobookDeleted, AudiobookDoesNotExist, AudiobookUpdateParametersEmpty,
 };
@@ -8,6 +9,7 @@ use crate::database::common::{
 use async_trait::async_trait;
 
 use sqlx::{Postgres, Transaction};
+use crate::database::common::utilities::generate_query_param_string;
 
 use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookGetById, AudiobookGetByIdJoin, AudiobookSearch, AudiobookUpdate};
 
@@ -29,8 +31,8 @@ impl AudiobookRepository {
             "#,
             params.id
         )
-        .fetch_optional(transaction_handle.as_mut())
-        .await?;
+            .fetch_optional(transaction_handle.as_mut())
+            .await?;
 
         if let Some(book) = query {
             return Ok(Option::from(book));
@@ -74,13 +76,12 @@ impl DbReadOne<AudiobookGetById, Audiobook> for AudiobookRepository {
             "#,
             params.id
         )
-        .fetch_optional(&self.pool_handler.pool)
-        .await?;
+            .fetch_optional(&self.pool_handler.pool)
+            .await?;
 
         let audiobook = AudiobookRepository::audiobook_is_correct(maybe_audiobook)?;
         Ok(audiobook)
     }
-
 }
 
 #[async_trait]
@@ -135,7 +136,6 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
             Some(audiobook) => Ok(audiobook)
         }
     }
-
 }
 
 // #[async_trait]
@@ -179,9 +179,7 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
 #[async_trait]
 impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
     async fn read_many(&self, params: &AudiobookSearch) -> DbResultMultiple<AudiobookDetail> {
-        let audiobooks = sqlx::query_as!(
-            AudiobookDetail,
-            r#"
+        let mut query = r#"
             SELECT
                 a.id,
                 a.name,
@@ -231,26 +229,26 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
                 AND (overall_rating <= $11 OR $11 IS NULL)
                 AND (u.name = $12 OR $12 IS NULL)
                 AND (g.name = $13 OR $13 IS NULL)
-            ORDER BY
-                a.created_at
-                    DESC;
-            "#,
-            params.name,
-            params.author_id,
-            params.genre_id,
-            params.min_like_count,
-            params.max_like_count,
-            params.min_length,
-            params.max_length,
-            params.min_stream_count,
-            params.max_stream_count,
-            params.min_overall_rating,
-            params.max_overall_rating,
-            params.author_name,
-            params.genre_name
-        )
-        .fetch_all(&self.pool_handler.pool)
-        .await?;
+            "#.to_owned();
+
+        let query_params = generate_query_param_string(&params.query_params);
+        query.push_str(query_params.as_str());
+        let audiobooks = sqlx::query_as::<_, AudiobookDetail>(query.as_str())
+            .bind(&params.name)
+            .bind(params.author_id)
+            .bind(params.genre_id)
+            .bind(params.min_like_count)
+            .bind(params.max_like_count)
+            .bind(&params.min_length)
+            .bind(&params.max_length)
+            .bind(params.min_stream_count)
+            .bind(params.max_stream_count)
+            .bind(params.min_overall_rating)
+            .bind(params.max_overall_rating)
+            .bind(&params.author_name)
+            .bind(&params.genre_name)
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
         Ok(audiobooks)
     }
 }
@@ -273,8 +271,8 @@ impl DbCreate<AudiobookCreate, Audiobook> for AudiobookRepository {
             params.thumbnail,
             params.description
         )
-        .fetch_one(&self.pool_handler.pool)
-        .await?;
+            .fetch_one(&self.pool_handler.pool)
+            .await?;
 
         Ok(book)
     }
@@ -294,7 +292,7 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
             AudiobookGetById { id: params.id },
             &mut transaction,
         )
-        .await?;
+            .await?;
         let validated_audiobook = AudiobookRepository::audiobook_is_correct(audiobook)?;
         let updated_audio_books = sqlx::query_as!(
             Audiobook,
@@ -327,8 +325,8 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
             params.description,
             validated_audiobook.id
         )
-        .fetch_all(transaction.as_mut())
-        .await?;
+            .fetch_all(transaction.as_mut())
+            .await?;
         transaction.commit().await?;
 
         Ok(updated_audio_books)
@@ -343,7 +341,7 @@ impl DbDelete<AudiobookDelete, Audiobook> for AudiobookRepository {
             AudiobookGetById { id: params.id },
             &mut transaction,
         )
-        .await?;
+            .await?;
 
         let _ = AudiobookRepository::audiobook_is_correct(book_query.clone())?;
 
@@ -359,8 +357,8 @@ impl DbDelete<AudiobookDelete, Audiobook> for AudiobookRepository {
             "#,
             params.id,
         )
-        .fetch_all(transaction.as_mut())
-        .await?;
+            .fetch_all(transaction.as_mut())
+            .await?;
         transaction.commit().await?;
 
         Ok(books)
