@@ -8,6 +8,7 @@ use actix_web::http::StatusCode;
 use actix_web::web::Redirect;
 use actix_web::{get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use askama::Template;
+use hmac::Mac;
 use uuid::Uuid;
 use crate::authorized;
 
@@ -154,5 +155,11 @@ pub async fn user_manage_picture(identity: Option<Identity>, user_repo: web::Dat
 
     user_repo.update(&user_update).await?;
     save_file(form.picture, path)?;
-    Ok(HttpResponse::Ok().finish())
+    // Ok(HttpResponse::Ok()
+    //     .insert_header(("HX-Redirect", "/user/manage"))
+    //     .finish())
+    // TEMPORARY SOLUTION
+    Ok(HttpResponse::SeeOther()
+        .insert_header((LOCATION, "/"))
+        .finish())
 }
