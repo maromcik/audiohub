@@ -66,7 +66,7 @@ pub struct AudiobookSearch {
     pub max_like_count: Option<i64>,
     pub min_overall_rating: Option<i16>,
     pub max_overall_rating: Option<i16>,
-    pub query_params: Option<DbQueryParams>
+    pub query_params: DbQueryParams
 }
 
 impl AudiobookSearch {
@@ -86,7 +86,7 @@ impl AudiobookSearch {
         max_like_count: Option<i64>,
         min_overall_rating: Option<i16>,
         max_overall_rating: Option<i16>,
-        query_params: Option<DbQueryParams>
+        query_params: DbQueryParams
     ) -> Self {
         Self {
             name: name.map(|n| n.to_owned()),
@@ -121,7 +121,7 @@ impl AudiobookSearch {
             max_like_count: None,
             min_overall_rating: None,
             max_overall_rating: None,
-            query_params: Some(query_params)
+            query_params
         }
     }
 
@@ -140,7 +140,7 @@ impl AudiobookSearch {
             max_like_count: None,
             min_overall_rating: None,
             max_overall_rating: None,
-            query_params: None
+            query_params: DbQueryParams::default()
         }
     }
 
@@ -159,7 +159,7 @@ impl AudiobookSearch {
             max_like_count: None,
             min_overall_rating: None,
             max_overall_rating: None,
-            query_params: None
+            query_params: DbQueryParams::default()
         }
     }
 
@@ -178,7 +178,7 @@ impl AudiobookSearch {
             max_like_count: None,
             min_overall_rating: None,
             max_overall_rating: None,
-            query_params: None
+            query_params: DbQueryParams::default()
         }
     }
     pub fn search_by_genre_name(name: &str) -> Self {
@@ -196,7 +196,7 @@ impl AudiobookSearch {
             max_like_count: None,
             min_overall_rating: None,
             max_overall_rating: None,
-            query_params: None
+            query_params: DbQueryParams::default()
         }
     }
     pub fn search_by_author_name(name: &str) -> Self {
@@ -214,7 +214,7 @@ impl AudiobookSearch {
             max_like_count: None,
             min_overall_rating: None,
             max_overall_rating: None,
-            query_params: None
+            query_params: DbQueryParams::default()
         }
     }
 }

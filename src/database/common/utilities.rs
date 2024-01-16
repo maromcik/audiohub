@@ -28,30 +28,25 @@ pub fn parse_value<T>(
 }
 
 
-pub fn generate_query_param_string(params: &Option<DbQueryParams>) -> String {
-    match &params {
-        None => { String::default() }
-        Some(qp) => {
-            let mut qp_string = String::new();
-            if let Some(order) = &qp.order {
-                qp_string.push_str("ORDER BY ");
-                qp_string.push_str(&order.column);
-                match order.order {
-                    DbOrder::Asc => qp_string.push_str(" ASC"),
-                    DbOrder::Desc => qp_string.push_str(" DESC")
-                }
-            }
-            qp_string.push('\n');
-            if let Some(l) = qp.limit {
-                qp_string.push_str("LIMIT ");
-                qp_string.push_str(l.to_string().as_str());
-            }
-            qp_string.push('\n');
-            if let Some(o) = qp.offset {
-                qp_string.push_str("OFFSET ");
-                qp_string.push_str(o.to_string().as_str());
-            }
-            qp_string
+pub fn generate_query_param_string(params: &DbQueryParams) -> String {
+    let mut qp_string = String::new();
+    if let Some(order) = &params.order {
+        qp_string.push_str("ORDER BY ");
+        qp_string.push_str(&order.column);
+        match order.order {
+            DbOrder::Asc => qp_string.push_str(" ASC"),
+            DbOrder::Desc => qp_string.push_str(" DESC")
         }
     }
+    qp_string.push('\n');
+    if let Some(l) = params.limit {
+        qp_string.push_str("LIMIT ");
+        qp_string.push_str(l.to_string().as_str());
+    }
+    qp_string.push('\n');
+    if let Some(o) = params.offset {
+        qp_string.push_str("OFFSET ");
+        qp_string.push_str(o.to_string().as_str());
+    }
+    qp_string
 }

@@ -24,6 +24,7 @@ use crate::authorized;
 use sqlx::postgres::types::PgInterval;
 use uuid::Uuid;
 use crate::database::common::error::{BackendError, BackendErrorKind};
+use crate::database::common::query_parameters::DbQueryParams;
 use crate::database::models::chapter::ChaptersGetByBookId;
 
 #[get("/create")]
@@ -170,7 +171,7 @@ pub async fn get_audiobook(
     user_repo: web::Data<UserRepository>,
     audiobook_repo: web::Data<AudiobookRepository>,
     chapter_repo: web::Data<ChapterRepository>,
-    path: web::Path<(Id,)>,
+    path: web::Path<(Id, )>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity);
     let user = get_user_from_identity(identity, user_repo).await?;
@@ -199,7 +200,7 @@ async fn releases(
 ) -> Result<HttpResponse, AppError> {
     //add functionality for ordering audiobooks
     authorized!(identity);
-    let books = book_repo.read_many(&AudiobookSearch::default()).await?;
+    let books = book_repo.read_many(&AudiobookSearch::with_params(DbQueryParams::limit(5, 0))).await?;
 
     let template = NewReleasesTemplate { audiobooks: books };
     let body = template.render()?;
@@ -212,7 +213,7 @@ pub async fn remove_audiobook(
     identity: Option<Identity>,
     user_repo: web::Data<UserRepository>,
     audiobook_repo: web::Data<AudiobookRepository>,
-    path: web::Path<(Id,)>,
+    path: web::Path<(Id, )>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity);
     let user = get_user_from_identity(identity, user_repo).await?;
