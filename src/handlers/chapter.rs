@@ -9,13 +9,13 @@ use actix_web::http::header::LOCATION;
 use actix_web::{get, web, HttpResponse, post};
 use askama::Template;
 use crate::database::models::Id;
-use crate::forms::chapter::ChapterCreateForm;
+use crate::forms::chapter::{ChapterCreateAudiobookInfoForm, ChapterCreateForm};
 
 
-#[get("/create")]
+#[post("/create/form")]
 pub async fn create_chapter_form(
     identity: Option<Identity>,
-    form: web::Form<ChapterCreateForm>,
+    form: web::Form<ChapterCreateAudiobookInfoForm>,
 ) -> Result<HttpResponse, AppError> {
     authorized!(identity);
     let template = ChapterCreateFormTemplate { audiobook_id: form.audiobook_id, position: form.position };

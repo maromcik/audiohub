@@ -3,19 +3,28 @@
 
         {% include "audiobook/audiobook_detail_content.html" %}
 
-        <div class="pl-4 overflow-auto">
-            <div id="chapters-list">
-                {% include "chapter/chapters_by_audiobook.html" %}
-            </div>
-        </div>
-        <!--    <div class="w-full min-h-96 md:w-1/2 lg:w-1/2 xl:w-1/2 2xl:w-1/2 max-w-2xl rounded overflow-hidden shadow-lg flex flex-col items-center ml-8">-->
-        <!--        <div id="chapters-list" class="md:w-1/2 p-4 text-white">-->
-        <!--            Chapters-->
-        <!--            {% include "chapter/chapters_by_audiobook.html" %}-->
-        <!--        </div>-->
-        <!--    </div>-->
-        {% include "audiobook/player.html" %}
+
 
     </div>
 </div>
 
+<div class="pl-4 overflow-auto">
+    <div id="chapters-list">
+        {% include "chapter/chapters_by_audiobook.html" %}
+    </div>
+</div>
+
+<!--   THIS BUTTON NEEDS TO BE IN EACH CHAPTER     -->
+<button onclick="setCurTime(10)" type="button">Set to chapter</button><br>
+<audio id="audiobook-player" controls>
+    <source src="{{ audiobook.file_path }}" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+
+<script>
+    let vid = document.getElementById("audiobook-player");
+
+    function setCurTime(t) {
+        vid.currentTime = t;
+    }
+</script>
