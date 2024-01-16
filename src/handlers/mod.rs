@@ -10,6 +10,7 @@ pub use crate::handlers::user::login_user as user_login;
 pub use crate::handlers::user::logout_user as user_logout;
 pub use crate::handlers::user::register as user_register_page;
 pub use crate::handlers::user::register_user as user_register;
+pub use crate::handlers::user::user_manage;
 
 pub use crate::handlers::homepage::index;
 pub use crate::handlers::homepage::index_content;

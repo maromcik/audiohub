@@ -1,17 +1,19 @@
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
-use crate::templates::user::{LoginTemplate, RegistrationTemplate};
+use crate::templates::user::{LoginTemplate, RegistrationTemplate, UserManagementTemplate};
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::http::StatusCode;
 use actix_web::web::Redirect;
 use actix_web::{get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use askama::Template;
+use crate::authorized;
 
 use crate::database::common::{DbCreate, DbReadOne};
 
-use crate::database::models::user::{UserCreate, UserLogin};
+use crate::database::models::user::{UserCreate, UserGetById, UserLogin};
 use crate::forms::user::UserCreateForm;
+use crate::handlers::utilities::parse_user_id;
 
 #[get("/register")]
 pub async fn register() -> Result<HttpResponse, AppError> {
@@ -50,9 +52,6 @@ pub async fn register_user(
     };
 
     user_repo.create(&new_user).await?;
-    user_repo
-        .read_one(&UserLogin::new(&form.email, &form.password))
-        .await?;
     Ok(Redirect::to("/user/login").using_status_code(StatusCode::FOUND))
 }
 
@@ -96,4 +95,13 @@ pub async fn logout_user(identity: Option<Identity>) -> Result<impl Responder, A
         u.logout();
     }
     Ok(Redirect::to("/user/login").using_status_code(StatusCode::FOUND))
+}
+
+#[get("/manage")]
+pub async fn user_manage(identity: Option<Identity>, user_repo: web::Data<UserRepository>) -> Result<impl Responder, AppError> {
+    let u = authorized!(identity);
+    let user = user_repo.read_one(&UserGetById::new(&parse_user_id(u)?)).await?;
+    let template = UserManagementTemplate { user };
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
