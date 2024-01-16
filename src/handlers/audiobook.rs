@@ -136,8 +136,8 @@ pub async fn get_audiobook(
         .await?;
 
     let body = match audiobook.author_id == user.id {
-        true => (AudiobookDetailCreatorTemplate { audiobook: audiobook, chapters: chapters }).render()?,
-        false => (AudiobookDetailVisitorTemplate { audiobook: audiobook, chapters: chapters }).render()?
+        true => (AudiobookDetailCreatorTemplate { audiobook, chapters }).render()?,
+        false => (AudiobookDetailVisitorTemplate { audiobook, chapters }).render()?
     };
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
