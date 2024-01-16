@@ -16,7 +16,8 @@ use crate::database::common::{DbCreate, DbReadOne, DbUpdate};
 use crate::database::models::user::{UserCreate, UserGetById, UserLogin, UserUpdate};
 use crate::forms::audiobook::AudiobookUploadForm;
 use crate::forms::user::{ProfilePictureUploadForm, UserCreateForm, UserUpdateForm};
-use crate::handlers::utilities::{parse_user_id, save_file, validate_file};
+use crate::handlers::user_register;
+use crate::handlers::utilities::{get_user_from_identity, parse_user_id, remove_file, save_file, validate_file};
 
 #[get("/register")]
 pub async fn register() -> Result<HttpResponse, AppError> {
@@ -146,7 +147,9 @@ pub async fn user_manage_password(identity: Option<Identity>) -> Result<impl Res
 pub async fn user_manage_picture(identity: Option<Identity>, user_repo: web::Data<UserRepository>, MultipartForm(form): MultipartForm<ProfilePictureUploadForm>,) -> Result<impl Responder, AppError> {
     let u = authorized!(identity);
     let path = validate_file(&form.picture, Uuid::new_v4(), "image", "user")?;
-    let user_update = UserUpdate::new(&parse_user_id(u)?,
+    let user = get_user_from_identity(u, user_repo.clone()).await?;
+    remove_file(&user.profile_picture)?;
+    let user_update = UserUpdate::new(&user.id,
                                       None, None, None, None, None, Some(path.as_str()), None);
 
     user_repo.update(&user_update).await?;
