@@ -92,15 +92,15 @@ CREATE TABLE IF NOT EXISTS "Bookmark"
 
 CREATE TABLE IF NOT EXISTS "Active_Audiobook"
 (
-    user_id                         bigserial        NOT NULL,
-    audiobook_id                    bigserial        NOT NULL,
-    playback_chapter_id             bigserial,
-    playback_position_in_chapter    interval        DEFAULT make_interval(0,0,0,0,0,0,0),
+    user_id                         bigserial           NOT NULL,
+    audiobook_id                    bigserial           NOT NULL,
+    playback_chapter_id             bigserial           NOT NULL,
+    playback_position_in_chapter    float8              DEFAULT 0,
 
     PRIMARY KEY (user_id, audiobook_id, playback_chapter_id),
-    FOREIGN KEY (user_id)       REFERENCES "User" (id),
-    FOREIGN KEY (audiobook_id)  REFERENCES "Audiobook" (id),
-    FOREIGN KEY (audiobook_id)  REFERENCES "Chapter" (id)
+    FOREIGN KEY (user_id)               REFERENCES "User" (id),
+    FOREIGN KEY (audiobook_id)          REFERENCES "Audiobook" (id),
+    FOREIGN KEY (playback_chapter_id)   REFERENCES "Chapter" (id)
 );
 
 CREATE INDEX IF NOT EXISTS "Audiobook_author_id_idx" ON "Audiobook" (author_id);

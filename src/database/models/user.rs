@@ -1,7 +1,6 @@
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use sqlx::postgres::types::PgInterval;
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
 pub struct User {
@@ -210,7 +209,7 @@ pub struct AddActiveAudiobook {
     pub user_id: Id,
     pub audiobook_id: Id,
     pub playback_chapter_id: Id,
-    pub playback_position_in_chapter: Option<PgInterval>,
+    pub playback_position_in_chapter: Option<f64>,
 }
 
 impl AddActiveAudiobook {
@@ -220,7 +219,7 @@ impl AddActiveAudiobook {
         user_id: Id,
         audiobook_id: Id,
         playback_chapter_id: Id,
-        playback_position_in_chapter: Option<PgInterval>,
+        playback_position_in_chapter: Option<f64>,
     ) -> Self {
         Self {
             user_id,
@@ -255,7 +254,7 @@ pub struct UpdateActiveAudiobook {
     pub user_id: Id,
     pub audiobook_id: Id,
     pub playback_chapter_id: Id,
-    pub playback_position_in_chapter: PgInterval,
+    pub playback_position_in_chapter: f64,
 }
 
 impl UpdateActiveAudiobook {
@@ -265,7 +264,7 @@ impl UpdateActiveAudiobook {
         user_id: Id,
         audiobook_id: Id,
         playback_chapter_id: Id,
-        playback_position_in_chapter: PgInterval,
+        playback_position_in_chapter: f64,
     ) -> Self {
         Self {
             user_id,
