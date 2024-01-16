@@ -11,12 +11,12 @@ use askama::Template;
 use uuid::Uuid;
 use crate::authorized;
 
-use crate::database::common::{DbCreate, DbReadOne};
+use crate::database::common::{DbCreate, DbReadOne, DbUpdate};
 
-use crate::database::models::user::{UserCreate, UserGetById, UserLogin};
+use crate::database::models::user::{UserCreate, UserGetById, UserLogin, UserUpdate};
 use crate::forms::audiobook::AudiobookUploadForm;
 use crate::forms::user::{ProfilePictureUploadForm, UserCreateForm, UserUpdateForm};
-use crate::handlers::utilities::parse_user_id;
+use crate::handlers::utilities::{parse_user_id, save_file, validate_file};
 
 #[get("/register")]
 pub async fn register() -> Result<HttpResponse, AppError> {
@@ -143,9 +143,12 @@ pub async fn user_manage_password(identity: Option<Identity>) -> Result<impl Res
 }
 
 #[post("/manage/picture")]
-pub async fn user_manage_picture(identity: Option<Identity>, MultipartForm(form): MultipartForm<ProfilePictureUploadForm>,) -> Result<impl Responder, AppError> {
-    authorized!(identity);
-    let template = UserManageProfilePictureFormTemplate { };
-    let body = template.render()?;
-    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+pub async fn user_manage_picture(identity: Option<Identity>, user_repo: web::Data<UserRepository>, MultipartForm(form): MultipartForm<ProfilePictureUploadForm>,) -> Result<impl Responder, AppError> {
+    let u = authorized!(identity);
+    let path = validate_file(&form.picture, Uuid::new_v4(), "image", "user")?;
+    let user_update = UserUpdate::new(&parse_user_id(u)?,
+                                      None, None, None, None, None, Some(path.as_str()), None);
+    user_repo.update(&user_update).await?;
+    save_file(form.picture, path)?;
+    Ok(HttpResponse::Ok().finish())
 }
