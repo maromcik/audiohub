@@ -13,20 +13,24 @@
     </div>
 </div>
 
-<!--   THIS BUTTON NEEDS TO BE IN EACH CHAPTER     -->
-<button onclick="setCurTime(10)" type="button">Set to chapter</button><br>
+<button onclick="setCurTime(10)" type="button">Set to chapter</button>
 <audio id="audiobook-player" controls>
     <source src="{{ audiobook.file_path }}" type="audio/mpeg">
     Your browser does not support the audio element.
 </audio>
 
 <a href="/audiobook/{{ audiobook.id }}/delete">Delete Audiobook</a>
-<form hx-post="/chapter/create/form" hx-swap="afterend" class="mb-4">
+<form hx-post="/chapter/create" hx-swap="afterend" class="mb-4">
     <input type="hidden" name="audiobook_id" value="{{ audiobook.id }}">
     <input id="chapter-create-form-position" type="hidden" name="position">
-    <script type="text/javascript">
-
-    </script>
+    <div class="mb-4">
+        <label class="block text-gray-300 text-sm font-bold mb-2" for="chapter-name">
+            Chapter Name
+        </label>
+        <input name="name"
+               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+               id="chapter-name" type="text" placeholder="Chapter Name">
+    </div>
     <button onclick="getCurTime()" type="submit"
             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
         Add new chapter
