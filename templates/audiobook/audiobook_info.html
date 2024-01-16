@@ -7,6 +7,9 @@
                     <a hx-push-url="true" hx-get="/audiobook/{{ audiobook.id }}/detail" hx-target="#content-area"> {{ audiobook.name }}</a>
                 </div>
                 <p class="text-gray-300 text-sm">
+                    Author: {{ audiobook.author_name }}
+                </p>
+                <p class="text-gray-300 text-sm">
                     Description: {{ audiobook.description }}
                 </p>
                 <p class="text-gray-300 text-sm">
