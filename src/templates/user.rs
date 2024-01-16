@@ -12,8 +12,17 @@ pub struct LoginTemplate {
 }
 
 
+
 #[derive(Template)]
-#[template(path = "user/management.html")]
-pub struct UserManagementTemplate {
+#[template(path = "user/password.html")]
+pub struct UserManagePasswordTemplate {}
+
+#[derive(Template)]
+#[template(path = "user/profile.html")]
+pub struct UserManageProfileTemplate {
     pub user: User,
 }
+
+#[derive(Template)]
+#[template(path = "user/profile_picture.html")]
+pub struct UserManageProfilePictureFormTemplate {}
