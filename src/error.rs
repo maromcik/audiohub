@@ -6,6 +6,7 @@ use actix_web::{App, HttpResponse, ResponseError};
 use askama::Template;
 use serde::Serialize;
 use std::fmt::{Debug, Display, Formatter};
+use std::io::Error;
 use std::num::ParseIntError;
 
 use thiserror::Error;
@@ -123,6 +124,12 @@ impl From<actix_identity::error::GetIdentityError> for AppError {
 impl From<actix_session::SessionInsertError> for AppError {
     fn from(value: actix_session::SessionInsertError) -> Self {
         Self::new(AppErrorKind::SessionError, value.to_string().as_str())
+    }
+}
+
+impl From<std::io::Error> for AppError {
+    fn from(value: Error) -> Self {
+        Self::new(AppErrorKind::FileError, value.to_string().as_str())
     }
 }
 

@@ -173,6 +173,8 @@ pub async fn remove_audiobook(
     if user.id != audiobook.author_id {
         return Err(AppError::from(BackendError::new(BackendErrorKind::UnauthorizedOperation)));
     }
+    std::fs::remove_file(audiobook.file_path)?;
+    std::fs::remove_file(audiobook.thumbnail)?;
     audiobook_repo.delete(&AudiobookDelete::new(&audiobook.id)).await?;
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/"))
