@@ -45,7 +45,6 @@ async fn main() -> anyhow::Result<()> {
         .parse::<bool>()?;
     info!("USE_SECURE_COOKIE: {}", use_secure_cookie);
 
-    gst::init()?;
 
     if let Err(e) = dotenvy::dotenv() {
         warn!("failed loading .env file: {e}");
