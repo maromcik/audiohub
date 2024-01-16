@@ -28,6 +28,14 @@ impl DbQueryParams {
             offset: Some(offset)
         }
     }
+
+    pub fn order(order: DbOrderColumn) -> Self {
+        Self {
+            order: Some(order),
+            limit: None,
+            offset: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -49,7 +57,7 @@ impl Default for DbOrderColumn {
     fn default() -> Self {
         Self {
             column: "created_at".to_string(),
-            order: DbOrder::Asc
+            order: DbOrder::Desc
         }
     }
 }

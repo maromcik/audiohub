@@ -11,6 +11,7 @@ use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, web, HttpResponse};
 use askama::Template;
+use crate::database::common::query_parameters::{DbOrder, DbOrderColumn, DbQueryParams};
 
 #[get("/")]
 pub async fn index(
@@ -43,7 +44,9 @@ pub async fn index_content(
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
 
-    let books = book_repo.read_many(&AudiobookSearch::default()).await?;
+    let books = book_repo.read_many(
+        &AudiobookSearch::with_params(
+            DbQueryParams::limit(5, 0))).await?;
     let user = user_repo
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
