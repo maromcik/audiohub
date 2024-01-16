@@ -8,18 +8,17 @@ use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, web, HttpResponse, post};
 use askama::Template;
-use sqlx::postgres::types::PgInterval;
 use crate::database::models::Id;
 use crate::forms::chapter::ChapterCreateForm;
-use crate::templates::audiobook::AudiobookDetailCreatorTemplate;
 
-#[get("/create/audiobook/{id}")]
+
+#[get("/create")]
 pub async fn create_chapter_form(
     identity: Option<Identity>,
-    path: web::Path<(Id,)>
+    form: web::Form<ChapterCreateForm>,
 ) -> Result<HttpResponse, AppError> {
     authorized!(identity);
-    let template = ChapterCreateFormTemplate { audiobook_id: path.into_inner().0 };
+    let template = ChapterCreateFormTemplate { audiobook_id: form.audiobook_id, position: form.position };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -32,13 +31,8 @@ pub async fn create_chapter(
     -> Result<HttpResponse, AppError> {
     authorized!(identity);
     let chapter = chapter_repo.create(&ChapterCreate::new(&form.name,
-                                            &form.audiobook_id,
-                                            &PgInterval {
-                                                months: 0,
-                                                days: 0,
-                                                microseconds: 0
-                                            },
-                                            &form.sequential_number)).await?;
+                                                          &form.audiobook_id,
+                                                          &form.position)).await?;
 
     let template = ChapterDetailTemplate { chapter };
     let body = template.render()?;
@@ -49,7 +43,7 @@ pub async fn create_chapter(
 pub async fn get_chapters_by_audiobook(
     identity: Option<Identity>,
     chapter_repo: web::Data<ChapterRepository>,
-    path: web::Path<(Id,)>,
+    path: web::Path<(Id, )>,
 ) -> Result<HttpResponse, AppError> {
     authorized!(identity);
     let chapters = chapter_repo

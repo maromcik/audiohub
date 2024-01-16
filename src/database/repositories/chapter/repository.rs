@@ -159,14 +159,13 @@ impl DbCreate<ChapterCreate, Chapter> for ChapterRepository {
         let chapter = sqlx::query_as!(
             Chapter,
             r#"
-            INSERT INTO "Chapter" (name, audiobook_id, length, sequential_number)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO "Chapter" (name, audiobook_id, position)
+            VALUES ($1, $2, $3)
             RETURNING *
             "#,
             params.name,
             params.audiobook_id,
-            params.length,
-            params.sequential_number,
+            params.position
         )
         .fetch_one(&self.pool_handler.pool)
         .await?;
@@ -196,11 +195,9 @@ impl DbReadMany<ChapterSearch, Chapter> for ChapterRepository {
             WHERE
                 (name = $1 OR $1 IS NULL)
                 AND (audiobook_id = $2 OR $2 IS NULL)
-                AND (sequential_number = $3 OR $3 IS NULL)
             "#,
             params.name,
-            params.audiobook_id,
-            params.sequential_number,
+            params.audiobook_id
         )
         .fetch_all(&self.pool_handler.pool)
         .await?;
@@ -216,7 +213,7 @@ impl DbReadMany<ChaptersGetByBookId, Chapter> for ChapterRepository {
             r#"
             SELECT * FROM "Chapter"
             WHERE audiobook_id = $1
-            ORDER BY sequential_number
+            ORDER BY position
             "#,
             params.audiobook_id,
         )

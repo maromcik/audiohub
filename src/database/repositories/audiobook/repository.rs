@@ -1,4 +1,3 @@
-use std::ops::Add;
 use crate::database::common::error::BackendErrorKind::{
     AudiobookDeleted, AudiobookDoesNotExist, AudiobookUpdateParametersEmpty,
 };
@@ -94,7 +93,6 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
                 a.id,
                 a.name,
                 a.description,
-                a.length,
                 a.file_path,
                 a.thumbnail,
                 a.overall_rating,
@@ -184,7 +182,6 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
                 a.id,
                 a.name,
                 a.description,
-                a.length,
                 a.file_path,
                 a.thumbnail,
                 a.overall_rating,
@@ -221,14 +218,12 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
                 AND (genre_id = $3 OR $3 IS NULL)
                 AND (like_count >= $4 OR $4 IS NULL)
                 AND (like_count <= $5 OR $5 IS NULL)
-                AND (length >= $6 OR $6 IS NULL)
-                AND (length <= $7 OR $7 IS NULL)
-                AND (stream_count >= $8 OR $8 IS NULL)
-                AND (stream_count <= $9 OR $9 IS NULL)
-                AND (overall_rating >= $10 OR $10 IS NULL)
-                AND (overall_rating <= $11 OR $11 IS NULL)
-                AND (u.name = $12 OR $12 IS NULL)
-                AND (g.name = $13 OR $13 IS NULL)
+                AND (stream_count >= $6 OR $6 IS NULL)
+                AND (stream_count <= $7 OR $7 IS NULL)
+                AND (overall_rating >= $8 OR $8 IS NULL)
+                AND (overall_rating <= $9 OR $9 IS NULL)
+                AND (u.name = $10 OR $10 IS NULL)
+                AND (g.name = $11 OR $11 IS NULL)
             "#.to_owned();
 
         let query_params = generate_query_param_string(&params.query_params);
@@ -239,8 +234,6 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
             .bind(params.genre_id)
             .bind(params.min_like_count)
             .bind(params.max_like_count)
-            .bind(&params.min_length)
-            .bind(&params.max_length)
             .bind(params.min_stream_count)
             .bind(params.max_stream_count)
             .bind(params.min_overall_rating)
@@ -259,14 +252,13 @@ impl DbCreate<AudiobookCreate, Audiobook> for AudiobookRepository {
         let book = sqlx::query_as!(
             Audiobook,
             r#"
-            INSERT INTO "Audiobook" (name, author_id, genre_id, length, file_path, thumbnail, description)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            INSERT INTO "Audiobook" (name, author_id, genre_id, file_path, thumbnail, description)
+            VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING *
             "#,
             params.name,
             params.author_id,
             params.genre_id,
-            params.length,
             params.file_path,
             params.thumbnail,
             params.description
@@ -302,21 +294,19 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
                 name = COALESCE($1, name),
                 author_id = COALESCE($2, author_id),
                 genre_id = COALESCE($3, genre_id),
-                length = COALESCE($4, length),
-                file_path = COALESCE($5, file_path),
-                stream_count = COALESCE($6, stream_count),
-                like_count = COALESCE($7, like_count),
-                overall_rating = COALESCE($8, overall_rating),
-                thumbnail = COALESCE($9, thumbnail),
-                description = COALESCE($10, thumbnail),
+                file_path = COALESCE($4, file_path),
+                stream_count = COALESCE($5, stream_count),
+                like_count = COALESCE($6, like_count),
+                overall_rating = COALESCE($7, overall_rating),
+                thumbnail = COALESCE($8, thumbnail),
+                description = COALESCE($9, thumbnail),
                 edited_at = current_timestamp
-            WHERE id = $11
+            WHERE id = $10
             RETURNING *
             "#,
             params.name,
             params.author_id,
             params.genre_id,
-            params.length,
             params.file_path,
             params.stream_count,
             params.like_count,

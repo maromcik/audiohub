@@ -2,7 +2,6 @@ use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
-use sqlx::postgres::types::PgInterval;
 use crate::database::common::query_parameters::DbQueryParams;
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
@@ -12,7 +11,6 @@ pub struct Audiobook {
     pub name: String,
     pub author_id: Id,
     pub genre_id: Id,
-    pub length: PgInterval,
     pub file_path: String,
     pub stream_count: i64,
     pub like_count: i64,
@@ -31,7 +29,6 @@ pub struct AudiobookDetail {
     pub name: String,
     pub author_id: Id,
     pub genre_id: Id,
-    pub length: PgInterval,
     pub file_path: String,
     pub stream_count: i64,
     pub like_count: i64,
@@ -58,8 +55,6 @@ pub struct AudiobookSearch {
     pub genre_name: Option<String>,
     pub author_id: Option<Id>,
     pub genre_id: Option<Id>,
-    pub min_length: Option<PgInterval>,
-    pub max_length: Option<PgInterval>,
     pub min_stream_count: Option<i64>,
     pub max_stream_count: Option<i64>,
     pub min_like_count: Option<i64>,
@@ -78,8 +73,6 @@ impl AudiobookSearch {
         author_name: Option<&str>,
         genre_id: Option<Id>,
         genre_name: Option<&str>,
-        min_length: Option<PgInterval>,
-        max_length: Option<PgInterval>,
         min_stream_count: Option<i64>,
         max_stream_count: Option<i64>,
         min_like_count: Option<i64>,
@@ -94,8 +87,6 @@ impl AudiobookSearch {
             author_name: author_name.map(|n| n.to_owned()),
             author_id: author_id.map(|n| n.to_owned()),
             genre_id: genre_id.map(|n| n.to_owned()),
-            min_length: min_length.map(|n| n.to_owned()),
-            max_length: max_length.map(|n| n.to_owned()),
             min_stream_count: min_stream_count.map(|n| n.to_owned()),
             max_stream_count: max_stream_count.map(|n| n.to_owned()),
             min_like_count: min_like_count.map(|n| n.to_owned()),
@@ -113,8 +104,6 @@ impl AudiobookSearch {
             author_name: None,
             author_id: None,
             genre_id: None,
-            min_length: None,
-            max_length: None,
             min_stream_count: None,
             max_stream_count: None,
             min_like_count: None,
@@ -132,8 +121,6 @@ impl AudiobookSearch {
             author_name: None,
             author_id: None,
             genre_id: Some(genre_id),
-            min_length: None,
-            max_length: None,
             min_stream_count: None,
             max_stream_count: None,
             min_like_count: None,
@@ -151,8 +138,6 @@ impl AudiobookSearch {
             author_name: None,
             author_id: Some(author_id),
             genre_id: None,
-            min_length: None,
-            max_length: None,
             min_stream_count: None,
             max_stream_count: None,
             min_like_count: None,
@@ -170,8 +155,6 @@ impl AudiobookSearch {
             author_name: None,
             author_id: None,
             genre_id: None,
-            min_length: None,
-            max_length: None,
             min_stream_count: None,
             max_stream_count: None,
             min_like_count: None,
@@ -188,8 +171,6 @@ impl AudiobookSearch {
             author_name: None,
             author_id: None,
             genre_id: None,
-            min_length: None,
-            max_length: None,
             min_stream_count: None,
             max_stream_count: None,
             min_like_count: None,
@@ -206,8 +187,6 @@ impl AudiobookSearch {
             author_name: Some(name.to_owned()),
             author_id: None,
             genre_id: None,
-            min_length: None,
-            max_length: None,
             min_stream_count: None,
             max_stream_count: None,
             min_like_count: None,
@@ -224,7 +203,6 @@ pub struct AudiobookCreate {
     pub name: String,
     pub author_id: Id,
     pub genre_id: Id,
-    pub length: PgInterval,
     pub file_path: String,
     pub thumbnail: String,
     pub description: String,
@@ -238,7 +216,6 @@ impl AudiobookCreate {
         name: &str,
         author_id: &Id,
         genre_id: &Id,
-        length: &PgInterval,
         file_path: &str,
         thumbnail: &str,
         description: &str,
@@ -247,7 +224,6 @@ impl AudiobookCreate {
             name: name.to_owned(),
             author_id: *author_id,
             genre_id: *genre_id,
-            length: length.clone(),
             file_path: file_path.to_owned(),
             thumbnail: thumbnail.to_owned(),
             description: description.to_owned(),
@@ -260,7 +236,6 @@ pub struct AudiobookUpdate {
     pub name: Option<String>,
     pub author_id: Option<Id>,
     pub genre_id: Option<Id>,
-    pub length: Option<PgInterval>,
     pub file_path: Option<String>,
     pub stream_count: Option<i64>,
     pub like_count: Option<i64>,
@@ -277,7 +252,6 @@ impl AudiobookUpdate {
         name: Option<&str>,
         author_id: Option<&Id>,
         genre_id: Option<&Id>,
-        length: Option<&PgInterval>,
         file_path: Option<&str>,
         stream_count: Option<&i64>,
         like_count: Option<&i64>,
@@ -291,7 +265,6 @@ impl AudiobookUpdate {
             name: name.and_then(change_to_owned),
             author_id: author_id.copied(),
             genre_id: genre_id.copied(),
-            length: length.cloned(),
             file_path: file_path.and_then(change_to_owned),
             stream_count: stream_count.copied(),
             like_count: like_count.copied(),
@@ -306,7 +279,6 @@ impl AudiobookUpdate {
         self.name.is_none()
             && self.author_id.is_none()
             && self.genre_id.is_none()
-            && self.length.is_none()
             && self.file_path.is_none()
             && self.stream_count.is_none()
             && self.like_count.is_none()

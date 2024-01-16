@@ -5,6 +5,11 @@ use crate::database::models::Id;
 pub struct ChapterCreateForm {
     pub name: String,
     pub audiobook_id: Id,
-    pub length: String,
-    pub sequential_number: i32
+    pub position: f64,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ChapterCreateAudiobookInfoForm {
+    pub audiobook_id: Id,
+    pub position: f64
 }

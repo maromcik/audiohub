@@ -35,7 +35,6 @@ CREATE TABLE IF NOT EXISTS "Audiobook"
     genre_id            bigserial       NOT NULL,
     author_id           bigserial       NOT NULL,
     name                text            NOT NULL,
-    length              interval        NOT NULL DEFAULT make_interval(0,0,0,0,0,0,0),
     file_path           text            NOT NULL,
     thumbnail           text            NOT NULL,
     description         text            NOT NULL,
@@ -56,8 +55,7 @@ CREATE TABLE IF NOT EXISTS "Chapter"
     ---------------------------------------------
     name                text            NOT NULL,
     audiobook_id        bigserial       NOT NULL,
-    length              interval        NOT NULL,
-    sequential_number   int             NOT NULL,
+    position            float8          NOT NULL DEFAULT 0,
     created_at   timestamptz NOT NULL DEFAULT now(),
     edited_at    timestamptz NOT NULL DEFAULT now(),
     deleted_at   timestamptz,

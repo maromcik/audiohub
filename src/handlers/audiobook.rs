@@ -1,5 +1,5 @@
 use crate::database::common::{DbCreate, DbDelete, DbReadMany, DbReadOne};
-use crate::database::models::audiobook::{AudiobookCreate, AudiobookDelete, AudiobookGetById, AudiobookGetByIdJoin, AudiobookSearch};
+use crate::database::models::audiobook::{AudiobookCreate, AudiobookDelete, AudiobookGetByIdJoin, AudiobookSearch};
 use crate::database::models::genre::{GenreGetById, GenreSearch};
 
 use crate::database::models::Id;
@@ -7,7 +7,7 @@ use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::database::repositories::chapter::repository::ChapterRepository;
-use crate::error::{AppError, AppErrorKind};
+use crate::error::{AppError};
 use crate::forms::audiobook::{AudiobookCreateForm, AudiobookUploadForm};
 use crate::handlers::utilities::{get_metadata_from_session, get_user_from_identity, AudiobookCreateSessionKeys, validate_file, save_file, remove_file};
 use crate::templates::audiobook::{AudiobookCreateFormTemplate, AudiobookDetailCreatorTemplate, AudiobookDetailVisitorTemplate, AudiobookUploadFormTemplate, NewReleasesTemplate};
@@ -19,7 +19,6 @@ use actix_web::{get, post, web, HttpResponse};
 use askama::Template;
 
 use crate::authorized;
-use sqlx::postgres::types::PgInterval;
 use uuid::Uuid;
 use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::common::query_parameters::DbQueryParams;
@@ -90,11 +89,6 @@ pub async fn upload_audiobook(
         &metadata.name,
         &user.id,
         &metadata.genre_id,
-        &PgInterval {
-            months: 0,
-            days: 0,
-            microseconds: 0,
-        },
         &audiobook_path,
         &thumbnail_path,
         &metadata.description,
