@@ -123,6 +123,13 @@ pub fn save_file(file: TempFile, path: String) -> Result<(), AppError> {
     Ok(())
 }
 
+pub fn remove_file(path: &str) -> Result<(), AppError> {
+    if !path.is_empty() && std::path::Path::new(path).exists() {
+        std::fs::remove_file(path)?;
+    }
+    Ok(())
+}
+
 #[macro_export]
 macro_rules! authorized {
     ($e:expr) => {

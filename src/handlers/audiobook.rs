@@ -9,7 +9,7 @@ use crate::database::repositories::user::repository::UserRepository;
 use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::error::{AppError, AppErrorKind};
 use crate::forms::audiobook::{AudiobookCreateForm, AudiobookUploadForm};
-use crate::handlers::utilities::{get_metadata_from_session, get_user_from_identity, AudiobookCreateSessionKeys, validate_file, save_file};
+use crate::handlers::utilities::{get_metadata_from_session, get_user_from_identity, AudiobookCreateSessionKeys, validate_file, save_file, remove_file};
 use crate::templates::audiobook::{AudiobookCreateFormTemplate, AudiobookDetailCreatorTemplate, AudiobookDetailVisitorTemplate, AudiobookUploadFormTemplate, NewReleasesTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
@@ -173,8 +173,8 @@ pub async fn remove_audiobook(
     if user.id != audiobook.author_id {
         return Err(AppError::from(BackendError::new(BackendErrorKind::UnauthorizedOperation)));
     }
-    std::fs::remove_file(audiobook.file_path)?;
-    std::fs::remove_file(audiobook.thumbnail)?;
+    remove_file(&audiobook.file_path)?;
+    remove_file(&audiobook.thumbnail)?;
     audiobook_repo.delete(&AudiobookDelete::new(&audiobook.id)).await?;
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/"))

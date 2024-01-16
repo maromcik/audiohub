@@ -148,6 +148,7 @@ pub async fn user_manage_picture(identity: Option<Identity>, user_repo: web::Dat
     let path = validate_file(&form.picture, Uuid::new_v4(), "image", "user")?;
     let user_update = UserUpdate::new(&parse_user_id(u)?,
                                       None, None, None, None, None, Some(path.as_str()), None);
+
     user_repo.update(&user_update).await?;
     save_file(form.picture, path)?;
     Ok(HttpResponse::Ok().finish())
