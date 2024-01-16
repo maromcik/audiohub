@@ -8,9 +8,7 @@ use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::{AppError, AppErrorKind};
 use crate::forms::audiobook::{AudiobookCreateForm, AudiobookUploadForm};
-use crate::handlers::utilities::{
-    get_metadata_from_session, get_user_from_identity, AudiobookCreateSessionKeys,
-};
+use crate::handlers::utilities::{get_metadata_from_session, get_user_from_identity, AudiobookCreateSessionKeys, validate_file, save_file};
 use crate::templates::audiobook::{AudiobookCreateFormTemplate, AudiobookDetailCreatorTemplate, AudiobookDetailVisitorTemplate, AudiobookUploadFormTemplate, NewReleasesTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
@@ -80,45 +78,9 @@ pub async fn upload_audiobook(
     let u = authorized!(identity);
     let user = get_user_from_identity(u, user_repo).await?;
     let session_keys = AudiobookCreateSessionKeys::new(user.id);
-    let thumbnail_path = format!(
-        "./media/audiobook_{}_thumbnail_{}",
-        uuid.clone(),
-        form.thumbnail.file_name.unwrap_or_default()
-    );
+    let thumbnail_path = validate_file(&form.thumbnail, uuid, "image", "audiobook")?;
+    let audiobook_path = validate_file(&form.audio_file, uuid, "audio", "audiobook")?;
 
-    let audiobook_path = format!(
-        "./media/audiobook_{}_audio_{}",
-        uuid.clone(),
-        form.audio_file.file_name.unwrap_or_default()
-    );
-
-    let Some(thumbnail_mime) = form.thumbnail.content_type else {
-        return Err(AppError::new(
-            AppErrorKind::FileError,
-            "No thumbnail MIME type found",
-        ));
-    };
-
-    let Some(audiobook_mime) = form.audio_file.content_type else {
-        return Err(AppError::new(
-            AppErrorKind::FileError,
-            "No audiobook MIME type found",
-        ));
-    };
-
-    if !thumbnail_mime.to_string().starts_with("image/") {
-        return Err(AppError::new(
-            AppErrorKind::FileError,
-            "Invalid thumbnail content type",
-        ));
-    }
-
-    if !audiobook_mime.to_string().starts_with("audio/") {
-        return Err(AppError::new(
-            AppErrorKind::FileError,
-            "Invalid audiobook content type",
-        ));
-    }
 
     let metadata = get_metadata_from_session(&session, &session_keys)?;
 
@@ -137,21 +99,8 @@ pub async fn upload_audiobook(
     );
     let book = audiobook_repo.create(&book_crate).await?;
 
-    log::info!("saving a thumbnail to {thumbnail_path}");
-    if let Err(e) = form.thumbnail.file.persist(&thumbnail_path) {
-        return Err(AppError::new(
-            AppErrorKind::FileError,
-            e.to_string().as_str(),
-        ));
-    };
-
-    log::info!("saving an audiobook to {audiobook_path}");
-    if let Err(e) = form.audio_file.file.persist(&audiobook_path) {
-        return Err(AppError::new(
-            AppErrorKind::FileError,
-            e.to_string().as_str(),
-        ));
-    };
+    save_file(form.thumbnail, thumbnail_path)?;
+    save_file(form.audio_file, audiobook_path)?;
 
     session.remove(session_keys.name.as_str());
     session.remove(session_keys.description.as_str());

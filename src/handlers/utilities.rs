@@ -9,6 +9,7 @@ use actix_multipart::form::tempfile::TempFile;
 use actix_session::Session;
 use actix_web::http::header::LOCATION;
 use actix_web::{web, HttpResponse};
+use uuid::Uuid;
 
 pub fn parse_user_id(identity: Identity) -> Result<Id, AppError> {
     Ok(identity.id()?.parse::<i64>()?)
@@ -81,8 +82,45 @@ impl AudiobookCreateSessionKeys {
     }
 }
 
-pub fn validate_file(file: TempFile) {
+pub fn validate_file(file: &TempFile, uuid: Uuid, mime: &str, handler: &str) -> Result<String, AppError>{
+    let extension = match file.file_name.clone() {
+        None => "".to_owned(),
+        Some(name) => {
+            let split_res = name.split('.');
+            let vector = split_res.collect::<Vec<&str>>();
+            match vector.last() {
+                None => "".to_owned(),
+                Some(ext) => { ext.to_string() }
+            }
+        }
+    };
+    let file_path = format!("./media/{handler}_{uuid}_{mime}.{extension}");
 
+    let Some(file_mime) = &file.content_type else {
+        return Err(AppError::new(
+            AppErrorKind::FileError,
+            "No thumbnail MIME type found",
+        ));
+    };
+
+    if !file_mime.to_string().starts_with(format!("{mime}/").as_str()) {
+        return Err(AppError::new(
+            AppErrorKind::FileError,
+            "Invalid thumbnail content type",
+        ));
+    }
+    Ok(file_path)
+}
+
+pub fn save_file(file: TempFile, path: String) -> Result<(), AppError> {
+    log::info!("saving file to {path}");
+    if let Err(e) = file.file.persist(&path) {
+        return Err(AppError::new(
+            AppErrorKind::FileError,
+            e.to_string().as_str(),
+        ));
+    };
+    Ok(())
 }
 
 #[macro_export]
