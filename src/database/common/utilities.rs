@@ -38,7 +38,7 @@ pub fn generate_query_param_string(params: &Option<DbQueryParams>) -> String {
                 qp_string.push_str(&order.column);
                 match order.order {
                     DbOrder::Asc => qp_string.push_str(" ASC"),
-                    DbOrder::Desc => qp_string.push_str(" ASC")
+                    DbOrder::Desc => qp_string.push_str(" DESC")
                 }
             }
             qp_string.push('\n');
