@@ -8,6 +8,7 @@ RUN apt-get install -y gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstre
 RUN apt-get install -y gstreamer1.0-plugins-ugly gstreamer1.0-libav libgstrtspserver-1.0-dev libges-1.0-dev
 
 COPY . .
+RUN mkdir media
 
 RUN cargo install --path .
 

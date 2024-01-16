@@ -21,7 +21,12 @@ pub async fn register() -> Result<HttpResponse, AppError> {
 }
 
 #[get("/login")]
-pub async fn login() -> Result<HttpResponse, AppError> {
+pub async fn login(identity: Option<Identity>) -> Result<HttpResponse, AppError> {
+    if identity.is_some() {
+        return Ok(HttpResponse::SeeOther()
+            .insert_header((LOCATION, "/"))
+            .finish())
+    }
     let template = LoginTemplate {
         message: "".to_string(),
     };
