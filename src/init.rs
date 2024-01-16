@@ -24,9 +24,12 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(user_register_page)
         .service(user_register)
         .service(user_logout)
-        .service(user_manage_profile)
-        .service(user_manage_password)
-        .service(user_manage_picture);
+        .service(user_manage_form)
+        .service(user_manage_password_form)
+        .service(user_manage_picture_form)
+        .service(user_manage)
+        .service(user_manage_picture)
+        .service(user_manage_password);
 
     let audiobook_scope = web::scope("audiobook")
         .app_data(web::Data::new(audiobook_repository.clone()))

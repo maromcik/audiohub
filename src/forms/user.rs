@@ -16,3 +16,12 @@ pub struct ProfilePictureUploadForm {
     #[multipart(rename = "picture")]
     pub picture: TempFile,
 }
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct UserUpdateForm {
+    pub username: String,
+    pub email: String,
+    pub name: String,
+    pub surname: String,
+    pub bio: String
+}

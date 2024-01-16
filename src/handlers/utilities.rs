@@ -5,6 +5,7 @@ use crate::database::models::Id;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::{AppError, AppErrorKind};
 use actix_identity::Identity;
+use actix_multipart::form::tempfile::TempFile;
 use actix_session::Session;
 use actix_web::http::header::LOCATION;
 use actix_web::{web, HttpResponse};
@@ -78,6 +79,10 @@ impl AudiobookCreateSessionKeys {
             genre_id: format!("audiobook_create_{}_genre_id", user_id),
         }
     }
+}
+
+pub fn validate_file(file: TempFile) {
+
 }
 
 #[macro_export]
