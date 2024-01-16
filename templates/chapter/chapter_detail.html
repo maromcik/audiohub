@@ -1,1 +1,17 @@
-<p>Seq num: {{ chapter.sequential_number }}; Name:{{ chapter.name }}</p>
+<div class="container mx-auto p-6 bg-black">
+    <div class="bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <input type="hidden" name="length" value="0">
+
+        <div class="mb-4">
+            <p class="block text-gray-300 text-sm font-bold mb-2">
+                {{ chapter.name }}
+            </p>
+        </div>
+
+        <div class="mb-4">
+            <p class="block text-gray-300 text-sm font-bold mb-2">
+                {{ chapter.sequential_number }}
+            </p>
+        </div>
+    </div>
+</div>
