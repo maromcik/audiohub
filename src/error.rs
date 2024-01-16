@@ -2,7 +2,7 @@ use crate::database::common::error::{BackendError, BackendErrorKind, DbError, Db
 use crate::templates::error::GenericError;
 use actix_identity;
 use actix_web::http::StatusCode;
-use actix_web::{App, HttpResponse, ResponseError};
+use actix_web::{HttpResponse, ResponseError};
 use askama::Template;
 use serde::Serialize;
 use std::fmt::{Debug, Display, Formatter};

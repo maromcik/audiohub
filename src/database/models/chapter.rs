@@ -1,8 +1,8 @@
-use crate::database::models::genre::GenreSearch;
+
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use sqlx::postgres::types::PgInterval;
+
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Clone)]
 pub struct Chapter {

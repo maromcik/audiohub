@@ -1,4 +1,4 @@
-use crate::database::models::audiobook::{Audiobook, AudiobookDetail};
+use crate::database::models::audiobook::{AudiobookDetail};
 use crate::database::models::chapter::Chapter;
 use crate::database::models::genre::Genre;
 use askama::Template;
