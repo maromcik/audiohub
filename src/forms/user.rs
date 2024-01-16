@@ -1,7 +1,7 @@
-use actix_multipart::form::MultipartForm;
-use actix_multipart::form::tempfile::TempFile;
-use serde::Deserialize;
 use crate::database::models::Id;
+use actix_multipart::form::tempfile::TempFile;
+use actix_multipart::form::MultipartForm;
+use serde::Deserialize;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct UserCreateForm {
@@ -11,7 +11,6 @@ pub struct UserCreateForm {
     pub name: String,
     pub surname: String,
 }
-
 
 #[derive(Debug, MultipartForm)]
 pub struct ProfilePictureUploadForm {
@@ -25,7 +24,7 @@ pub struct UserUpdateForm {
     pub email: String,
     pub name: String,
     pub surname: String,
-    pub bio: String
+    pub bio: String,
 }
 #[derive(Debug, Clone, Deserialize)]
 pub struct UserUpdatePasswordForm {

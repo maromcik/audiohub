@@ -1,6 +1,6 @@
 use crate::database::models::chapter::Chapter;
-use askama::Template;
 use crate::database::models::Id;
+use askama::Template;
 
 #[derive(Template)]
 #[template(path = "chapter/chapter_create.html")]
@@ -18,5 +18,5 @@ pub struct ChaptersByAudiobookTemplate {
 #[derive(Template)]
 #[template(path = "chapter/chapter_detail.html")]
 pub struct ChapterDetailTemplate {
-    pub chapter: Chapter
+    pub chapter: Chapter,
 }

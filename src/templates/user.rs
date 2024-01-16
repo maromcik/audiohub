@@ -1,5 +1,5 @@
-use askama::Template;
 use crate::database::models::user::User;
+use askama::Template;
 
 #[derive(Template)]
 #[template(path = "user/registration.html")]
@@ -10,8 +10,6 @@ pub struct RegistrationTemplate {}
 pub struct LoginTemplate {
     pub message: String,
 }
-
-
 
 #[derive(Template)]
 #[template(path = "user/password.html")]

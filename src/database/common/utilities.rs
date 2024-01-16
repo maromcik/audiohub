@@ -1,6 +1,6 @@
+use crate::database::common::query_parameters::{DbOrder, DbQueryParams};
 use sqlx::{Postgres, QueryBuilder};
 use std::fmt::Display;
-use crate::database::common::query_parameters::{DbOrder, DbQueryParams};
 
 pub fn add_sql_to_query(
     query_builder: &mut QueryBuilder<Postgres>,
@@ -27,7 +27,6 @@ pub fn parse_value<T>(
     query_pairs.push(format!(r#"{name} {op} '{value}'"#));
 }
 
-
 pub fn generate_query_param_string(params: &DbQueryParams) -> String {
     let mut qp_string = String::new();
     if let Some(order) = &params.order {
@@ -35,7 +34,7 @@ pub fn generate_query_param_string(params: &DbQueryParams) -> String {
         qp_string.push_str(&order.column);
         match order.order {
             DbOrder::Asc => qp_string.push_str(" ASC"),
-            DbOrder::Desc => qp_string.push_str(" DESC")
+            DbOrder::Desc => qp_string.push_str(" DESC"),
         }
     }
     qp_string.push('\n');

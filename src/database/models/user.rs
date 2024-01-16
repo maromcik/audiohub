@@ -293,7 +293,6 @@ impl BookmarkOperation {
     }
 }
 
-
 #[derive(Debug, Clone)]
 pub struct UserUpdatePassword {
     pub id: Id,
@@ -302,15 +301,11 @@ pub struct UserUpdatePassword {
 }
 
 impl UserUpdatePassword {
-    pub fn new(
-        id: &Id,
-        old_password: &str,
-        new_password: &str,
-    ) -> Self {
+    pub fn new(id: &Id, old_password: &str, new_password: &str) -> Self {
         Self {
             id: *id,
             old_password: old_password.to_owned(),
-            new_password: new_password.to_owned()
+            new_password: new_password.to_owned(),
         }
     }
 }

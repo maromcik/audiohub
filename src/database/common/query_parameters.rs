@@ -1,23 +1,18 @@
 use std::fmt::{Debug, Display, Formatter};
 
-
 #[derive(Debug, Clone)]
 pub struct DbQueryParams {
     pub order: Option<DbOrderColumn>,
     pub limit: Option<i64>,
-    pub offset: Option<i64>
+    pub offset: Option<i64>,
 }
 
 impl DbQueryParams {
-    pub fn new(
-        order: Option<DbOrderColumn>,
-        limit: Option<i64>,
-        offset: Option<i64>
-    ) -> Self {
+    pub fn new(order: Option<DbOrderColumn>, limit: Option<i64>, offset: Option<i64>) -> Self {
         Self {
             order,
             limit,
-            offset
+            offset,
         }
     }
 
@@ -25,7 +20,7 @@ impl DbQueryParams {
         Self {
             order: Some(DbOrderColumn::default()),
             limit: Some(limit),
-            offset: Some(offset)
+            offset: Some(offset),
         }
     }
 
@@ -43,7 +38,7 @@ impl Default for DbQueryParams {
         Self {
             order: Some(DbOrderColumn::default()),
             limit: None,
-            offset: None
+            offset: None,
         }
     }
 }
@@ -51,14 +46,14 @@ impl Default for DbQueryParams {
 #[derive(Debug, Clone)]
 pub struct DbOrderColumn {
     pub column: String,
-    pub order: DbOrder
+    pub order: DbOrder,
 }
 
 impl DbOrderColumn {
     pub fn new(column: &str, order: DbOrder) -> Self {
         Self {
             column: column.to_owned(),
-            order
+            order,
         }
     }
 }
@@ -67,7 +62,7 @@ impl Default for DbOrderColumn {
     fn default() -> Self {
         Self {
             column: "created_at".to_string(),
-            order: DbOrder::Desc
+            order: DbOrder::Desc,
         }
     }
 }
@@ -86,7 +81,6 @@ impl DbOrder {
         }
     }
 }
-
 
 impl Display for DbOrder {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

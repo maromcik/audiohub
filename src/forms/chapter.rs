@@ -1,5 +1,5 @@
-use serde::Deserialize;
 use crate::database::models::Id;
+use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ChapterCreateForm {
@@ -11,5 +11,5 @@ pub struct ChapterCreateForm {
 #[derive(Debug, Clone, Deserialize)]
 pub struct ChapterCreateAudiobookInfoForm {
     pub audiobook_id: Id,
-    pub position: f64
+    pub position: f64,
 }

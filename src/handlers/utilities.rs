@@ -82,7 +82,12 @@ impl AudiobookCreateSessionKeys {
     }
 }
 
-pub fn validate_file(file: &TempFile, uuid: Uuid, mime: &str, handler: &str) -> Result<String, AppError>{
+pub fn validate_file(
+    file: &TempFile,
+    uuid: Uuid,
+    mime: &str,
+    handler: &str,
+) -> Result<String, AppError> {
     let extension = match file.file_name.clone() {
         None => "".to_owned(),
         Some(name) => {
@@ -90,7 +95,7 @@ pub fn validate_file(file: &TempFile, uuid: Uuid, mime: &str, handler: &str) -> 
             let vector = split_res.collect::<Vec<&str>>();
             match vector.last() {
                 None => "".to_owned(),
-                Some(ext) => { ext.to_string() }
+                Some(ext) => ext.to_string(),
             }
         }
     };
@@ -103,7 +108,10 @@ pub fn validate_file(file: &TempFile, uuid: Uuid, mime: &str, handler: &str) -> 
         ));
     };
 
-    if !file_mime.to_string().starts_with(format!("{mime}/").as_str()) {
+    if !file_mime
+        .to_string()
+        .starts_with(format!("{mime}/").as_str())
+    {
         return Err(AppError::new(
             AppErrorKind::FileError,
             "Invalid thumbnail content type",

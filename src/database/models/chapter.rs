@@ -1,8 +1,8 @@
+use crate::database::models::genre::GenreSearch;
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use sqlx::postgres::types::PgInterval;
-use crate::database::models::genre::GenreSearch;
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Clone)]
 pub struct Chapter {
@@ -34,24 +34,17 @@ pub struct ChapterCreate {
 }
 
 impl ChapterCreate {
-    pub fn new(
-        name: &str,
-        audiobook_id: &Id,
-        position: &f64
-    ) -> Self {
+    pub fn new(name: &str, audiobook_id: &Id, position: &f64) -> Self {
         Self {
             name: name.to_owned(),
             audiobook_id: *audiobook_id,
-            position: *position
+            position: *position,
         }
     }
 }
 
 impl ChapterSearch {
-    pub fn new(
-        name: Option<&str>,
-        audiobook_id: Option<&Id>,
-    ) -> Self {
+    pub fn new(name: Option<&str>, audiobook_id: Option<&Id>) -> Self {
         Self {
             name: name.map(|n| n.to_owned()),
             audiobook_id: audiobook_id.map(|n| n.to_owned()),

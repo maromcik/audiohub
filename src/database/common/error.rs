@@ -33,7 +33,7 @@ pub enum BackendErrorKind {
     GenreDoesNotExist,
     GenreUpdateParametersEmpty,
 
-    UnauthorizedOperation
+    UnauthorizedOperation,
 }
 
 impl Display for BackendErrorKind {
@@ -109,8 +109,7 @@ impl Display for BackendErrorKind {
             UnauthorizedOperation => {
                 write!(
                     f,
-                    concat!("You are not permitted to execute this operation!"
-                    )
+                    concat!("You are not permitted to execute this operation!")
                 )
             }
         }

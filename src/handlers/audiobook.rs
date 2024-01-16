@@ -1,16 +1,24 @@
 use crate::database::common::{DbCreate, DbDelete, DbReadMany, DbReadOne};
-use crate::database::models::audiobook::{AudiobookCreate, AudiobookDelete, AudiobookGetByIdJoin, AudiobookSearch};
+use crate::database::models::audiobook::{
+    AudiobookCreate, AudiobookDelete, AudiobookGetByIdJoin, AudiobookSearch,
+};
 use crate::database::models::genre::{GenreGetById, GenreSearch};
 
 use crate::database::models::Id;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
+use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
-use crate::database::repositories::chapter::repository::ChapterRepository;
-use crate::error::{AppError};
+use crate::error::AppError;
 use crate::forms::audiobook::{AudiobookCreateForm, AudiobookUploadForm};
-use crate::handlers::utilities::{get_metadata_from_session, get_user_from_identity, AudiobookCreateSessionKeys, validate_file, save_file, remove_file};
-use crate::templates::audiobook::{AudiobookCreateFormTemplate, AudiobookDetailCreatorTemplate, AudiobookDetailVisitorTemplate, AudiobookUploadFormTemplate, NewReleasesTemplate};
+use crate::handlers::utilities::{
+    get_metadata_from_session, get_user_from_identity, remove_file, save_file, validate_file,
+    AudiobookCreateSessionKeys,
+};
+use crate::templates::audiobook::{
+    AudiobookCreateFormTemplate, AudiobookDetailCreatorTemplate, AudiobookDetailVisitorTemplate,
+    AudiobookUploadFormTemplate, NewReleasesTemplate,
+};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_session::Session;
@@ -19,10 +27,10 @@ use actix_web::{get, post, web, HttpResponse};
 use askama::Template;
 
 use crate::authorized;
-use uuid::Uuid;
 use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::common::query_parameters::DbQueryParams;
 use crate::database::models::chapter::ChaptersGetByBookId;
+use uuid::Uuid;
 
 #[get("/create")]
 pub async fn create_audiobook_form(
@@ -82,7 +90,6 @@ pub async fn upload_audiobook(
     let thumbnail_path = validate_file(&form.thumbnail, uuid, "image", "audiobook")?;
     let audiobook_path = validate_file(&form.audio_file, uuid, "audio", "audiobook")?;
 
-
     let metadata = get_metadata_from_session(&session, &session_keys)?;
 
     let book_crate = AudiobookCreate::new(
@@ -114,7 +121,7 @@ pub async fn get_audiobook(
     user_repo: web::Data<UserRepository>,
     audiobook_repo: web::Data<AudiobookRepository>,
     chapter_repo: web::Data<ChapterRepository>,
-    path: web::Path<(Id, )>,
+    path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity);
     let user = get_user_from_identity(identity, user_repo).await?;
@@ -130,8 +137,16 @@ pub async fn get_audiobook(
         .await?;
 
     let body = match audiobook.author_id == user.id {
-        true => (AudiobookDetailCreatorTemplate { audiobook, chapters }).render()?,
-        false => (AudiobookDetailVisitorTemplate { audiobook, chapters }).render()?
+        true => (AudiobookDetailCreatorTemplate {
+            audiobook,
+            chapters,
+        })
+        .render()?,
+        false => (AudiobookDetailVisitorTemplate {
+            audiobook,
+            chapters,
+        })
+        .render()?,
     };
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -143,20 +158,21 @@ async fn releases(
 ) -> Result<HttpResponse, AppError> {
     //add functionality for ordering audiobooks
     authorized!(identity);
-    let books = book_repo.read_many(&AudiobookSearch::with_params(DbQueryParams::limit(5, 0))).await?;
+    let books = book_repo
+        .read_many(&AudiobookSearch::with_params(DbQueryParams::limit(5, 0)))
+        .await?;
 
     let template = NewReleasesTemplate { audiobooks: books };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
-
 #[get("/{id}/delete")]
 pub async fn remove_audiobook(
     identity: Option<Identity>,
     user_repo: web::Data<UserRepository>,
     audiobook_repo: web::Data<AudiobookRepository>,
-    path: web::Path<(Id, )>,
+    path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity);
     let user = get_user_from_identity(identity, user_repo).await?;
@@ -165,11 +181,15 @@ pub async fn remove_audiobook(
         .await?;
 
     if user.id != audiobook.author_id {
-        return Err(AppError::from(BackendError::new(BackendErrorKind::UnauthorizedOperation)));
+        return Err(AppError::from(BackendError::new(
+            BackendErrorKind::UnauthorizedOperation,
+        )));
     }
     remove_file(&audiobook.file_path)?;
     remove_file(&audiobook.thumbnail)?;
-    audiobook_repo.delete(&AudiobookDelete::new(&audiobook.id)).await?;
+    audiobook_repo
+        .delete(&AudiobookDelete::new(&audiobook.id))
+        .await?;
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/"))
         .finish())

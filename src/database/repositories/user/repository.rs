@@ -17,7 +17,11 @@ use crate::database::common::{
 use crate::database::models::active_audiobook::ActiveAudiobook;
 
 use crate::database::models::bookmark::Bookmark;
-use crate::database::models::user::{AddActiveAudiobook, BookmarkOperation, RemoveActiveAudiobook, UpdateActiveAudiobook, User, UserCreate, UserDelete, UserGetById, UserGetByUsername, UserLogin, UserSearch, UserUpdate, UserUpdatePassword};
+use crate::database::models::user::{
+    AddActiveAudiobook, BookmarkOperation, RemoveActiveAudiobook, UpdateActiveAudiobook, User,
+    UserCreate, UserDelete, UserGetById, UserGetByUsername, UserLogin, UserSearch, UserUpdate,
+    UserUpdatePassword,
+};
 
 fn generate_salt() -> SaltString {
     SaltString::generate(&mut OsRng)
@@ -64,8 +68,8 @@ impl UserRepository {
             "#,
             params.id
         )
-            .fetch_optional(transaction_handle.as_mut())
-            .await?;
+        .fetch_optional(transaction_handle.as_mut())
+        .await?;
 
         if let Some(user) = query {
             return Ok(Option::from(user));
@@ -117,8 +121,8 @@ impl UserRepository {
             "#,
             params.id
         )
-            .fetch_all(&self.pool_handler.pool)
-            .await?;
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
         Ok(active_audiobooks)
     }
 
@@ -159,8 +163,8 @@ impl UserRepository {
             params.audiobook_id,
             params.playback_chapter_id,
         )
-            .fetch_one(&self.pool_handler.pool)
-            .await?;
+        .fetch_one(&self.pool_handler.pool)
+        .await?;
 
         Ok(removed_active_audiobook)
     }
@@ -183,8 +187,8 @@ impl UserRepository {
             params.audiobook_id,
             params.playback_chapter_id
         )
-            .fetch_one(&self.pool_handler.pool)
-            .await?;
+        .fetch_one(&self.pool_handler.pool)
+        .await?;
 
         Ok(updated_active_audiobook)
     }
@@ -198,8 +202,8 @@ impl UserRepository {
             "#,
             params.id
         )
-            .fetch_all(&self.pool_handler.pool)
-            .await?;
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
         Ok(bookmarks)
     }
 
@@ -214,8 +218,8 @@ impl UserRepository {
             params.user_id,
             params.audiobook_id
         )
-            .fetch_one(&self.pool_handler.pool)
-            .await?;
+        .fetch_one(&self.pool_handler.pool)
+        .await?;
         Ok(bookmark)
     }
 
@@ -230,14 +234,15 @@ impl UserRepository {
             params.user_id,
             params.audiobook_id
         )
-            .fetch_one(&self.pool_handler.pool)
-            .await?;
+        .fetch_one(&self.pool_handler.pool)
+        .await?;
         Ok(bookmark)
     }
 
     pub async fn update_password(&self, params: &UserUpdatePassword) -> DbResultSingle<User> {
         let mut transaction = self.pool_handler.pool.begin().await?;
-        let user_query = UserRepository::get_user(UserGetById { id: params.id }, &mut transaction).await?;
+        let user_query =
+            UserRepository::get_user(UserGetById { id: params.id }, &mut transaction).await?;
         let user = UserRepository::user_is_correct(user_query.clone())?;
         let user = UserRepository::verify_password(user, &params.old_password)?;
 
@@ -258,8 +263,8 @@ impl UserRepository {
             salt.to_string(),
             user.id,
         )
-            .fetch_one(transaction.as_mut())
-            .await?;
+        .fetch_one(transaction.as_mut())
+        .await?;
 
         transaction.commit().await?;
 
@@ -320,8 +325,8 @@ impl DbReadOne<UserLogin, User> for UserRepository {
             "#,
             params.email_or_username
         )
-            .fetch_optional(&self.pool_handler.pool)
-            .await?;
+        .fetch_optional(&self.pool_handler.pool)
+        .await?;
 
         let user = UserRepository::user_is_correct(user)?;
 
@@ -342,8 +347,8 @@ impl DbReadOne<UserGetById, User> for UserRepository {
             "#,
             params.id
         )
-            .fetch_optional(&self.pool_handler.pool)
-            .await?;
+        .fetch_optional(&self.pool_handler.pool)
+        .await?;
 
         let user = UserRepository::user_is_correct(maybe_user)?;
         Ok(user)
@@ -363,8 +368,8 @@ impl DbReadOne<UserGetByUsername, User> for UserRepository {
             "#,
             params.username
         )
-            .fetch_optional(&self.pool_handler.pool)
-            .await?;
+        .fetch_optional(&self.pool_handler.pool)
+        .await?;
 
         let user = UserRepository::user_is_correct(maybe_user)?;
         Ok(user)
@@ -463,8 +468,8 @@ impl DbUpdate<UserUpdate, User> for UserRepository {
             salt,
             validated_user.id
         )
-            .fetch_all(transaction.as_mut())
-            .await?;
+        .fetch_all(transaction.as_mut())
+        .await?;
         transaction.commit().await?;
         Ok(updated_users)
     }
@@ -496,12 +501,11 @@ impl DbDelete<UserDelete, User> for UserRepository {
             params.id,
             Utc::now()
         )
-            .fetch_all(transaction.as_mut())
-            .await?;
+        .fetch_all(transaction.as_mut())
+        .await?;
 
         transaction.commit().await?;
 
         Ok(users)
     }
 }
-

@@ -7,7 +7,7 @@ use crate::database::common::{
 };
 use crate::database::models::audiobook::AudiobookGetById;
 use crate::database::models::chapter::{
-    Chapter, ChapterCreate, ChaptersGetByBookId, ChapterGetById, ChapterSearch, ChapterUpdate,
+    Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate, ChaptersGetByBookId,
 };
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
