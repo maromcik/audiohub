@@ -3,7 +3,7 @@ use crate::database::common::{DbCreate, DbReadMany};
 use crate::database::models::chapter::{ChapterCreate, ChaptersGetByBookId};
 use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::error::AppError;
-use crate::templates::chapter::{ChapterCreateFormTemplate, ChaptersByAudiobookTemplate};
+use crate::templates::chapter::{ChapterCreateFormTemplate, ChapterDetailTemplate, ChaptersByAudiobookTemplate};
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, web, HttpResponse, post};
@@ -31,7 +31,7 @@ pub async fn create_chapter(
     form: web::Form<ChapterCreateForm>)
     -> Result<HttpResponse, AppError> {
     authorized!(identity);
-    chapter_repo.create(&ChapterCreate::new(&form.name,
+    let chapter = chapter_repo.create(&ChapterCreate::new(&form.name,
                                             &form.audiobook_id,
                                             &PgInterval {
                                                 months: 0,
@@ -39,7 +39,10 @@ pub async fn create_chapter(
                                                 microseconds: 0
                                             },
                                             &form.sequential_number)).await?;
-    Ok(HttpResponse::Ok().finish())
+
+    let template = ChapterDetailTemplate { chapter };
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
 #[get("/audiobook/{id}")]

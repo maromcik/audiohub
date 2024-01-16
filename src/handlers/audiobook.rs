@@ -6,6 +6,7 @@ use crate::database::models::Id;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
+use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::error::{AppError, AppErrorKind};
 use crate::forms::audiobook::{AudiobookCreateForm, AudiobookUploadForm};
 use crate::handlers::utilities::{get_metadata_from_session, get_user_from_identity, AudiobookCreateSessionKeys, validate_file, save_file};
@@ -22,6 +23,7 @@ use sqlx::postgres::types::PgInterval;
 use uuid::Uuid;
 use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::common::query_parameters::DbQueryParams;
+use crate::database::models::chapter::ChaptersGetByBookId;
 
 #[get("/create")]
 pub async fn create_audiobook_form(
@@ -117,16 +119,25 @@ pub async fn get_audiobook(
     identity: Option<Identity>,
     user_repo: web::Data<UserRepository>,
     audiobook_repo: web::Data<AudiobookRepository>,
+    chapter_repo: web::Data<ChapterRepository>,
     path: web::Path<(Id, )>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity);
     let user = get_user_from_identity(identity, user_repo).await?;
+    let book_id = path.into_inner().0;
     let audiobook = audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(&path.into_inner().0))
+        .read_one(&AudiobookGetByIdJoin::new(&book_id))
         .await?;
+
+    let chapters = chapter_repo
+        .read_many(&ChaptersGetByBookId {
+            audiobook_id: book_id,
+        })
+        .await?;
+
     let body = match audiobook.author_id == user.id {
-        true => (AudiobookDetailCreatorTemplate { audiobook }).render()?,
-        false => (AudiobookDetailVisitorTemplate { audiobook }).render()?
+        true => (AudiobookDetailCreatorTemplate { audiobook: audiobook, chapters: chapters }).render()?,
+        false => (AudiobookDetailVisitorTemplate { audiobook: audiobook, chapters: chapters }).render()?
     };
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
