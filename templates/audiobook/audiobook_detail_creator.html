@@ -40,23 +40,25 @@
 
             <a href="/audiobook/{{ audiobook.id }}/delete">Delete Audiobook</a>
 
-            <div hx-get="/chapter/audiobook/{{ audiobook.id }}" hx-trigger="load" hx-swap="afterend">
-                Chapters
-            </div>
-
-            <form hx-get="/chapter/create/audiobook/{{ audiobook.id }}" hx-swap="afterend">
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
-                    Add new chapter
-                </button>
-            </form>
+<!--            <div hx-get="/chapter/audiobook/{{ audiobook.id }}" hx-trigger="load" hx-swap="afterend">-->
+<!--                Chapters-->
+<!--            </div>-->
         </div>
-        <div class="md:w-1/2 p-4">
+    </div>
+    <div class="w-full min-h-96 md:w-1/2 lg:w-1/2 xl:w-1/2 2xl:w-1/2 max-w-2xl rounded overflow-hidden shadow-lg flex flex-col items-center ml-8">
+        <div id="chapters-list" class="md:w-1/2 p-4 text-white">
             Chapters
             {% include "chapter/chapters_by_audiobook.html" %}
         </div>
+    </div>
+
+</div>
+<form hx-get="/chapter/create/audiobook/{{ audiobook.id }}" hx-swap="afterend">
+    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
+        Add new chapter
+    </button>
+</form>
 <!--    <audio controls autoplay>-->
 <!--        <source src="{{ audiobook.file_path }}" type="audio/mpeg">-->
 <!--        Your browser does not support the audio element.-->
 <!--    </audio>-->
-    </div>
-</div>
