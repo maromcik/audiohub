@@ -8,16 +8,16 @@
     </div>
 </div>
 
+<audio id="audiobook-player" controls>
+    <source src="{{ audiobook.file_path }}" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+
 <div class="pl-4 overflow-auto">
     <div id="chapters-list">
         {% include "chapter/chapters_by_audiobook.html" %}
     </div>
 </div>
-
-<audio id="audiobook-player" controls>
-    <source src="{{ audiobook.file_path }}" type="audio/mpeg">
-    Your browser does not support the audio element.
-</audio>
 
 <script>
     let vid = document.getElementById("audiobook-player");
