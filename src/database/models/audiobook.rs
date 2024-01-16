@@ -105,13 +105,33 @@ impl AudiobookSearch {
             query_params
         }
     }
-    pub fn search_by_genre_id(genre_id: Option<Id>) -> Self {
+
+    pub fn with_params(query_params: DbQueryParams) -> Self {
         Self {
             name: None,
             genre_name: None,
             author_name: None,
             author_id: None,
-            genre_id: genre_id.map(|n| n.to_owned()),
+            genre_id: None,
+            min_length: None,
+            max_length: None,
+            min_stream_count: None,
+            max_stream_count: None,
+            min_like_count: None,
+            max_like_count: None,
+            min_overall_rating: None,
+            max_overall_rating: None,
+            query_params: Some(query_params)
+        }
+    }
+
+    pub fn search_by_genre_id(genre_id: Id) -> Self {
+        Self {
+            name: None,
+            genre_name: None,
+            author_name: None,
+            author_id: None,
+            genre_id: Some(genre_id),
             min_length: None,
             max_length: None,
             min_stream_count: None,
@@ -124,12 +144,12 @@ impl AudiobookSearch {
         }
     }
 
-    pub fn search_by_author_id(author_id: Option<Id>) -> Self {
+    pub fn search_by_author_id(author_id: Id) -> Self {
         Self {
             name: None,
             genre_name: None,
             author_name: None,
-            author_id: author_id.map(|n| n.to_owned()),
+            author_id: Some(author_id),
             genre_id: None,
             min_length: None,
             max_length: None,
@@ -143,9 +163,9 @@ impl AudiobookSearch {
         }
     }
 
-    pub fn search_by_book_name(name: Option<&str>) -> Self {
+    pub fn search_by_book_name(name: &str) -> Self {
         Self {
-            name: name.map(|n| n.to_owned()),
+            name: Some(name.to_owned()),
             genre_name: None,
             author_name: None,
             author_id: None,
@@ -161,10 +181,10 @@ impl AudiobookSearch {
             query_params: None
         }
     }
-    pub fn search_by_genre_name(name: Option<&str>) -> Self {
+    pub fn search_by_genre_name(name: &str) -> Self {
         Self {
-            name: name.map(|n| n.to_owned()),
-            genre_name: None,
+            name: None,
+            genre_name: Some(name.to_owned()),
             author_name: None,
             author_id: None,
             genre_id: None,
@@ -179,11 +199,11 @@ impl AudiobookSearch {
             query_params: None
         }
     }
-    pub fn search_by_author_name(name: Option<&str>) -> Self {
+    pub fn search_by_author_name(name: &str) -> Self {
         Self {
             name: None,
             genre_name: None,
-            author_name: name.map(|n| n.to_owned()),
+            author_name: Some(name.to_owned()),
             author_id: None,
             genre_id: None,
             min_length: None,

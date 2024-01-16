@@ -46,6 +46,7 @@ pub fn generate_query_param_string(params: &Option<DbQueryParams>) -> String {
                 qp_string.push_str("LIMIT ");
                 qp_string.push_str(l.to_string().as_str());
             }
+            qp_string.push('\n');
             if let Some(o) = qp.offset {
                 qp_string.push_str("OFFSET ");
                 qp_string.push_str(o.to_string().as_str());

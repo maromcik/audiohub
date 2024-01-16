@@ -9,7 +9,7 @@ pub struct DbQueryParams {
 }
 
 impl DbQueryParams {
-    fn new(
+    pub fn new(
         order: Option<DbOrderColumn>,
         limit: Option<i64>,
         offset: Option<i64>
@@ -21,7 +21,7 @@ impl DbQueryParams {
         }
     }
 
-    fn limit(limit: i64, offset: i64) -> Self {
+    pub fn limit(limit: i64, offset: i64) -> Self {
         Self {
             order: None,
             limit: Some(limit),
@@ -34,6 +34,15 @@ impl DbQueryParams {
 pub struct DbOrderColumn {
     pub column: String,
     pub order: DbOrder
+}
+
+impl DbOrderColumn {
+    pub fn new(column: &str, order: DbOrder) -> Self {
+        Self {
+            column: column.to_owned(),
+            order
+        }
+    }
 }
 
 impl Default for DbOrderColumn {
