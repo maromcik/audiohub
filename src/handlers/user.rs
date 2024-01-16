@@ -15,9 +15,8 @@ use crate::authorized;
 use crate::database::common::{DbCreate, DbReadOne, DbUpdate};
 
 use crate::database::models::user::{UserCreate, UserGetById, UserLogin, UserUpdate};
-use crate::forms::audiobook::AudiobookUploadForm;
 use crate::forms::user::{ProfilePictureUploadForm, UserCreateForm, UserUpdateForm};
-use crate::handlers::user_register;
+
 use crate::handlers::utilities::{get_user_from_identity, parse_user_id, remove_file, save_file, validate_file};
 
 #[get("/register")]
@@ -130,10 +129,21 @@ pub async fn user_manage_picture_form(identity: Option<Identity>) -> Result<impl
 #[post("/manage")]
 pub async fn user_manage(identity: Option<Identity>, user_repo: web::Data<UserRepository>, form: web::Form<UserUpdateForm>,) -> Result<impl Responder, AppError> {
     let u = authorized!(identity);
-    let user = user_repo.read_one(&UserGetById::new(&parse_user_id(u)?)).await?;
-    let template = UserManageProfileTemplate { user };
-    let body = template.render()?;
-    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+    let user_update = UserUpdate::new(
+        &parse_user_id(u)?,
+        Some(&form.username),
+        Some(&form.email),
+        Some(&form.name),
+        Some(&form.surname),
+        Some(&form.bio),
+        None,
+        None
+    );
+    user_repo.update(&user_update).await?;
+    // TEMPORARY SOLUTION
+    Ok(HttpResponse::SeeOther()
+        .insert_header((LOCATION, "/"))
+        .finish())
 }
 
 #[post("/manage/password")]

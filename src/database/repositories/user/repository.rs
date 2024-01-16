@@ -17,10 +17,7 @@ use crate::database::common::{
 use crate::database::models::active_audiobook::ActiveAudiobook;
 
 use crate::database::models::bookmark::Bookmark;
-use crate::database::models::user::{
-    AddActiveAudiobook, BookmarkOperation, RemoveActiveAudiobook, UpdateActiveAudiobook, User,
-    UserCreate, UserDelete, UserGetById, UserGetByUsername, UserLogin, UserSearch, UserUpdate,
-};
+use crate::database::models::user::{AddActiveAudiobook, BookmarkOperation, RemoveActiveAudiobook, UpdateActiveAudiobook, User, UserCreate, UserDelete, UserGetById, UserGetByUsername, UserLogin, UserSearch, UserUpdate, UserUpdatePassword};
 
 fn generate_salt() -> SaltString {
     SaltString::generate(&mut OsRng)
@@ -67,8 +64,8 @@ impl UserRepository {
             "#,
             params.id
         )
-        .fetch_optional(transaction_handle.as_mut())
-        .await?;
+            .fetch_optional(transaction_handle.as_mut())
+            .await?;
 
         if let Some(user) = query {
             return Ok(Option::from(user));
@@ -96,8 +93,177 @@ impl UserRepository {
         Err(DbError::from(BackendError::new(UserDoesNotExist)))
     }
 
-    pub fn verify_password(user: &User, given_password: &str) -> Result<bool, DbError> {
-        verify_password_hash(&user.password_hash, given_password)
+    pub fn verify_password(user: User, given_password: &str) -> DbResultSingle<User> {
+        match verify_password_hash(&user.password_hash, given_password) {
+            Ok(ret) => {
+                if ret {
+                    return Ok(user);
+                }
+                Err(DbError::from(BackendError::new(UserPasswordDoesNotMatch)))
+            }
+            Err(e) => Err(e),
+        }
+    }
+
+    pub async fn get_all_active_audiobooks(
+        &self,
+        params: &UserGetById,
+    ) -> DbResultMultiple<ActiveAudiobook> {
+        let active_audiobooks = sqlx::query_as!(
+            ActiveAudiobook,
+            r#"
+            SELECT * FROM "Active_Audiobook"
+            WHERE user_id = $1
+            "#,
+            params.id
+        )
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
+        Ok(active_audiobooks)
+    }
+
+    pub async fn add_active_audiobook(
+        &self,
+        params: &AddActiveAudiobook,
+    ) -> DbResultSingle<ActiveAudiobook> {
+        let active_audiobook = sqlx::query_as!(
+            ActiveAudiobook,
+            r#"
+            INSERT INTO "Active_Audiobook" (user_id, audiobook_id, playback_chapter_id, playback_position_in_chapter)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+            "#,
+            params.user_id,
+            params.audiobook_id,
+            params.playback_chapter_id,
+            params.playback_position_in_chapter
+        )
+            .fetch_one(&self.pool_handler.pool)
+            .await?;
+
+        Ok(active_audiobook)
+    }
+
+    pub async fn remove_active_audiobook(
+        &self,
+        params: &RemoveActiveAudiobook,
+    ) -> DbResultSingle<ActiveAudiobook> {
+        let removed_active_audiobook = sqlx::query_as!(
+            ActiveAudiobook,
+            r#"
+            DELETE FROM "Active_Audiobook"
+            WHERE user_id = $1 AND audiobook_id = $2 AND playback_chapter_id = $3
+            RETURNING *
+            "#,
+            params.user_id,
+            params.audiobook_id,
+            params.playback_chapter_id,
+        )
+            .fetch_one(&self.pool_handler.pool)
+            .await?;
+
+        Ok(removed_active_audiobook)
+    }
+
+    pub async fn update_chapter_of_active_audiobook(
+        &self,
+        params: &UpdateActiveAudiobook,
+    ) -> DbResultSingle<ActiveAudiobook> {
+        let updated_active_audiobook = sqlx::query_as!(
+            ActiveAudiobook,
+            r#"
+            UPDATE "Active_Audiobook"
+            SET
+                playback_position_in_chapter = COALESCE($1, playback_position_in_chapter)
+            WHERE user_id = $2 AND audiobook_id = $3 AND playback_chapter_id = $4
+            RETURNING *
+            "#,
+            params.playback_position_in_chapter,
+            params.user_id,
+            params.audiobook_id,
+            params.playback_chapter_id
+        )
+            .fetch_one(&self.pool_handler.pool)
+            .await?;
+
+        Ok(updated_active_audiobook)
+    }
+
+    pub async fn get_all_bookmarks(&self, params: &UserGetById) -> DbResultMultiple<Bookmark> {
+        let bookmarks = sqlx::query_as!(
+            Bookmark,
+            r#"
+            SELECT * FROM "Bookmark"
+            WHERE user_id = $1
+            "#,
+            params.id
+        )
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
+        Ok(bookmarks)
+    }
+
+    pub async fn bookmark(&self, params: &BookmarkOperation) -> DbResultSingle<Bookmark> {
+        let bookmark = sqlx::query_as!(
+            Bookmark,
+            r#"
+            INSERT INTO "Bookmark" (user_id, audiobook_id)
+            VALUES ($1, $2)
+            RETURNING *
+            "#,
+            params.user_id,
+            params.audiobook_id
+        )
+            .fetch_one(&self.pool_handler.pool)
+            .await?;
+        Ok(bookmark)
+    }
+
+    pub async fn unbookmark(&self, params: &BookmarkOperation) -> DbResultSingle<Bookmark> {
+        let bookmark = sqlx::query_as!(
+            Bookmark,
+            r#"
+            DELETE FROM "Bookmark"
+            WHERE user_id = $1 AND audiobook_id = $2
+            RETURNING *
+            "#,
+            params.user_id,
+            params.audiobook_id
+        )
+            .fetch_one(&self.pool_handler.pool)
+            .await?;
+        Ok(bookmark)
+    }
+
+    pub async fn update_password(&self, params: &UserUpdatePassword) -> DbResultSingle<User> {
+        let mut transaction = self.pool_handler.pool.begin().await?;
+        let user_query = UserRepository::get_user(UserGetById { id: params.id }, &mut transaction).await?;
+        let user = UserRepository::user_is_correct(user_query.clone())?;
+        let user = UserRepository::verify_password(user, &params.old_password)?;
+
+        let salt = generate_salt();
+        let password_hash = hash_password(params.new_password.clone(), &salt)?;
+
+        let users = sqlx::query_as!(
+            User,
+            r#"
+            UPDATE "User" SET
+                password_hash = $1,
+                password_salt = $2,
+                edited_at = current_timestamp
+            WHERE id = $3
+            RETURNING *
+            "#,
+            password_hash,
+            salt.to_string(),
+            user.id,
+        )
+            .fetch_one(transaction.as_mut())
+            .await?;
+
+        transaction.commit().await?;
+
+        Ok(users)
     }
 }
 
@@ -154,20 +320,12 @@ impl DbReadOne<UserLogin, User> for UserRepository {
             "#,
             params.email_or_username
         )
-        .fetch_optional(&self.pool_handler.pool)
-        .await?;
+            .fetch_optional(&self.pool_handler.pool)
+            .await?;
 
         let user = UserRepository::user_is_correct(user)?;
 
-        match UserRepository::verify_password(&user, &params.password) {
-            Ok(ret) => {
-                if ret {
-                    return Ok(user);
-                }
-                Err(DbError::from(BackendError::new(UserPasswordDoesNotMatch)))
-            }
-            Err(e) => Err(e),
-        }
+        UserRepository::verify_password(user, &params.password)
     }
 }
 
@@ -184,8 +342,8 @@ impl DbReadOne<UserGetById, User> for UserRepository {
             "#,
             params.id
         )
-        .fetch_optional(&self.pool_handler.pool)
-        .await?;
+            .fetch_optional(&self.pool_handler.pool)
+            .await?;
 
         let user = UserRepository::user_is_correct(maybe_user)?;
         Ok(user)
@@ -205,8 +363,8 @@ impl DbReadOne<UserGetByUsername, User> for UserRepository {
             "#,
             params.username
         )
-        .fetch_optional(&self.pool_handler.pool)
-        .await?;
+            .fetch_optional(&self.pool_handler.pool)
+            .await?;
 
         let user = UserRepository::user_is_correct(maybe_user)?;
         Ok(user)
@@ -252,8 +410,8 @@ impl DbReadMany<UserSearch, User> for UserRepository {
             params.name,
             params.surname
         )
-        .fetch_all(&self.pool_handler.pool)
-        .await?;
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
         Ok(users)
     }
 }
@@ -305,8 +463,8 @@ impl DbUpdate<UserUpdate, User> for UserRepository {
             salt,
             validated_user.id
         )
-        .fetch_all(transaction.as_mut())
-        .await?;
+            .fetch_all(transaction.as_mut())
+            .await?;
         transaction.commit().await?;
         Ok(updated_users)
     }
@@ -338,8 +496,8 @@ impl DbDelete<UserDelete, User> for UserRepository {
             params.id,
             Utc::now()
         )
-        .fetch_all(transaction.as_mut())
-        .await?;
+            .fetch_all(transaction.as_mut())
+            .await?;
 
         transaction.commit().await?;
 
@@ -347,134 +505,3 @@ impl DbDelete<UserDelete, User> for UserRepository {
     }
 }
 
-impl UserRepository {
-    pub async fn get_all_active_audiobooks(
-        &self,
-        params: &UserGetById,
-    ) -> DbResultMultiple<ActiveAudiobook> {
-        let active_audiobooks = sqlx::query_as!(
-            ActiveAudiobook,
-            r#"
-            SELECT * FROM "Active_Audiobook"
-            WHERE user_id = $1
-            "#,
-            params.id
-        )
-        .fetch_all(&self.pool_handler.pool)
-        .await?;
-        Ok(active_audiobooks)
-    }
-
-    pub async fn add_active_audiobook(
-        &self,
-        params: &AddActiveAudiobook,
-    ) -> DbResultSingle<ActiveAudiobook> {
-        let active_audiobook = sqlx::query_as!(
-            ActiveAudiobook,
-            r#"
-            INSERT INTO "Active_Audiobook" (user_id, audiobook_id, playback_chapter_id, playback_position_in_chapter)
-            VALUES ($1, $2, $3, $4)
-            RETURNING *
-            "#,
-            params.user_id,
-            params.audiobook_id,
-            params.playback_chapter_id,
-            params.playback_position_in_chapter
-        )
-            .fetch_one(&self.pool_handler.pool)
-            .await?;
-
-        Ok(active_audiobook)
-    }
-
-    pub async fn remove_active_audiobook(
-        &self,
-        params: &RemoveActiveAudiobook,
-    ) -> DbResultSingle<ActiveAudiobook> {
-        let removed_active_audiobook = sqlx::query_as!(
-            ActiveAudiobook,
-            r#"
-            DELETE FROM "Active_Audiobook"
-            WHERE user_id = $1 AND audiobook_id = $2 AND playback_chapter_id = $3
-            RETURNING *
-            "#,
-            params.user_id,
-            params.audiobook_id,
-            params.playback_chapter_id,
-        )
-        .fetch_one(&self.pool_handler.pool)
-        .await?;
-
-        Ok(removed_active_audiobook)
-    }
-
-    pub async fn update_chapter_of_active_audiobook(
-        &self,
-        params: &UpdateActiveAudiobook,
-    ) -> DbResultSingle<ActiveAudiobook> {
-        let updated_active_audiobook = sqlx::query_as!(
-            ActiveAudiobook,
-            r#"
-            UPDATE "Active_Audiobook"
-            SET
-                playback_position_in_chapter = COALESCE($1, playback_position_in_chapter)
-            WHERE user_id = $2 AND audiobook_id = $3 AND playback_chapter_id = $4
-            RETURNING *
-            "#,
-            params.playback_position_in_chapter,
-            params.user_id,
-            params.audiobook_id,
-            params.playback_chapter_id
-        )
-        .fetch_one(&self.pool_handler.pool)
-        .await?;
-
-        Ok(updated_active_audiobook)
-    }
-
-    pub async fn get_all_bookmarks(&self, params: &UserGetById) -> DbResultMultiple<Bookmark> {
-        let bookmarks = sqlx::query_as!(
-            Bookmark,
-            r#"
-            SELECT * FROM "Bookmark"
-            WHERE user_id = $1
-            "#,
-            params.id
-        )
-        .fetch_all(&self.pool_handler.pool)
-        .await?;
-        Ok(bookmarks)
-    }
-
-    pub async fn bookmark(&self, params: &BookmarkOperation) -> DbResultSingle<Bookmark> {
-        let bookmark = sqlx::query_as!(
-            Bookmark,
-            r#"
-            INSERT INTO "Bookmark" (user_id, audiobook_id)
-            VALUES ($1, $2)
-            RETURNING *
-            "#,
-            params.user_id,
-            params.audiobook_id
-        )
-        .fetch_one(&self.pool_handler.pool)
-        .await?;
-        Ok(bookmark)
-    }
-
-    pub async fn unbookmark(&self, params: &BookmarkOperation) -> DbResultSingle<Bookmark> {
-        let bookmark = sqlx::query_as!(
-            Bookmark,
-            r#"
-            DELETE FROM "Bookmark"
-            WHERE user_id = $1 AND audiobook_id = $2
-            RETURNING *
-            "#,
-            params.user_id,
-            params.audiobook_id
-        )
-        .fetch_one(&self.pool_handler.pool)
-        .await?;
-        Ok(bookmark)
-    }
-}
