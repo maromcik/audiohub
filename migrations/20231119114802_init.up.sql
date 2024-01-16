@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS "Active_Audiobook"
     user_id                         bigserial           NOT NULL,
     audiobook_id                    bigserial           NOT NULL,
     playback_chapter_id             bigserial           NOT NULL,
-    playback_position_in_chapter    float8              DEFAULT 0,
+    playback_position_in_chapter    float8              NOT NULL DEFAULT 0,
 
     PRIMARY KEY (user_id, audiobook_id, playback_chapter_id),
     FOREIGN KEY (user_id)               REFERENCES "User" (id),

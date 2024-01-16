@@ -14,11 +14,10 @@ use crate::database::common::error::{DbResultMultiple, DbResultSingle};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
-use crate::database::models::active_audiobook::ActiveAudiobook;
+use crate::database::models::active_audiobook::{ActiveAudiobook, RemoveActiveAudiobook, SetActiveAudiobook};
 
-use crate::database::models::bookmark::Bookmark;
-use crate::database::models::user::{
-    AddActiveAudiobook, BookmarkOperation, RemoveActiveAudiobook, UpdateActiveAudiobook, User,
+use crate::database::models::bookmark::{Bookmark, BookmarkOperation};
+use crate::database::models::user::{User,
     UserCreate, UserDelete, UserGetById, UserGetByUsername, UserLogin, UserSearch, UserUpdate,
     UserUpdatePassword,
 };
@@ -126,27 +125,6 @@ impl UserRepository {
         Ok(active_audiobooks)
     }
 
-    pub async fn add_active_audiobook(
-        &self,
-        params: &AddActiveAudiobook,
-    ) -> DbResultSingle<ActiveAudiobook> {
-        let active_audiobook = sqlx::query_as!(
-            ActiveAudiobook,
-            r#"
-            INSERT INTO "Active_Audiobook" (user_id, audiobook_id, playback_chapter_id, playback_position_in_chapter)
-            VALUES ($1, $2, $3, $4)
-            RETURNING *
-            "#,
-            params.user_id,
-            params.audiobook_id,
-            params.playback_chapter_id,
-            params.playback_position_in_chapter
-        )
-            .fetch_one(&self.pool_handler.pool)
-            .await?;
-
-        Ok(active_audiobook)
-    }
 
     pub async fn remove_active_audiobook(
         &self,
@@ -169,9 +147,9 @@ impl UserRepository {
         Ok(removed_active_audiobook)
     }
 
-    pub async fn update_chapter_of_active_audiobook(
+    pub async fn set_active_audiobook(
         &self,
-        params: &UpdateActiveAudiobook,
+        params: &SetActiveAudiobook,
     ) -> DbResultSingle<ActiveAudiobook> {
         let updated_active_audiobook = sqlx::query_as!(
             ActiveAudiobook,
@@ -187,10 +165,29 @@ impl UserRepository {
             params.audiobook_id,
             params.playback_chapter_id
         )
-        .fetch_one(&self.pool_handler.pool)
+        .fetch_all(&self.pool_handler.pool)
         .await?;
 
-        Ok(updated_active_audiobook)
+        if let Some(updated) = updated_active_audiobook.into_iter().nth(0) {
+            return Ok(updated);
+        }
+
+        let new_active_audiobook = sqlx::query_as!(
+            ActiveAudiobook,
+            r#"
+            INSERT INTO "Active_Audiobook" (user_id, audiobook_id, playback_chapter_id, playback_position_in_chapter)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+            "#,
+            params.user_id,
+            params.audiobook_id,
+            params.playback_chapter_id,
+            params.playback_position_in_chapter
+        )
+            .fetch_one(&self.pool_handler.pool)
+            .await?;
+
+        Ok(new_active_audiobook)
     }
 
     pub async fn get_all_bookmarks(&self, params: &UserGetById) -> DbResultMultiple<Bookmark> {
