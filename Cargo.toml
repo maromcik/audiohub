@@ -31,5 +31,3 @@ actix-cors = "0.7.0"
 actix-multipart = "0.6.1"
 futures-util = "0.3.30"
 lazy_static = "1.4.0"
-glib = { git = "https://github.com/gtk-rs/gtk-rs-core" }
-gst = { package = "gstreamer" }
