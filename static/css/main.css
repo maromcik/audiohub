@@ -85,3 +85,9 @@ div.content {
     margin-top: 20px;
     flex-grow: 1;
 }
+
+
+.book-info-link {
+    text-decoration: none;
+    display: block;
+}

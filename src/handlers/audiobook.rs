@@ -15,10 +15,7 @@ use crate::handlers::utilities::{
     get_metadata_from_session, get_user_from_identity, remove_file, save_file, validate_file,
     AudiobookCreateSessionKeys,
 };
-use crate::templates::audiobook::{
-    AudiobookCreateFormTemplate, AudiobookDetailCreatorTemplate, AudiobookDetailVisitorTemplate,
-    AudiobookUploadFormTemplate, NewReleasesTemplate,
-};
+use crate::templates::audiobook::{AudiobookCreateFormTemplate, AudiobookDetailCreatorTemplate, AudiobookDetailPageTemplate, AudiobookDetailVisitorTemplate, AudiobookUploadFormTemplate, NewReleasesTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_session::Session;
@@ -148,6 +145,9 @@ pub async fn get_audiobook(
         })
         .render()?,
     };
+
+
+    // let body = AudiobookDetailPageTemplate{audiobook}.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
