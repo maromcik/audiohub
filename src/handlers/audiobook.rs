@@ -211,12 +211,11 @@ pub async fn change_like(
     let identity = authorized!(identity);
 
     let user = get_user_from_identity(identity, &user_repo).await?;
-    let user_get_by_id = UserGetById{id: user.id};
-    let bookmarks = &user_repo.get_all_bookmarks(&user_get_by_id).await?;
-
-    let liked = bookmarks.iter().any(|bookmark| bookmark.user_id == user.id);
-
     let book_id = path.into_inner().0;
+
+    let liked = user_repo.is_bookmarked(&user.id, &book_id).await?.is_some();
+
+
     let audiobook = audiobook_repo
         .read_one(&AudiobookGetByIdJoin::new(&book_id))
         .await?;

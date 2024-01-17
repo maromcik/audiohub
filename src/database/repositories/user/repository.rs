@@ -17,6 +17,7 @@ use crate::database::common::{
 use crate::database::models::active_audiobook::{ActiveAudiobook, RemoveActiveAudiobook, SetActiveAudiobook};
 
 use crate::database::models::bookmark::{Bookmark, BookmarkOperation};
+use crate::database::models::Id;
 use crate::database::models::user::{User,
     UserCreate, UserDelete, UserGetById, UserGetByUsername, UserLogin, UserSearch, UserUpdate,
     UserUpdatePassword,
@@ -202,6 +203,21 @@ impl UserRepository {
         .fetch_all(&self.pool_handler.pool)
         .await?;
         Ok(bookmarks)
+    }
+
+    pub async fn is_bookmarked(&self, user_id: &Id, book_id: &Id ) -> DbResultSingle<Option<Bookmark>>{
+        let bookmark = sqlx::query_as!(
+            Bookmark,
+            r#"
+            SELECT * FROM "Bookmark"
+            WHERE user_id = $1 AND audiobook_id = $2
+            "#,
+            user_id,
+            book_id
+        ).fetch_optional(&self.pool_handler.pool)
+            .await?;
+
+        Ok(bookmark)
     }
 
     pub async fn bookmark(&self, params: &BookmarkOperation) -> DbResultSingle<Bookmark> {
