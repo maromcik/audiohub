@@ -229,8 +229,7 @@ pub async fn change_like(
         }
     };
 
-    let update = AudiobookUpdate{id: book_id.clone(), author_id: None, genre_id: None, name: None, description: None,
-        file_path: None, overall_rating: None, thumbnail: None, stream_count: None, like_count: Some(likes)};
+    let update = AudiobookUpdate::update_likes(book_id, likes);
 
     audiobook_repo.update(&update).await?;
 

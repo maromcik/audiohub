@@ -286,6 +286,21 @@ impl AudiobookUpdate {
             && self.description.is_none()
             && self.thumbnail.is_none()
     }
+    
+    pub fn update_likes(id: Id, like_count: i64) -> Self {
+        Self {
+            id,
+            name: None,
+            author_id: None,
+            genre_id: None,
+            file_path: None,
+            stream_count: None,
+            like_count: Some(like_count),
+            overall_rating: None,
+            thumbnail: None,
+            description: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
