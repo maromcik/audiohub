@@ -59,7 +59,7 @@ pub fn get_metadata_from_session(
 
 pub async fn get_user_from_identity(
     identity: Identity,
-    user_repo: web::Data<UserRepository>,
+    user_repo: &web::Data<UserRepository>,
 ) -> Result<User, AppError> {
     Ok(user_repo
         .read_one(&UserGetById::new(&parse_user_id(identity)?))

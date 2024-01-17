@@ -195,7 +195,7 @@ pub async fn user_manage_picture(
 ) -> Result<impl Responder, AppError> {
     let u = authorized!(identity);
     let path = validate_file(&form.picture, Uuid::new_v4(), "image", "user")?;
-    let user = get_user_from_identity(u, user_repo.clone()).await?;
+    let user = get_user_from_identity(u, &user_repo).await?;
     remove_file(&user.profile_picture)?;
     let user_update = UserUpdate::new(
         &user.id,
