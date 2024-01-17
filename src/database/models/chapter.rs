@@ -31,7 +31,7 @@ pub struct ChaptersGetByBookId {
 pub struct ChapterDisplay {
     pub name: String,
     pub position: f64,
-    pub order: f64
+    pub order: usize
 }
 #[derive(Debug, Clone)]
 pub struct ChapterCreate {

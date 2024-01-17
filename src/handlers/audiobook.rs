@@ -147,7 +147,7 @@ pub async fn get_audiobook(
 
     let displayed_chapters : Vec<ChapterDisplay> = chapters.into_iter().enumerate()
         .map(|(order, ch)| ChapterDisplay{ name: ch.name,
-            order: (order + 1) as f64, position: ch.position })
+            order: order + 1, position: ch.position })
         .collect();
 
     let body = AudiobookDetailPageTemplate{audiobook, chapters: displayed_chapters}.render()?;
