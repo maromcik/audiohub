@@ -26,6 +26,14 @@ pub struct ChaptersGetByBookId {
     pub audiobook_id: Id,
 }
 
+impl ChaptersGetByBookId {
+    pub fn new(id: Id) -> Self {
+        Self {
+            audiobook_id: id,
+        }
+    }
+}
+
 
 #[derive(Debug, Clone)]
 pub struct ChapterDisplay {

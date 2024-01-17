@@ -127,9 +127,7 @@ pub async fn get_audiobook(
         .await?;
 
     let chapters = chapter_repo
-        .read_many(&ChaptersGetByBookId {
-            audiobook_id: book_id,
-        })
+        .read_many(&ChaptersGetByBookId::new(book_id))
         .await?;
 
     // let body = match audiobook.author_id == user.id {

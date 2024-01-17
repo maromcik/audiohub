@@ -57,7 +57,11 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(get_genres)
         .service(get_audiobooks_by_genre);
 
-    let rating_scope = web::scope("rating").app_data(web::Data::new(rating_repository.clone()));
+    let rating_scope = web::scope("rating")
+        .app_data(web::Data::new(rating_repository.clone()))
+        .service(create_rating)
+        .service(create_rating_form)
+        .service(get_ratings_by_audiobook);
 
     Box::new(move |cfg: &mut ServiceConfig| {
         cfg.app_data(web::Data::new(user_repository.clone()))

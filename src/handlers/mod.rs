@@ -4,6 +4,7 @@ pub mod genre;
 pub mod homepage;
 pub mod user;
 mod utilities;
+pub mod rating;
 pub mod library;
 
 pub use crate::handlers::user::login as user_login_page;
