@@ -156,11 +156,11 @@ impl UserRepository {
             r#"
             UPDATE "Active_Audiobook"
             SET
-                playback_position_in_chapter = COALESCE($1, playback_position_in_chapter)
+                playback_position = COALESCE($1, playback_position)
             WHERE user_id = $2 AND audiobook_id = $3 AND playback_chapter_id = $4
             RETURNING *
             "#,
-            params.playback_position_in_chapter,
+            params.playback_position,
             params.user_id,
             params.audiobook_id,
             params.playback_chapter_id
@@ -175,14 +175,14 @@ impl UserRepository {
         let new_active_audiobook = sqlx::query_as!(
             ActiveAudiobook,
             r#"
-            INSERT INTO "Active_Audiobook" (user_id, audiobook_id, playback_chapter_id, playback_position_in_chapter)
+            INSERT INTO "Active_Audiobook" (user_id, audiobook_id, playback_chapter_id, playback_position)
             VALUES ($1, $2, $3, $4)
             RETURNING *
             "#,
             params.user_id,
             params.audiobook_id,
             params.playback_chapter_id,
-            params.playback_position_in_chapter
+            params.playback_position
         )
             .fetch_one(&self.pool_handler.pool)
             .await?;

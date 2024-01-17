@@ -1,0 +1,1 @@
+ALTER TABLE "Active_Audiobook" RENAME COLUMN playback_position_in_chapter TO playback_position
