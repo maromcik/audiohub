@@ -10,10 +10,7 @@ use async_trait::async_trait;
 use crate::database::common::utilities::generate_query_param_string;
 use sqlx::{Postgres, Transaction};
 
-use crate::database::models::audiobook::{
-    Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookGetById,
-    AudiobookGetByIdJoin, AudiobookSearch, AudiobookUpdate,
-};
+use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookGetById, AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookSearch, AudiobookUpdate};
 
 #[derive(Clone)]
 pub struct AudiobookRepository {
@@ -52,6 +49,26 @@ impl AudiobookRepository {
         }
 
         Err(DbError::from(BackendError::new(AudiobookDoesNotExist)))
+    }
+
+    pub async fn quick_search(&self, query: String) -> DbResultMultiple<AudiobookQuickSearch> {
+        let mut comparison_string: String = "%".to_owned();
+        comparison_string.push_str(query.as_str());
+        comparison_string.push_str("%");
+
+        let results = sqlx::query_as!(
+            AudiobookQuickSearch,
+            r#"
+            SELECT id, name FROM "Audiobook"
+            WHERE name LIKE $1
+            LIMIT 5
+            "#,
+            comparison_string
+        )
+            .fetch_many(&self.pool_handler.pool)
+            .await?;
+
+        return Ok(results);
     }
 }
 
@@ -303,7 +320,7 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
                 like_count = COALESCE($6, like_count),
                 overall_rating = COALESCE($7, overall_rating),
                 thumbnail = COALESCE($8, thumbnail),
-                description = COALESCE($9, thumbnail),
+                description = COALESCE($9, description),
                 edited_at = current_timestamp
             WHERE id = $10
             RETURNING *

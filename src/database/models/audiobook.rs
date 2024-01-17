@@ -332,3 +332,11 @@ pub struct AudiobookMetadataForm {
     pub description: String,
     pub genre_id: Id,
 }
+
+
+#[derive(Debug, Clone)]
+pub struct AudiobookQuickSearch {
+    pub id: Id,
+    pub name: String,
+}
+

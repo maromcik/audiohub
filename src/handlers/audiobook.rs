@@ -13,7 +13,7 @@ use crate::handlers::utilities::{
     get_metadata_from_session, get_user_from_identity, remove_file, save_file, validate_file,
     AudiobookCreateSessionKeys,
 };
-use crate::templates::audiobook::{AudiobookCreateFormTemplate, AudiobookDetailCreatorTemplate, AudiobookDetailPageTemplate, AudiobookDetailVisitorTemplate, AudiobookUploadFormTemplate, NewReleasesTemplate};
+use crate::templates::audiobook::{AudiobookCreateFormTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_session::Session;
@@ -27,8 +27,6 @@ use crate::database::common::query_parameters::DbQueryParams;
 use crate::database::models::chapter::{ChapterDisplay, ChaptersGetByBookId};
 use uuid::Uuid;
 use crate::database::models::bookmark::BookmarkOperation;
-use crate::database::models::user::UserGetById;
-use crate::handlers::user_login;
 
 #[get("/create")]
 pub async fn create_audiobook_form(
@@ -214,7 +212,6 @@ pub async fn change_like(
     let book_id = path.into_inner().0;
 
     let liked = user_repo.is_bookmarked(&user.id, &book_id).await?.is_some();
-
 
     let audiobook = audiobook_repo
         .read_one(&AudiobookGetByIdJoin::new(&book_id))
