@@ -70,6 +70,6 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
             .service(chapter_scope)
             .service(rating_scope)
             .service(library::index)
-            .service(ActixFiles::new("/", "./src/static").prefer_utf8(true));
+            .service(ActixFiles::new("/media", "./media").prefer_utf8(true));
     })
 }

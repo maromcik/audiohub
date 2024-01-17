@@ -9,6 +9,7 @@ use actix_multipart::form::tempfile::TempFile;
 use actix_session::Session;
 use actix_web::http::header::LOCATION;
 use actix_web::{web, HttpResponse};
+use askama::filters::format;
 use uuid::Uuid;
 
 pub fn parse_user_id(identity: Identity) -> Result<Id, AppError> {
@@ -99,7 +100,7 @@ pub fn validate_file(
             }
         }
     };
-    let file_path = format!("./media/{handler}_{uuid}_{mime}.{extension}");
+    let file_path = format!("/media/{handler}_{uuid}_{mime}.{extension}");
 
     let Some(file_mime) = &file.content_type else {
         return Err(AppError::new(
@@ -121,8 +122,9 @@ pub fn validate_file(
 }
 
 pub fn save_file(file: TempFile, path: String) -> Result<(), AppError> {
-    log::info!("saving file to {path}");
-    if let Err(e) = file.file.persist(&path) {
+    log::info!("saving file to .{path}");
+    let path = format!(".{path}");
+    if let Err(e) = file.file.persist(path) {
         return Err(AppError::new(
             AppErrorKind::FileError,
             e.to_string().as_str(),
