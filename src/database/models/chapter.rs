@@ -26,6 +26,13 @@ pub struct ChaptersGetByBookId {
     pub audiobook_id: Id,
 }
 
+
+#[derive(Debug, Clone)]
+pub struct ChapterDisplay {
+    pub name: String,
+    pub position: f64,
+    pub order: f64
+}
 #[derive(Debug, Clone)]
 pub struct ChapterCreate {
     pub name: String,

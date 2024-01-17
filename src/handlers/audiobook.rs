@@ -24,7 +24,7 @@ use askama::Template;
 use crate::authorized;
 use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::common::query_parameters::DbQueryParams;
-use crate::database::models::chapter::ChaptersGetByBookId;
+use crate::database::models::chapter::{ChapterDisplay, ChaptersGetByBookId};
 use uuid::Uuid;
 use crate::database::models::bookmark::BookmarkOperation;
 use crate::database::models::user::UserGetById;
@@ -147,7 +147,12 @@ pub async fn get_audiobook(
     //     .render()?,
     // };
 
-    let body = AudiobookDetailPageTemplate{audiobook}.render()?;
+    let displayed_chapters : Vec<ChapterDisplay> = chapters.into_iter().enumerate()
+        .map(|(order, ch)| ChapterDisplay{ name: ch.name,
+            order: (order + 1) as f64, position: ch.position })
+        .collect();
+
+    let body = AudiobookDetailPageTemplate{audiobook, chapters: displayed_chapters}.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
@@ -228,7 +233,8 @@ pub async fn change_like(
         }
     };
 
-    let update = AudiobookUpdate{id: book_id.clone(), author_id: None, genre_id: None, name: None, description: None, file_path: None, overall_rating: None, thumbnail: None, stream_count: None, like_count: Some(likes)};
+    let update = AudiobookUpdate{id: book_id.clone(), author_id: None, genre_id: None, name: None, description: None,
+        file_path: None, overall_rating: None, thumbnail: None, stream_count: None, like_count: Some(likes)};
 
     audiobook_repo.update(&update).await?;
 
