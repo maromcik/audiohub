@@ -229,9 +229,6 @@ pub async fn search (
 ) -> Result<HttpResponse, AppError> {
 
     authorized!(identity);
-    let books = audiobook_repo.quick_search("Loo").await?;
-    for b in books {
-        println!("{:?}", b);
-    }
+    let books = audiobook_repo.quick_search(&q.name).await?;
     Ok(HttpResponse::Ok().finish())
 }
