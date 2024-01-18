@@ -16,10 +16,7 @@ pub async fn index(
     let u = authorized!(identity);
     let audiobooks = user_repo.get_bookmarked(&parse_user_id(u)?).await?;
 
-
-    // TODO : change audiobook to active book
-    let tmp_book = audiobooks[0].clone();
-    let template = LibraryPageTemplate {audiobooks, audiobook:tmp_book};
+    let template = LibraryPageTemplate { audiobooks };
 
     let body = template.render()?;
 
@@ -35,9 +32,7 @@ pub async fn get_content(
     let audiobooks = user_repo.get_bookmarked(&parse_user_id(u)?).await?;
 
 
-    // TODO : change audiobook to active book
-    let tmp_book = audiobooks[0].clone();
-    let template = LibraryContentTemplate {audiobooks, audiobook:tmp_book};
+    let template = LibraryContentTemplate { audiobooks };
 
     let body = template.render()?;
 
