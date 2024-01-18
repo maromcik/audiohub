@@ -158,7 +158,8 @@ impl UserRepository {
             r#"
             UPDATE "Active_Audiobook"
             SET
-                playback_position = COALESCE($1, playback_position)
+                playback_position = COALESCE($1, playback_position),
+                edited_at = current_timestamp
             WHERE user_id = $2 AND audiobook_id = $3 AND playback_chapter_id = $4
             RETURNING *
             "#,
