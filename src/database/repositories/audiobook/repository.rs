@@ -117,6 +117,7 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
                 a.name,
                 a.description,
                 a.file_path,
+                a.length,
                 a.thumbnail,
                 a.overall_rating,
                 a.stream_count,
@@ -206,6 +207,7 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
                 a.name,
                 a.description,
                 a.file_path,
+                a.length,
                 a.thumbnail,
                 a.overall_rating,
                 a.stream_count,
@@ -276,14 +278,15 @@ impl DbCreate<AudiobookCreate, Audiobook> for AudiobookRepository {
         let book = sqlx::query_as!(
             Audiobook,
             r#"
-            INSERT INTO "Audiobook" (name, author_id, genre_id, file_path, thumbnail, description)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO "Audiobook" (name, author_id, genre_id, file_path, length, thumbnail, description)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             RETURNING *
             "#,
             params.name,
             params.author_id,
             params.genre_id,
             params.file_path,
+            params.length,
             params.thumbnail,
             params.description
         )
@@ -319,19 +322,21 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
                 author_id = COALESCE($2, author_id),
                 genre_id = COALESCE($3, genre_id),
                 file_path = COALESCE($4, file_path),
-                stream_count = COALESCE($5, stream_count),
-                like_count = COALESCE($6, like_count),
-                overall_rating = COALESCE($7, overall_rating),
-                thumbnail = COALESCE($8, thumbnail),
-                description = COALESCE($9, description),
+                length = COALESCE($5, length),
+                stream_count = COALESCE($6, stream_count),
+                like_count = COALESCE($7, like_count),
+                overall_rating = COALESCE($8, overall_rating),
+                thumbnail = COALESCE($9, thumbnail),
+                description = COALESCE($10, description),
                 edited_at = current_timestamp
-            WHERE id = $10
+            WHERE id = $11
             RETURNING *
             "#,
             params.name,
             params.author_id,
             params.genre_id,
             params.file_path,
+            params.length,
             params.stream_count,
             params.like_count,
             params.overall_rating,

@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::database::common::query_parameters::DbQueryParams;
 
-#[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
+#[derive(sqlx::FromRow, Debug, Clone, PartialEq)]
 pub struct Audiobook {
     pub id: Id,
     // --------------
@@ -12,6 +12,7 @@ pub struct Audiobook {
     pub author_id: Id,
     pub genre_id: Id,
     pub file_path: String,
+    pub length: f64,
     pub stream_count: i64,
     pub like_count: i64,
     pub overall_rating: i16,
@@ -22,7 +23,7 @@ pub struct Audiobook {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
+#[derive(sqlx::FromRow, Debug, Clone, PartialEq)]
 pub struct AudiobookDetail {
     pub id: Id,
     // --------------
@@ -30,6 +31,7 @@ pub struct AudiobookDetail {
     pub author_id: Id,
     pub genre_id: Id,
     pub file_path: String,
+    pub length: f64,
     pub stream_count: i64,
     pub like_count: i64,
     pub overall_rating: i16,
@@ -56,6 +58,7 @@ pub struct ActiveAudiobookDetail {
     pub author_id: Id,
     pub genre_id: Id,
     pub file_path: String,
+    pub length: f64,
     pub stream_count: i64,
     pub like_count: i64,
     pub overall_rating: i16,
@@ -233,6 +236,7 @@ pub struct AudiobookCreate {
     pub author_id: Id,
     pub genre_id: Id,
     pub file_path: String,
+    pub length: f64,
     pub thumbnail: String,
     pub description: String,
 }
@@ -246,6 +250,7 @@ impl AudiobookCreate {
         author_id: &Id,
         genre_id: &Id,
         file_path: &str,
+        length: &f64,
         thumbnail: &str,
         description: &str,
     ) -> Self {
@@ -254,6 +259,7 @@ impl AudiobookCreate {
             author_id: *author_id,
             genre_id: *genre_id,
             file_path: file_path.to_owned(),
+            length: *length,
             thumbnail: thumbnail.to_owned(),
             description: description.to_owned(),
         }
@@ -266,6 +272,7 @@ pub struct AudiobookUpdate {
     pub author_id: Option<Id>,
     pub genre_id: Option<Id>,
     pub file_path: Option<String>,
+    pub length: Option<f64>,
     pub stream_count: Option<i64>,
     pub like_count: Option<i64>,
     pub overall_rating: Option<i16>,
@@ -282,6 +289,7 @@ impl AudiobookUpdate {
         author_id: Option<&Id>,
         genre_id: Option<&Id>,
         file_path: Option<&str>,
+        length: Option<&f64>,
         stream_count: Option<&i64>,
         like_count: Option<&i64>,
         overall_rating: Option<&i16>,
@@ -295,6 +303,7 @@ impl AudiobookUpdate {
             author_id: author_id.copied(),
             genre_id: genre_id.copied(),
             file_path: file_path.and_then(change_to_owned),
+            length: length.copied(),
             stream_count: stream_count.copied(),
             like_count: like_count.copied(),
             overall_rating: overall_rating.copied(),
@@ -309,6 +318,7 @@ impl AudiobookUpdate {
             && self.author_id.is_none()
             && self.genre_id.is_none()
             && self.file_path.is_none()
+            && self.length.is_none()
             && self.stream_count.is_none()
             && self.like_count.is_none()
             && self.overall_rating.is_none()
@@ -322,6 +332,7 @@ impl AudiobookUpdate {
             name: None,
             author_id: None,
             genre_id: None,
+            length: None,
             file_path: None,
             stream_count: None,
             like_count: Some(like_count),

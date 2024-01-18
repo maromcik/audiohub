@@ -1,0 +1,1 @@
+ALTER TABLE "Audiobook" DROP COLUMN IF EXISTS length;

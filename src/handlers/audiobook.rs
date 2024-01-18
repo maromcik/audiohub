@@ -27,6 +27,7 @@ use actix_session::Session;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, patch, post, web, HttpResponse};
 use askama::Template;
+use lofty::AudioFile;
 
 use crate::authorized;
 use crate::database::common::error::{BackendError, BackendErrorKind};
@@ -85,7 +86,7 @@ pub async fn upload_audiobook(
     session: Session,
     user_repo: web::Data<UserRepository>,
     audiobook_repo: web::Data<AudiobookRepository>,
-    MultipartForm(form): MultipartForm<AudiobookUploadForm>,
+    MultipartForm(mut form): MultipartForm<AudiobookUploadForm>,
 ) -> Result<HttpResponse, AppError> {
     let uuid = Uuid::new_v4();
     let u = authorized!(identity);
@@ -96,11 +97,17 @@ pub async fn upload_audiobook(
 
     let metadata = get_metadata_from_session(&session, &session_keys)?;
 
+    let audio_file = form.audio_file.file.as_file_mut();
+    let lofty_audio_file = lofty::read_from(audio_file)?;
+    let properties = lofty_audio_file.properties();
+    let length = properties.duration().as_secs_f64();
+
     let book_crate = AudiobookCreate::new(
         &metadata.name,
         &user.id,
         &metadata.genre_id,
         &audiobook_path,
+        &length,
         &thumbnail_path,
         &metadata.description,
     );

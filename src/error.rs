@@ -135,6 +135,12 @@ impl From<std::io::Error> for AppError {
     }
 }
 
+impl From<lofty::LoftyError> for AppError {
+    fn from(value: lofty::LoftyError) -> Self {
+        Self::new(AppErrorKind::FileError, value.to_string().as_str())
+    }
+}
+
 impl From<actix_session::SessionGetError> for AppError {
     fn from(value: actix_session::SessionGetError) -> Self {
         Self::new(AppErrorKind::SessionError, value.to_string().as_str())
