@@ -155,7 +155,7 @@ impl UserRepository {
                 "Genre" AS g
                     ON a.genre_id = g.id
             WHERE
-                ab.user_id = $1
+                ab.user_id = $1 AND (a.length - ab.playback_position) > 5
             ORDER BY ab.edited_at DESC
             "#,
             params.id
