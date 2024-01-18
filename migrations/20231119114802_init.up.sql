@@ -45,8 +45,8 @@ CREATE TABLE IF NOT EXISTS "Audiobook"
     edited_at    timestamptz NOT NULL DEFAULT now(),
     deleted_at   timestamptz,
 
-    FOREIGN KEY (genre_id)          REFERENCES "Genre" (id),
-    FOREIGN KEY (author_id)      REFERENCES "User" (id)
+    FOREIGN KEY (genre_id)          REFERENCES "Genre" (id) ON DELETE CASCADE,
+    FOREIGN KEY (author_id)         REFERENCES "User" (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "Chapter"
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS "Chapter"
     edited_at    timestamptz NOT NULL DEFAULT now(),
     deleted_at   timestamptz,
 
-    FOREIGN KEY (audiobook_id)      REFERENCES "Audiobook" (id)
+    FOREIGN KEY (audiobook_id)      REFERENCES "Audiobook" (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "Rating"
@@ -75,8 +75,8 @@ CREATE TABLE IF NOT EXISTS "Rating"
     edited_at       timestamptz NOT NULL DEFAULT now(),
     deleted_at      timestamptz,
 
-    FOREIGN KEY (user_id)       REFERENCES "User" (id),
-    FOREIGN KEY (audiobook_id)  REFERENCES "Audiobook" (id)
+    FOREIGN KEY (user_id)       REFERENCES "User" (id) ON DELETE CASCADE,
+    FOREIGN KEY (audiobook_id)  REFERENCES "Audiobook" (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "Bookmark"
@@ -85,8 +85,8 @@ CREATE TABLE IF NOT EXISTS "Bookmark"
     audiobook_id    bigserial        NOT NULL,
 
     PRIMARY KEY (user_id, audiobook_id),
-    FOREIGN KEY (user_id)       REFERENCES "User" (id),
-    FOREIGN KEY (audiobook_id)  REFERENCES "Audiobook" (id)
+    FOREIGN KEY (user_id)       REFERENCES "User" (id) ON DELETE CASCADE,
+    FOREIGN KEY (audiobook_id)  REFERENCES "Audiobook" (id) ON DELETE CASCADE
 );
 
 
@@ -95,12 +95,12 @@ CREATE TABLE IF NOT EXISTS "Active_Audiobook"
     user_id                         bigserial           NOT NULL,
     audiobook_id                    bigserial           NOT NULL,
     playback_chapter_id             bigserial           NOT NULL,
-    playback_position_in_chapter    float8              NOT NULL DEFAULT 0,
+    playback_position               float8              NOT NULL DEFAULT 0,
 
     PRIMARY KEY (user_id, audiobook_id, playback_chapter_id),
-    FOREIGN KEY (user_id)               REFERENCES "User" (id),
-    FOREIGN KEY (audiobook_id)          REFERENCES "Audiobook" (id),
-    FOREIGN KEY (playback_chapter_id)   REFERENCES "Chapter" (id)
+    FOREIGN KEY (user_id)               REFERENCES "User" (id) ON DELETE CASCADE,
+    FOREIGN KEY (audiobook_id)          REFERENCES "Audiobook" (id) ON DELETE CASCADE,
+    FOREIGN KEY (playback_chapter_id)   REFERENCES "Chapter" (id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS "Audiobook_author_id_idx" ON "Audiobook" (author_id);
