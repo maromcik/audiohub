@@ -6,6 +6,7 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use async_trait::async_trait;
+use futures_util::StreamExt;
 
 use crate::database::common::utilities::generate_query_param_string;
 use sqlx::{Postgres, Transaction};
@@ -51,25 +52,25 @@ impl AudiobookRepository {
         Err(DbError::from(BackendError::new(AudiobookDoesNotExist)))
     }
 
-    // pub async fn quick_search(&self, query: String) -> DbResultMultiple<AudiobookQuickSearch> {
-    //     let mut comparison_string: String = "%".to_owned();
-    //     comparison_string.push_str(query.as_str());
-    //     comparison_string.push_str("%");
-    //
-    //     let results = sqlx::query_as!(
-    //         AudiobookQuickSearch,
-    //         r#"
-    //         SELECT id, name FROM "Audiobook"
-    //         WHERE name LIKE $1
-    //         LIMIT 5
-    //         "#,
-    //         comparison_string
-    //     )
-    //         .fetch_many(&self.pool_handler.pool)
-    //         .await?;
-    //
-    //     return Ok(results);
-    // }
+    pub async fn quick_search(&self, query: String) -> DbResultMultiple<AudiobookQuickSearch> {
+        let mut comparison_string: String = "%".to_owned();
+        comparison_string.push_str(query.as_str());
+        comparison_string.push('%');
+
+        let results = sqlx::query_as!(
+            AudiobookQuickSearch,
+            r#"
+            SELECT id, name FROM "Audiobook"
+            WHERE name LIKE $1
+            LIMIT 5
+            "#,
+            comparison_string
+        )
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
+
+        Ok(results)
+    }
 }
 
 #[async_trait]
