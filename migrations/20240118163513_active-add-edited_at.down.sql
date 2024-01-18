@@ -1,0 +1,1 @@
+ALTER TABLE "Active_Audiobook" DROP COLUMN IF EXISTS edited_at;

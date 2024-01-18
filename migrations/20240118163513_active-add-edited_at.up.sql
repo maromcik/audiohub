@@ -1,0 +1,1 @@
+ALTER TABLE "Active_Audiobook" ADD COLUMN IF NOT EXISTS edited_at timestamptz NOT NULL DEFAULT now();
