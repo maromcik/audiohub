@@ -35,7 +35,7 @@ pub async fn index(
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
-#[get("/home")]
+#[get("/home-content")]
 pub async fn index_content(
     identity: Option<Identity>,
     user_repo: web::Data<UserRepository>,

@@ -10,7 +10,7 @@ use actix_files::Files as ActixFiles;
 use actix_web::web;
 use actix_web::web::ServiceConfig;
 use sqlx::PgPool;
-use crate::handlers::audiobook::change_like;
+use crate::handlers::audiobook::{change_like, releases_content, releases_page};
 use crate::handlers::rating::{create_rating, create_rating_form, get_ratings_by_audiobook};
 
 pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
@@ -42,7 +42,8 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(create_audiobook_form)
         .service(upload_audiobook_form)
         .service(get_audiobook)
-        .service(releases)
+        .service(releases_content)
+        .service(releases_page)
         .service(remove_audiobook)
         .service(change_like)
         .service(search);
@@ -75,6 +76,7 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
             .service(chapter_scope)
             .service(rating_scope)
             .service(library::index)
+            .service(library::get_content)
             .service(ActixFiles::new("/media", "./media").prefer_utf8(true));
     })
 }

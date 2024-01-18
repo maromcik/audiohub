@@ -15,8 +15,14 @@ pub struct AudiobookUploadFormTemplate {}
 
 
 #[derive(Template)]
-#[template(path = "audiobook/releases.html")]
-pub struct NewReleasesTemplate {
+#[template(path = "releases.html")]
+pub struct NewReleasesPageTemplate {
+    pub audiobooks: Vec<AudiobookDetail>,
+}
+
+#[derive(Template)]
+#[template(path = "audiobook/releases-content.html")]
+pub struct NewReleasesContentTemplate {
     pub audiobooks: Vec<AudiobookDetail>,
 }
 

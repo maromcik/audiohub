@@ -13,7 +13,7 @@ use crate::handlers::utilities::{
     get_metadata_from_session, get_user_from_identity, remove_file, save_file, validate_file,
     AudiobookCreateSessionKeys,
 };
-use crate::templates::audiobook::{AudiobookCreateFormTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesTemplate};
+use crate::templates::audiobook::{AudiobookCreateFormTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_session::Session;
@@ -138,7 +138,7 @@ pub async fn get_audiobook(
 }
 
 #[get("/releases")]
-async fn releases(
+async fn releases_page(
     identity: Option<Identity>,
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
@@ -148,7 +148,23 @@ async fn releases(
         .read_many(&AudiobookSearch::with_params(DbQueryParams::limit(5, 0)))
         .await?;
 
-    let template = NewReleasesTemplate { audiobooks: books };
+    let template = NewReleasesPageTemplate { audiobooks: books };
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+#[get("/releases-content")]
+async fn releases_content(
+    identity: Option<Identity>,
+    book_repo: web::Data<AudiobookRepository>,
+) -> Result<HttpResponse, AppError> {
+    //add functionality for ordering audiobooks
+    authorized!(identity);
+    let books = book_repo
+        .read_many(&AudiobookSearch::with_params(DbQueryParams::limit(5, 0)))
+        .await?;
+
+    let template = NewReleasesContentTemplate { audiobooks: books };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
