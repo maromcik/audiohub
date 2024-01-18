@@ -7,14 +7,14 @@ use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::error::AppError;
 use crate::templates::audiobook::AudiobooksByGenreTemplate;
-use crate::templates::genre::AllGenresTemplate;
+use crate::templates::genre::{GenresContentTemplate, GenresPageTemplate};
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, web, HttpResponse};
 use askama::Template;
 
-#[get("/")]
-async fn get_genres(
+#[get("/all")]
+async fn get_genres_page(
     identity: Option<Identity>,
     genre_repo: web::Data<GenreRepository>,
 ) -> Result<HttpResponse, AppError> {
@@ -22,10 +22,25 @@ async fn get_genres(
     //get all genres
     let genres = genre_repo.read_many(&GenreSearch::default()).await?;
 
-    let template = AllGenresTemplate { genres };
+    let template = GenresPageTemplate { genres };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
+
+#[get("/content")]
+async fn get_genres_content(
+    identity: Option<Identity>,
+    genre_repo: web::Data<GenreRepository>,
+) -> Result<HttpResponse, AppError> {
+    authorized!(identity);
+    // get all genres
+    let genres = genre_repo.read_many(&GenreSearch::default()).await?;
+
+    let template = GenresContentTemplate { genres };
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
 
 #[get("/{id}")]
 async fn get_audiobooks_by_genre(

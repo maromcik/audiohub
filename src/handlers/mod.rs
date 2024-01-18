@@ -13,7 +13,7 @@ pub use crate::handlers::user::logout_user as user_logout;
 pub use crate::handlers::user::register as user_register_page;
 pub use crate::handlers::user::register_user as user_register;
 pub use crate::handlers::user::user_manage;
-pub use crate::handlers::user::user_manage_form;
+pub use crate::handlers::user::user_manage_form_page;
 pub use crate::handlers::user::user_manage_password;
 pub use crate::handlers::user::user_manage_password_form;
 pub use crate::handlers::user::user_manage_picture;
@@ -23,7 +23,7 @@ pub use crate::handlers::homepage::index;
 pub use crate::handlers::homepage::index_content;
 
 pub use crate::handlers::audiobook::create_audiobook;
-pub use crate::handlers::audiobook::create_audiobook_form;
+pub use crate::handlers::audiobook::create_audiobook_page;
 pub use crate::handlers::audiobook::get_audiobook;
 pub use crate::handlers::audiobook::remove_active_audiobook;
 pub use crate::handlers::audiobook::remove_audiobook;
@@ -36,4 +36,4 @@ pub use crate::handlers::chapter::create_chapter;
 pub use crate::handlers::chapter::create_chapter_form;
 
 pub use crate::handlers::genre::get_audiobooks_by_genre;
-pub use crate::handlers::genre::get_genres;
+pub use crate::handlers::genre::get_genres_page;

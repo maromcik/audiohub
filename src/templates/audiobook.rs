@@ -4,8 +4,14 @@ use crate::database::models::genre::Genre;
 use askama::Template;
 
 #[derive(Template)]
+#[template(path = "pages/studio.html")]
+pub struct AudiobookCreatePageTemplate {
+    pub genres: Vec<Genre>,
+}
+
+#[derive(Template)]
 #[template(path = "audiobook/audiobook_create.html")]
-pub struct AudiobookCreateFormTemplate {
+pub struct AudiobookCreateContentTemplate {
     pub genres: Vec<Genre>,
 }
 
@@ -14,7 +20,7 @@ pub struct AudiobookCreateFormTemplate {
 pub struct AudiobookUploadFormTemplate {}
 
 #[derive(Template)]
-#[template(path = "releases.html")]
+#[template(path = "pages/releases.html")]
 pub struct NewReleasesPageTemplate {
     pub audiobooks: Vec<AudiobookDetail>,
 }

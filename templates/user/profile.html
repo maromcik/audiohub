@@ -1,4 +1,4 @@
-<div id="user-mgmt-profile">
+<div class="pl-10" id="user-mgmt-profile">
     <img class="w-48 h-48 object-cover mb-4" src="{{ user.profile_picture }}" alt="Profile Picture">
     <a hx-get="/user/manage/picture" hx-push-url="true" hx-target="#user-mgmt-profile-form" hx-swap="outerHTML" hx-boost="true">Change profile picture</a>
     <form id="user-mgmt-profile-form", hx-post="/user/manage/profile" class="bg-black shadow-lg border border-gray-800 rounded-lg p-5 flex flex-col items-center max-w-full w-96 mx-4 md:w-96 sm:w-96 lg:w-96 xl:w-1/4">

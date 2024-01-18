@@ -12,13 +12,13 @@
     <script src="https://kit.fontawesome.com/34be06a8e3.js" crossorigin="anonymous"></script>
 </head>
 <body class="bg-black text-white">
-{% include "components/navbar.html" %}
+{% include "../components/navbar.html" %}
 <div class="flex pt-16 flex-col h-screen">
     <!-- Sidebar -->
-    {% include "components/sidebar.html" %}
+    {% include "../components/sidebar.html" %}
     <!-- Main Content -->
     <main id="content-area" class="flex-1 pl-64 p-10 overflow-y-auto">
-        {% include "library-content.html"%}
+        {% include "../audiobook/library-content.html"%}
     </main>
 </div>
 

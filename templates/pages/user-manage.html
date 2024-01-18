@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>New releases</title>
+    <title>Manage user</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.4"
@@ -12,14 +12,15 @@
     <script src="https://kit.fontawesome.com/34be06a8e3.js" crossorigin="anonymous"></script>
 </head>
 <body class="bg-black text-white">
-    {% include "components/navbar.html" %}
-    <div class="flex pt-16 flex-col h-screen">
-        <!-- Sidebar -->
-        {% include "components/sidebar.html" %}
-        <!-- Main Content -->
-        <main id="content-area" class="flex-1 pl-64 p-10 overflow-y-auto">
-            {% include "audiobook/releases-content.html" %}
-        </main>
-    </div>
+{% include "../components/navbar.html" %}
+<div class="flex pt-16 flex-col h-screen">
+    <!-- Sidebar -->
+    {% include "../components/sidebar.html" %}
+    <!-- Main Content -->
+    <main id="content-area" class="flex-1 pl-64 p-10 overflow-y-auto">
+        {% include "../user/profile.html"%}
+    </main>
+</div>
+
 </body>
 </html>
