@@ -153,7 +153,7 @@ impl UserRepository {
                     ON a.genre_id = g.id
             WHERE
                 ab.user_id = $1
-            ORDER BY edited_at DESC
+            ORDER BY ab.edited_at DESC
             "#,
             params.id
         )
