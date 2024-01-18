@@ -292,6 +292,7 @@ impl UserRepository {
                     ON a.genre_id = g.id
             WHERE
                 b.user_id = $1
+            ORDER BY b.edited_at DESC
             "#,
             user_id,
         ).fetch_all(&self.pool_handler.pool)

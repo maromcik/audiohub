@@ -215,7 +215,7 @@ pub async fn change_like(
         .read_one(&AudiobookGetByIdJoin::new(&book_id))
         .await?;
 
-    let bookmark = BookmarkOperation{user_id: user.id, audiobook_id: book_id };
+    let bookmark = BookmarkOperation::new(user.id,book_id);
     let likes = match liked {
         true => {
             user_repo.unbookmark(&bookmark).await?;
