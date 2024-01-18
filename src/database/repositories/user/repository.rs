@@ -262,7 +262,8 @@ impl UserRepository {
     }
 
     pub async fn get_bookmarked(&self, user_id: &Id) -> DbResultMultiple<AudiobookDetail> {
-        let bookmarked = sqlx::query_as::<_, AudiobookDetail>(
+        let bookmarked = sqlx::query_as!(
+            AudiobookDetail,
             r#"
             SELECT
                 a.id,
@@ -288,27 +289,26 @@ impl UserRepository {
                 a.genre_id,
                 g.name AS genre_name,
 
-                ab.playback_position,
-                ab.edited_at AS active_audiobook_edited_at
+                ab.playback_position AS "playback_position?",
+                ab.edited_at AS "active_audiobook_edited_at?"
             FROM
-                "Active_Audiobook" AS ab
-                    RIGHT JOIN
-                "Audiobook" AS a ON a.id = ab.audiobook_id
-                    INNER JOIN
-                "Bookmark" AS b ON a.id = b.audiobook_id
+                "Audiobook" AS a
                     INNER JOIN
                 "User" AS u ON u.id = a.author_id
                     INNER JOIN
-                "Genre" AS g
-                    ON a.genre_id = g.id
+                "Genre" AS g ON a.genre_id = g.id
+                    INNER JOIN
+                "Bookmark" b ON b.audiobook_id = a.id
+                    LEFT JOIN
+                "Active_Audiobook" AS ab ON a.id = ab.audiobook_id AND u.id = ab.user_id
             WHERE
                 b.user_id = $1
             ORDER BY b.edited_at DESC
             "#,
+            user_id,
         )
-            .bind(user_id)
-            .fetch_all(&self.pool_handler.pool)
-            .await?;
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
 
         Ok(bookmarked)
     }

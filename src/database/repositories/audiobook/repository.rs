@@ -109,7 +109,8 @@ impl DbReadOne<AudiobookGetById, Audiobook> for AudiobookRepository {
 #[async_trait]
 impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
     async fn read_one(&self, params: &AudiobookGetByIdJoin) -> DbResultSingle<AudiobookDetail> {
-        let maybe_audiobook = sqlx::query_as::<_, AudiobookDetail>(
+        let maybe_audiobook = sqlx::query_as!(
+            AudiobookDetail,
             r#"
             SELECT
                 a.id,
@@ -135,8 +136,8 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
                 a.genre_id,
                 g.name AS genre_name,
 
-                ab.playback_position,
-                ab.edited_at AS active_audiobook_edited_at
+                ab.playback_position AS "playback_position?",
+                ab.edited_at AS "active_audiobook_edited_at?"
             FROM
                 "Audiobook" AS a
                     INNER JOIN
@@ -149,8 +150,8 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
                 a.deleted_at IS NULL
                 AND a.id = $1
             "#,
+            params.id
         )
-            .bind(params.id)
             .fetch_optional(&self.pool_handler.pool)
             .await?;
 
