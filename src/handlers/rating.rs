@@ -5,15 +5,13 @@ use crate::error::AppError;
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, post, web, HttpResponse};
-use askama::Template;
+
 use crate::database::models::rating::{RatingCreate, RatingsGetByBookId};
 use crate::database::repositories::rating::repository::RatingRepository;
 use crate::forms::rating::RatingCreateForm;
 
 #[get("/create/form")]
-pub async fn create_rating_form(
-    identity: Option<Identity>,
-) -> Result<HttpResponse, AppError> {
+pub async fn create_rating_form(identity: Option<Identity>) -> Result<HttpResponse, AppError> {
     authorized!(identity);
     // let body = template.render()?;
     // Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -27,7 +25,7 @@ pub async fn create_rating(
     form: web::Form<RatingCreateForm>,
 ) -> Result<HttpResponse, AppError> {
     authorized!(identity);
-    let rating = rating_repo
+    let _rating = rating_repo
         .create(&RatingCreate {
             audiobook_id: form.audiobook_id,
             user_id: form.user_id,
@@ -49,7 +47,7 @@ pub async fn get_ratings_by_audiobook(
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
     authorized!(identity);
-    let ratings = rating_repo
+    let _ratings = rating_repo
         .read_many(&RatingsGetByBookId::new(path.into_inner().0))
         .await?;
     // let template =

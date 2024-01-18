@@ -45,7 +45,6 @@ impl RatingSearch {
     }
 }
 
-
 #[derive(Debug, Clone, Deserialize)]
 pub struct RatingsGetByBookId {
     pub audiobook_id: Id,
@@ -53,12 +52,9 @@ pub struct RatingsGetByBookId {
 
 impl RatingsGetByBookId {
     pub fn new(id: Id) -> Self {
-        Self {
-            audiobook_id: id,
-        }
+        Self { audiobook_id: id }
     }
 }
-
 
 #[derive(Debug, Clone)]
 pub struct RatingCreate {

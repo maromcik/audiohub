@@ -1,8 +1,6 @@
-
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Clone)]
 pub struct Chapter {
@@ -28,18 +26,15 @@ pub struct ChaptersGetByBookId {
 
 impl ChaptersGetByBookId {
     pub fn new(id: Id) -> Self {
-        Self {
-            audiobook_id: id,
-        }
+        Self { audiobook_id: id }
     }
 }
-
 
 #[derive(Debug, Clone)]
 pub struct ChapterDisplay {
     pub name: String,
     pub position: f64,
-    pub order: usize
+    pub order: usize,
 }
 #[derive(Debug, Clone)]
 pub struct ChapterCreate {

@@ -6,7 +6,9 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::models::audiobook::AudiobookGetById;
-use crate::database::models::rating::{Rating, RatingCreate, RatingGetById, RatingSearch, RatingsGetByBookId, RatingUpdate};
+use crate::database::models::rating::{
+    Rating, RatingCreate, RatingGetById, RatingSearch, RatingUpdate, RatingsGetByBookId,
+};
 use crate::database::models::user::UserGetById;
 
 use async_trait::async_trait;
@@ -242,7 +244,6 @@ impl DbReadMany<RatingSearch, Rating> for RatingRepository {
     }
 }
 
-
 #[async_trait]
 impl DbReadMany<RatingsGetByBookId, Rating> for RatingRepository {
     async fn read_many(&self, params: &RatingsGetByBookId) -> DbResultMultiple<Rating> {
@@ -256,8 +257,8 @@ impl DbReadMany<RatingsGetByBookId, Rating> for RatingRepository {
             "#,
             params.audiobook_id,
         )
-            .fetch_all(&self.pool_handler.pool)
-            .await?;
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
         Ok(ratings)
     }
 }

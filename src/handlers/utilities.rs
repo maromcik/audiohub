@@ -9,7 +9,7 @@ use actix_multipart::form::tempfile::TempFile;
 use actix_session::Session;
 use actix_web::http::header::LOCATION;
 use actix_web::{web, HttpResponse};
-use askama::filters::format;
+
 use uuid::Uuid;
 
 pub fn parse_user_id(identity: Identity) -> Result<Id, AppError> {

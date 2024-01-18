@@ -1,5 +1,5 @@
-use crate::database::models::audiobook::{AudiobookDetail};
-use crate::database::models::chapter::{ChapterDisplay};
+use crate::database::models::audiobook::AudiobookDetail;
+use crate::database::models::chapter::ChapterDisplay;
 use crate::database::models::genre::Genre;
 use askama::Template;
 
@@ -12,7 +12,6 @@ pub struct AudiobookCreateFormTemplate {
 #[derive(Template)]
 #[template(path = "audiobook/audiobook_upload.html")]
 pub struct AudiobookUploadFormTemplate {}
-
 
 #[derive(Template)]
 #[template(path = "releases.html")]

@@ -1,16 +1,14 @@
 use crate::authorized;
-use crate::database::common::{DbCreate, DbReadMany};
-use crate::database::models::chapter::{ChapterCreate, ChaptersGetByBookId};
-use crate::database::models::Id;
+use crate::database::common::DbCreate;
+use crate::database::models::chapter::ChapterCreate;
+
 use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::error::AppError;
 use crate::forms::chapter::{ChapterCreateAudiobookInfoForm, ChapterCreateForm};
-use crate::templates::chapter::{
-    ChapterCreateFormTemplate, ChapterDetailTemplate,
-};
+use crate::templates::chapter::{ChapterCreateFormTemplate, ChapterDetailTemplate};
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
-use actix_web::{get, post, web, HttpResponse};
+use actix_web::{post, web, HttpResponse};
 use askama::Template;
 
 #[post("/create/form")]

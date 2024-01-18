@@ -1,5 +1,5 @@
-use askama::Template;
 use crate::database::models::audiobook::AudiobookDetail;
+use askama::Template;
 
 #[derive(Template)]
 #[template(path = "library.html")]

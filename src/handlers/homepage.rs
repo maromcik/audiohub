@@ -25,13 +25,15 @@ pub async fn index(
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
 
-    let active_audiobooks = user_repo.get_all_active_audiobooks(&UserGetById::new(&user.id)).await?;
+    let active_audiobooks = user_repo
+        .get_all_active_audiobooks(&UserGetById::new(&user.id))
+        .await?;
 
     let template = IndexTemplate {
         username: user.name,
         logged_in: true,
         audiobooks,
-        active_audiobooks
+        active_audiobooks,
     };
     let body = template.render()?;
 
@@ -51,13 +53,15 @@ pub async fn index_content(
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
 
-    let active_audiobooks = user_repo.get_all_active_audiobooks(&UserGetById::new(&user.id)).await?;
+    let active_audiobooks = user_repo
+        .get_all_active_audiobooks(&UserGetById::new(&user.id))
+        .await?;
 
     let template = IndexContentTemplate {
         username: user.name,
         logged_in: true,
         audiobooks,
-        active_audiobooks
+        active_audiobooks,
     };
 
     let body = template.render()?;

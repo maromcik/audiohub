@@ -6,12 +6,14 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use async_trait::async_trait;
-use futures_util::StreamExt;
 
 use crate::database::common::utilities::generate_query_param_string;
 use sqlx::{Postgres, Transaction};
 
-use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookGetById, AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookSearch, AudiobookUpdate};
+use crate::database::models::audiobook::{
+    Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookGetById,
+    AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookSearch, AudiobookUpdate,
+};
 
 #[derive(Clone)]
 pub struct AudiobookRepository {
@@ -66,8 +68,8 @@ impl AudiobookRepository {
             "#,
             comparison_string
         )
-            .fetch_all(&self.pool_handler.pool)
-            .await?;
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
 
         Ok(results)
     }

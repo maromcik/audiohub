@@ -204,9 +204,6 @@ impl UserGetById {
     }
 }
 
-
-
-
 #[derive(Debug, Clone)]
 pub struct UserUpdatePassword {
     pub id: Id,

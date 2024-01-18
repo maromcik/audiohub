@@ -19,11 +19,11 @@ pub struct AudiobookUploadForm {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct AudiobookSearchQuery {
-    pub name: String
+    pub name: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct AudiobookSetActiveForm {
     pub audiobook_id: Id,
-    pub position: f64
+    pub position: f64,
 }

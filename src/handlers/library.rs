@@ -1,12 +1,12 @@
-use actix_identity::Identity;
-use actix_web::{get, HttpResponse, web};
 use crate::authorized;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
 use crate::handlers::utilities::parse_user_id;
 use crate::templates::library::{LibraryContentTemplate, LibraryPageTemplate};
-use askama::Template;
+use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
+use actix_web::{get, web, HttpResponse};
+use askama::Template;
 
 #[get("/library")]
 pub async fn index(
@@ -30,7 +30,6 @@ pub async fn get_content(
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
     let audiobooks = user_repo.get_bookmarked(&parse_user_id(u)?).await?;
-
 
     let template = LibraryContentTemplate { audiobooks };
 

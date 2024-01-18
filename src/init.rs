@@ -5,13 +5,13 @@ use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::rating::repository::RatingRepository;
 use crate::database::repositories::user::repository::UserRepository;
+use crate::handlers::audiobook::{change_like, releases_content, releases_page};
+use crate::handlers::rating::{create_rating, create_rating_form, get_ratings_by_audiobook};
 use crate::handlers::*;
 use actix_files::Files as ActixFiles;
 use actix_web::web;
 use actix_web::web::ServiceConfig;
 use sqlx::PgPool;
-use crate::handlers::audiobook::{change_like, releases_content, releases_page};
-use crate::handlers::rating::{create_rating, create_rating_form, get_ratings_by_audiobook};
 
 pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let user_repository = UserRepository::new(PoolHandler::new(pool.clone()));

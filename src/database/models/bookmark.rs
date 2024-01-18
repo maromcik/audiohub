@@ -1,5 +1,5 @@
-use chrono::{DateTime, Utc};
 use crate::database::models::Id;
+use chrono::{DateTime, Utc};
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]
 pub struct Bookmark {
@@ -20,7 +20,7 @@ impl BookmarkOperation {
     pub const fn new(user_id: Id, audiobook_id: Id) -> Self {
         Self {
             user_id,
-            audiobook_id
+            audiobook_id,
         }
     }
 }

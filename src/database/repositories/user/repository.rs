@@ -14,15 +14,17 @@ use crate::database::common::error::{DbResultMultiple, DbResultSingle};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
-use crate::database::models::active_audiobook::{ActiveAudiobook, RemoveActiveAudiobook, SetActiveAudiobook};
+use crate::database::models::active_audiobook::{
+    ActiveAudiobook, RemoveActiveAudiobook, SetActiveAudiobook,
+};
 use crate::database::models::audiobook::{ActiveAudiobookDetail, AudiobookDetail};
 
 use crate::database::models::bookmark::{Bookmark, BookmarkOperation};
-use crate::database::models::Id;
-use crate::database::models::user::{User,
-    UserCreate, UserDelete, UserGetById, UserGetByUsername, UserLogin, UserSearch, UserUpdate,
-    UserUpdatePassword,
+use crate::database::models::user::{
+    User, UserCreate, UserDelete, UserGetById, UserGetByUsername, UserLogin, UserSearch,
+    UserUpdate, UserUpdatePassword,
 };
+use crate::database::models::Id;
 
 fn generate_salt() -> SaltString {
     SaltString::generate(&mut OsRng)
@@ -162,7 +164,6 @@ impl UserRepository {
         Ok(active_audiobooks)
     }
 
-
     pub async fn remove_active_audiobook(
         &self,
         params: &RemoveActiveAudiobook,
@@ -219,8 +220,8 @@ impl UserRepository {
             params.audiobook_id,
             params.playback_position
         )
-            .fetch_one(&self.pool_handler.pool)
-            .await?;
+        .fetch_one(&self.pool_handler.pool)
+        .await?;
 
         Ok(new_active_audiobook)
     }
@@ -239,7 +240,11 @@ impl UserRepository {
         Ok(bookmarks)
     }
 
-    pub async fn is_bookmarked(&self, user_id: &Id, book_id: &Id ) -> DbResultSingle<Option<Bookmark>>{
+    pub async fn is_bookmarked(
+        &self,
+        user_id: &Id,
+        book_id: &Id,
+    ) -> DbResultSingle<Option<Bookmark>> {
         let bookmark = sqlx::query_as!(
             Bookmark,
             r#"
@@ -248,8 +253,9 @@ impl UserRepository {
             "#,
             user_id,
             book_id
-        ).fetch_optional(&self.pool_handler.pool)
-            .await?;
+        )
+        .fetch_optional(&self.pool_handler.pool)
+        .await?;
 
         Ok(bookmark)
     }
@@ -295,14 +301,12 @@ impl UserRepository {
             ORDER BY b.edited_at DESC
             "#,
             user_id,
-        ).fetch_all(&self.pool_handler.pool)
-            .await?;
-
+        )
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
 
         Ok(bookmarked)
     }
-
-
 
     pub async fn bookmark(&self, params: &BookmarkOperation) -> DbResultSingle<Bookmark> {
         let bookmark = sqlx::query_as!(

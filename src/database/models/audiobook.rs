@@ -1,4 +1,3 @@
-use actix_web::cookie::time::Date;
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
@@ -75,9 +74,8 @@ pub struct ActiveAudiobookDetail {
     pub genre_name: String,
 
     pub playback_position: f64,
-    pub active_audiobook_edited_at: DateTime<Utc>
+    pub active_audiobook_edited_at: DateTime<Utc>,
 }
-
 
 #[derive(Debug, Clone, Default)]
 pub struct AudiobookSearch {
@@ -317,7 +315,7 @@ impl AudiobookUpdate {
             && self.description.is_none()
             && self.thumbnail.is_none()
     }
-    
+
     pub fn update_likes(id: Id, like_count: i64) -> Self {
         Self {
             id,
@@ -379,10 +377,8 @@ pub struct AudiobookMetadataForm {
     pub genre_id: Id,
 }
 
-
 #[derive(Debug, Clone)]
 pub struct AudiobookQuickSearch {
     pub id: Id,
     pub name: String,
 }
-

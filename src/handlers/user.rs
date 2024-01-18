@@ -1,6 +1,6 @@
 use crate::authorized;
 use crate::database::repositories::user::repository::UserRepository;
-use crate::error::{AppError};
+use crate::error::AppError;
 use crate::templates::user::{
     LoginTemplate, RegistrationTemplate, UserManagePasswordTemplate,
     UserManageProfilePictureFormTemplate, UserManageProfileTemplate,
