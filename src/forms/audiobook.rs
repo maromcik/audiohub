@@ -21,3 +21,9 @@ pub struct AudiobookUploadForm {
 pub struct AudiobookSearchQuery {
     pub name: String
 }
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AudiobookSetActiveForm {
+    pub audiobook_id: Id,
+    pub position: f64
+}

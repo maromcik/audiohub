@@ -8,7 +8,7 @@ use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
-use crate::forms::audiobook::{AudiobookCreateForm, AudiobookSearchQuery, AudiobookUploadForm};
+use crate::forms::audiobook::{AudiobookCreateForm, AudiobookSearchQuery, AudiobookSetActiveForm, AudiobookUploadForm};
 use crate::handlers::utilities::{get_metadata_from_session, get_user_from_identity, remove_file, save_file, validate_file, AudiobookCreateSessionKeys, parse_user_id};
 use crate::templates::audiobook::{AudiobookCreateFormTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate};
 use actix_identity::Identity;
@@ -23,6 +23,7 @@ use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::common::query_parameters::DbQueryParams;
 use crate::database::models::chapter::{ChapterDisplay, ChaptersGetByBookId};
 use uuid::Uuid;
+use crate::database::models::active_audiobook::SetActiveAudiobook;
 use crate::database::models::bookmark::BookmarkOperation;
 use crate::database::models::user::UserGetById;
 
@@ -245,4 +246,16 @@ pub async fn search (
     authorized!(identity);
     let books = audiobook_repo.quick_search(&q.name).await?;
     Ok(HttpResponse::Ok().finish())
+}
+
+
+#[post("/active")]
+pub async fn set_active_audiobook(
+    identity: Option<Identity>,
+    user_repo: web::Data<UserRepository>,
+    form: web::Form<AudiobookSetActiveForm>,
+) -> Result<HttpResponse, AppError> {
+    let identity = authorized!(identity);
+    user_repo.set_active_audiobook(&SetActiveAudiobook::new(parse_user_id(identity)?, form.audiobook_id, form.position)).await?;
+    todo!()
 }

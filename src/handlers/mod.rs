@@ -29,6 +29,7 @@ pub use crate::handlers::audiobook::remove_audiobook;
 pub use crate::handlers::audiobook::upload_audiobook;
 pub use crate::handlers::audiobook::upload_audiobook_form;
 pub use crate::handlers::audiobook::search;
+pub use crate::handlers::audiobook::set_active_audiobook;
 
 pub use crate::handlers::chapter::create_chapter;
 pub use crate::handlers::chapter::create_chapter_form;
