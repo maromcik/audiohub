@@ -1,5 +1,5 @@
 use crate::database::models::audiobook::{AudiobookDetail};
-use crate::database::models::chapter::{Chapter, ChapterDisplay};
+use crate::database::models::chapter::{ChapterDisplay};
 use crate::database::models::genre::Genre;
 use askama::Template;
 

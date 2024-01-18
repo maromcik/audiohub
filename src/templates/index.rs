@@ -1,4 +1,4 @@
-use crate::database::models::audiobook::AudiobookDetail;
+use crate::database::models::audiobook::{ActiveAudiobookDetail, AudiobookDetail};
 use askama::Template;
 
 #[derive(Template)]
@@ -7,6 +7,7 @@ pub struct IndexTemplate {
     pub logged_in: bool,
     pub username: String,
     pub audiobooks: Vec<AudiobookDetail>,
+    pub active_audiobooks: Vec<ActiveAudiobookDetail>,
 }
 
 #[derive(Template)]
@@ -15,4 +16,5 @@ pub struct IndexContentTemplate {
     pub logged_in: bool,
     pub username: String,
     pub audiobooks: Vec<AudiobookDetail>,
+    pub active_audiobooks: Vec<ActiveAudiobookDetail>,
 }

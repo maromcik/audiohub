@@ -6,9 +6,19 @@
     {% endif %}
     <p>Welcome to AudioHub, your number one source for audiobooks!</p>
 
+    {% if active_audiobooks.len() > 0 %}
+    <p>Jump back in</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {% for audiobook in active_audiobooks %}
+            {% include "audiobook/audiobook_info.html" %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <p>Discover</p>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {% for audiobook in audiobooks %}
-        {% include "audiobook/audiobook_info.html" %}
+            {% include "audiobook/audiobook_info.html" %}
         {% endfor %}
     </div>
 </div>

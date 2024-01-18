@@ -9,10 +9,7 @@ use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
 use crate::forms::audiobook::{AudiobookCreateForm, AudiobookSearchQuery, AudiobookUploadForm};
-use crate::handlers::utilities::{
-    get_metadata_from_session, get_user_from_identity, remove_file, save_file, validate_file,
-    AudiobookCreateSessionKeys,
-};
+use crate::handlers::utilities::{get_metadata_from_session, get_user_from_identity, remove_file, save_file, validate_file, AudiobookCreateSessionKeys, parse_user_id};
 use crate::templates::audiobook::{AudiobookCreateFormTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
@@ -27,6 +24,7 @@ use crate::database::common::query_parameters::DbQueryParams;
 use crate::database::models::chapter::{ChapterDisplay, ChaptersGetByBookId};
 use uuid::Uuid;
 use crate::database::models::bookmark::BookmarkOperation;
+use crate::database::models::user::UserGetById;
 
 #[get("/create")]
 pub async fn create_audiobook_form(

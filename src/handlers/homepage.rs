@@ -20,15 +20,18 @@ pub async fn index(
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
 
-    let books = book_repo.read_many(&AudiobookSearch::default()).await?;
+    let audiobooks = book_repo.read_many(&AudiobookSearch::default()).await?;
     let user = user_repo
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
 
+    let active_audiobooks = user_repo.get_all_active_audiobooks(&UserGetById::new(&user.id)).await?;
+
     let template = IndexTemplate {
         username: user.name,
         logged_in: true,
-        audiobooks: books,
+        audiobooks,
+        active_audiobooks
     };
     let body = template.render()?;
 
@@ -43,15 +46,18 @@ pub async fn index_content(
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
 
-    let books = book_repo.read_many(&AudiobookSearch::default()).await?;
+    let audiobooks = book_repo.read_many(&AudiobookSearch::default()).await?;
     let user = user_repo
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
 
+    let active_audiobooks = user_repo.get_all_active_audiobooks(&UserGetById::new(&user.id)).await?;
+
     let template = IndexContentTemplate {
         username: user.name,
         logged_in: true,
-        audiobooks: books,
+        audiobooks,
+        active_audiobooks
     };
 
     let body = template.render()?;
