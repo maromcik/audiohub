@@ -17,10 +17,7 @@ use crate::handlers::utilities::{
     get_metadata_from_session, get_user_from_identity, parse_user_id, remove_file, save_file,
     validate_file, AudiobookCreateSessionKeys,
 };
-use crate::templates::audiobook::{
-    AudiobookCreateFormTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate,
-    NewReleasesContentTemplate, NewReleasesPageTemplate,
-};
+use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_session::Session;
@@ -38,13 +35,25 @@ use crate::database::models::chapter::{ChapterDisplay, ChaptersGetByBookId};
 use uuid::Uuid;
 
 #[get("/create")]
-pub async fn create_audiobook_form(
+pub async fn create_audiobook_page(
     identity: Option<Identity>,
     genre_repo: web::Data<GenreRepository>,
 ) -> Result<HttpResponse, AppError> {
     authorized!(identity);
     let genres = genre_repo.read_many(&GenreSearch::new(None)).await?;
-    let template = AudiobookCreateFormTemplate { genres };
+    let template = AudiobookCreatePageTemplate { genres };
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+#[get("/create-content")]
+pub async fn create_audiobook_content(
+    identity: Option<Identity>,
+    genre_repo: web::Data<GenreRepository>,
+) -> Result<HttpResponse, AppError> {
+    authorized!(identity);
+    let genres = genre_repo.read_many(&GenreSearch::new(None)).await?;
+    let template = AudiobookCreateContentTemplate { genres };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }

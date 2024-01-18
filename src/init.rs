@@ -5,13 +5,15 @@ use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::rating::repository::RatingRepository;
 use crate::database::repositories::user::repository::UserRepository;
-use crate::handlers::audiobook::{change_like, releases_content, releases_page};
+use crate::handlers::audiobook::{change_like, create_audiobook_content, releases_content, releases_page};
 use crate::handlers::rating::{create_rating, create_rating_form, get_ratings_by_audiobook};
 use crate::handlers::*;
 use actix_files::Files as ActixFiles;
 use actix_web::web;
 use actix_web::web::ServiceConfig;
 use sqlx::PgPool;
+use crate::handlers::genre::get_genres_content;
+use crate::handlers::user::user_manage_form_content;
 
 pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let user_repository = UserRepository::new(PoolHandler::new(pool.clone()));
@@ -26,7 +28,8 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(user_register_page)
         .service(user_register)
         .service(user_logout)
-        .service(user_manage_form)
+        .service(user_manage_form_page)
+        .service(user_manage_form_content)
         .service(user_manage_password_form)
         .service(user_manage_picture_form)
         .service(user_manage)
@@ -39,7 +42,8 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .app_data(web::Data::new(chapter_repository.clone()))
         .service(create_audiobook)
         .service(upload_audiobook)
-        .service(create_audiobook_form)
+        .service(create_audiobook_page)
+        .service(create_audiobook_content)
         .service(upload_audiobook_form)
         .service(get_audiobook)
         .service(releases_content)
@@ -57,7 +61,8 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let genre_scope = web::scope("genre")
         .app_data(web::Data::new(genre_repository.clone()))
         .app_data(web::Data::new(audiobook_repository.clone()))
-        .service(get_genres)
+        .service(get_genres_page)
+        .service(get_genres_content)
         .service(get_audiobooks_by_genre);
 
     let rating_scope = web::scope("rating")

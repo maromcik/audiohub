@@ -1,10 +1,7 @@
 use crate::authorized;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
-use crate::templates::user::{
-    LoginTemplate, RegistrationTemplate, UserManagePasswordTemplate,
-    UserManageProfilePictureFormTemplate, UserManageProfileTemplate,
-};
+use crate::templates::user::{LoginTemplate, RegistrationTemplate, UserManagePasswordTemplate, UserManageProfilePictureFormTemplate, UserManageProfilePageTemplate, UserManageProfileContentTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_web::http::header::LOCATION;
@@ -111,7 +108,7 @@ pub async fn logout_user(identity: Option<Identity>) -> Result<impl Responder, A
 }
 
 #[get("/manage")]
-pub async fn user_manage_form(
+pub async fn user_manage_form_page(
     identity: Option<Identity>,
     user_repo: web::Data<UserRepository>,
 ) -> Result<impl Responder, AppError> {
@@ -119,7 +116,21 @@ pub async fn user_manage_form(
     let user = user_repo
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
-    let template = UserManageProfileTemplate { user };
+    let template = UserManageProfilePageTemplate { user };
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+#[get("/manage-content")]
+pub async fn user_manage_form_content(
+    identity: Option<Identity>,
+    user_repo: web::Data<UserRepository>,
+) -> Result<impl Responder, AppError> {
+    let u = authorized!(identity);
+    let user = user_repo
+        .read_one(&UserGetById::new(&parse_user_id(u)?))
+        .await?;
+    let template = UserManageProfileContentTemplate { user };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
