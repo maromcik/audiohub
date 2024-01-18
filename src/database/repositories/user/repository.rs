@@ -15,7 +15,7 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::models::active_audiobook::{ActiveAudiobook, RemoveActiveAudiobook, SetActiveAudiobook};
-use crate::database::models::audiobook::{AudiobookDetail};
+use crate::database::models::audiobook::{ActiveAudiobookDetail, AudiobookDetail};
 
 use crate::database::models::bookmark::{Bookmark, BookmarkOperation};
 use crate::database::models::Id;
@@ -113,12 +113,47 @@ impl UserRepository {
     pub async fn get_all_active_audiobooks(
         &self,
         params: &UserGetById,
-    ) -> DbResultMultiple<ActiveAudiobook> {
+    ) -> DbResultMultiple<ActiveAudiobookDetail> {
         let active_audiobooks = sqlx::query_as!(
-            ActiveAudiobook,
+            ActiveAudiobookDetail,
             r#"
-            SELECT * FROM "Active_Audiobook"
-            WHERE user_id = $1
+            SELECT
+                a.id,
+                a.name,
+                a.description,
+                a.file_path,
+                a.thumbnail,
+                a.overall_rating,
+                a.stream_count,
+                a.like_count,
+                a.created_at,
+                a.edited_at,
+
+                a.author_id,
+                u.name AS author_name,
+                u.surname,
+                u.username,
+                u.email,
+                u.profile_picture,
+                u.bio,
+
+                a.genre_id,
+                g.name AS genre_name,
+
+                ab.playback_chapter_id,
+                ab.playback_position,
+                ab.edited_at AS active_audiobook_edited_at
+            FROM
+                "Active_Audiobook" AS ab
+                    INNER JOIN
+                "Audiobook" AS a ON a.id = ab.audiobook_id
+                    INNER JOIN
+                "User" AS u ON u.id = a.author_id
+                    INNER JOIN
+                "Genre" AS g
+                    ON a.genre_id = g.id
+            WHERE
+                ab.user_id = $1
             "#,
             params.id
         )

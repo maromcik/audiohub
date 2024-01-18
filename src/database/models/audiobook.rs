@@ -1,3 +1,4 @@
+use actix_web::cookie::time::Date;
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
@@ -47,6 +48,37 @@ pub struct AudiobookDetail {
 
     pub genre_name: String,
 }
+
+#[derive(sqlx::FromRow, Debug, Clone, PartialEq)]
+pub struct ActiveAudiobookDetail {
+    pub id: Id,
+    // --------------
+    pub name: String,
+    pub author_id: Id,
+    pub genre_id: Id,
+    pub file_path: String,
+    pub stream_count: i64,
+    pub like_count: i64,
+    pub overall_rating: i16,
+    pub thumbnail: String,
+    pub description: String,
+    pub created_at: DateTime<Utc>,
+    pub edited_at: DateTime<Utc>,
+
+    pub username: String,
+    pub email: String,
+    pub author_name: String,
+    pub surname: String,
+    pub bio: String,
+    pub profile_picture: String,
+
+    pub genre_name: String,
+
+    pub playback_chapter_id: Id,
+    pub playback_position: f64,
+    pub active_audiobook_edited_at: DateTime<Utc>
+}
+
 
 #[derive(Debug, Clone, Default)]
 pub struct AudiobookSearch {
