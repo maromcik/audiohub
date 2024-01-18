@@ -225,7 +225,7 @@ pub async fn change_like(
 pub async fn search (
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
-    q: web::Query<(AudiobookSearchQuery,)>,
+    q: web::Query<(AudiobookSearchQuery)>,
 ) -> Result<HttpResponse, AppError> {
 
     authorized!(identity);
