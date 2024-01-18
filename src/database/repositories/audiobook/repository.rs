@@ -109,8 +109,7 @@ impl DbReadOne<AudiobookGetById, Audiobook> for AudiobookRepository {
 #[async_trait]
 impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
     async fn read_one(&self, params: &AudiobookGetByIdJoin) -> DbResultSingle<AudiobookDetail> {
-        let maybe_audiobook = sqlx::query_as!(
-            AudiobookDetail,
+        let maybe_audiobook = sqlx::query_as::<_, AudiobookDetail>(
             r#"
             SELECT
                 a.id,
@@ -134,24 +133,26 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
                 u.bio,
 
                 a.genre_id,
-                g.name AS genre_name
+                g.name AS genre_name,
 
+                ab.playback_position,
+                ab.edited_at AS active_audiobook_edited_at
             FROM
-                "User" AS u
-                    INNER JOIN
                 "Audiobook" AS a
-                    ON a.author_id = u.id
                     INNER JOIN
-                "Genre" AS g
-                    ON a.genre_id = g.id
+                "User" AS u ON u.id = a.author_id
+                    INNER JOIN
+                "Genre" AS g ON a.genre_id = g.id
+                    LEFT JOIN
+                "Active_Audiobook" AS ab ON ab.audiobook_id = a.id AND u.id = ab.user_id
             WHERE
                 a.deleted_at IS NULL
                 AND a.id = $1
             "#,
-            params.id
         )
-        .fetch_optional(&self.pool_handler.pool)
-        .await?;
+            .bind(params.id)
+            .fetch_optional(&self.pool_handler.pool)
+            .await?;
 
         match maybe_audiobook {
             None => Err(DbError::from(BackendError::new(AudiobookDoesNotExist))),
@@ -224,16 +225,18 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
                 u.bio,
 
                 a.genre_id,
-                g.name AS genre_name
+                g.name AS genre_name,
 
+                ab.playback_position,
+                ab.edited_at AS active_audiobook_edited_at
             FROM
-                "User" AS u
-                    INNER JOIN
                 "Audiobook" AS a
-                    ON a.author_id = u.id
                     INNER JOIN
-                "Genre" AS g
-                    ON a.genre_id = g.id
+                "User" AS u ON u.id = a.author_id
+                    INNER JOIN
+                "Genre" AS g ON a.genre_id = g.id
+                    LEFT JOIN
+                "Active_Audiobook" AS ab ON ab.audiobook_id = a.id AND u.id = ab.user_id
             WHERE
                 a.deleted_at IS NULL
                 AND u.deleted_at IS NULL
