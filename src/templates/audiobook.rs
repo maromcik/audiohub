@@ -2,6 +2,7 @@ use crate::database::models::audiobook::AudiobookDetail;
 use crate::database::models::chapter::ChapterDisplay;
 use crate::database::models::genre::Genre;
 use askama::Template;
+use crate::database::models::active_audiobook::PlayedAudiobook;
 
 #[derive(Template)]
 #[template(path = "pages/studio.html")]
@@ -39,8 +40,21 @@ pub struct AudiobooksByGenreTemplate {
 }
 
 #[derive(Template)]
-#[template(path = "audiobook/audiobook_detail.html")]
+#[template(path = "pages/detail.html")]
 pub struct AudiobookDetailPageTemplate {
     pub audiobook: AudiobookDetail,
     pub chapters: Vec<ChapterDisplay>,
+}
+
+#[derive(Template)]
+#[template(path = "audiobook/detail-content.html")]
+pub struct AudiobookDetailContentTemplate {
+    pub audiobook: AudiobookDetail,
+    pub chapters: Vec<ChapterDisplay>,
+}
+
+#[derive(Template)]
+#[template(path = "components/player.html")]
+pub struct PlayerTemplate {
+    pub last_played: PlayedAudiobook,
 }

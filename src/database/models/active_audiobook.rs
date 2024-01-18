@@ -33,6 +33,14 @@ pub struct SetActiveAudiobook {
     pub playback_position: f64,
 }
 
+
+#[derive(Debug, Clone)]
+pub struct PlayedAudiobook {
+    pub path: String,
+    pub name: String,
+    pub playback_position: f64,
+}
+
 impl SetActiveAudiobook {
     #[must_use]
     #[inline]

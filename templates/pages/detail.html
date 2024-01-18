@@ -1,8 +1,8 @@
 {% extends "index.html" %}
 {% block title %}
-Library
+{{ audiobook.name }}
 {% endblock %}
 
 {% block content %}
-  {% include "../genre/genres-content.html"%}
+    {% include "../audiobook/detail-content.html"%}
 {% endblock %}

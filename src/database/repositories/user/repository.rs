@@ -14,9 +14,7 @@ use crate::database::common::error::{DbResultMultiple, DbResultSingle};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
-use crate::database::models::active_audiobook::{
-    ActiveAudiobook, RemoveActiveAudiobook, SetActiveAudiobook,
-};
+use crate::database::models::active_audiobook::{ActiveAudiobook, PlayedAudiobook, RemoveActiveAudiobook, SetActiveAudiobook};
 use crate::database::models::audiobook::{ActiveAudiobookDetail, AudiobookDetail};
 
 use crate::database::models::bookmark::{Bookmark, BookmarkOperation};
@@ -225,6 +223,30 @@ impl UserRepository {
         .await?;
 
         Ok(new_active_audiobook)
+    }
+
+    /// Returns most currently listened users book
+    pub async fn get_latest_active_audiobook(
+        &self,
+        user_id: &Id,
+    ) -> DbResultSingle<Option<PlayedAudiobook>> {
+        let last_active_book = sqlx::query_as!(
+            PlayedAudiobook,
+            r#"
+            SELECT A.file_path AS path, A.name AS name, ACT.playback_position AS playback_position
+            FROM "Active_Audiobook" ACT
+                LEFT JOIN "Audiobook" A ON
+                ACT.audiobook_id = A.id
+            WHERE
+                ACT.user_id = $1
+            ORDER BY ACT.edited_at DESC
+            LIMIT 1
+            "#,
+            user_id,
+        )
+            .fetch_optional(&self.pool_handler.pool)
+            .await?;
+        Ok(last_active_book)
     }
 
     pub async fn get_all_bookmarks(&self, params: &UserGetById) -> DbResultMultiple<Bookmark> {

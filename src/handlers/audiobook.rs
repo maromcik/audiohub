@@ -17,12 +17,12 @@ use crate::handlers::utilities::{
     get_metadata_from_session, get_user_from_identity, parse_user_id, remove_file, save_file,
     validate_file, AudiobookCreateSessionKeys,
 };
-use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate};
+use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_session::Session;
 use actix_web::http::header::LOCATION;
-use actix_web::{get, patch, post, web, HttpResponse};
+use actix_web::{get, patch, post, web, HttpResponse, put};
 use askama::Template;
 use lofty::AudioFile;
 
@@ -170,6 +170,42 @@ pub async fn get_audiobook(
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
+/// TODO: refactor content methods, so it does not duplicate code
+#[get("/{id}/detail-content")]
+pub async fn get_audiobook_detail_content(
+    identity: Option<Identity>,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    chapter_repo: web::Data<ChapterRepository>,
+    path: web::Path<(Id,)>,
+) -> Result<HttpResponse, AppError> {
+    let _ = authorized!(identity);
+    let book_id = path.into_inner().0;
+    let audiobook = audiobook_repo
+        .read_one(&AudiobookGetByIdJoin::new(&book_id))
+        .await?;
+
+    let chapters = chapter_repo
+        .read_many(&ChaptersGetByBookId::new(book_id))
+        .await?;
+
+    let displayed_chapters: Vec<ChapterDisplay> = chapters
+        .into_iter()
+        .enumerate()
+        .map(|(order, ch)| ChapterDisplay {
+            name: ch.name,
+            order: order + 1,
+            position: ch.position,
+        })
+        .collect();
+
+    let body = AudiobookDetailContentTemplate {
+        audiobook,
+        chapters: displayed_chapters,
+    }
+        .render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
 #[get("/releases")]
 async fn releases_page(
     identity: Option<Identity>,
@@ -296,6 +332,54 @@ pub async fn set_active_audiobook(
         .await?;
     todo!()
 }
+
+#[get("/last-played")]
+pub async fn get_last_active_audiobook(
+    identity: Option<Identity>,
+    user_repo: web::Data<UserRepository>
+) -> Result<HttpResponse, AppError> {
+    let identity = authorized!(identity);
+    let id = parse_user_id(identity)?;
+    let latest = user_repo.get_latest_active_audiobook(&id)
+        .await?;
+
+    if latest.is_none() {
+
+        return Ok(HttpResponse::Ok()
+            .content_type("text/html")
+            .body("xd"));
+    }
+
+    let template = PlayerTemplate {last_played: latest.unwrap()};
+    Ok(HttpResponse::Ok()
+        .content_type("text/html")
+        .body(template.render()?))
+}
+
+#[put("/{id}/play")]
+pub async fn set_played_audiobook(
+    identity: Option<Identity>,
+    user_repo: web::Data<UserRepository>
+) -> Result<HttpResponse, AppError> {
+    let identity = authorized!(identity);
+    let id = parse_user_id(identity)?;
+    let latest = user_repo.get_latest_active_audiobook(&id)
+        .await?;
+
+    if latest.is_none() {
+
+        return Ok(HttpResponse::Ok()
+            .content_type("text/html")
+            .body("xd"));
+    }
+
+    let template = PlayerTemplate {last_played: latest.unwrap()};
+    Ok(HttpResponse::Ok()
+        .content_type("text/html")
+        .body(template.render()?))
+}
+
+
 
 #[get("{id}/active/delete")]
 pub async fn remove_active_audiobook(
