@@ -52,9 +52,9 @@ impl AudiobookRepository {
         Err(DbError::from(BackendError::new(AudiobookDoesNotExist)))
     }
 
-    pub async fn quick_search(&self, query: String) -> DbResultMultiple<AudiobookQuickSearch> {
+    pub async fn quick_search(&self, query: &str) -> DbResultMultiple<AudiobookQuickSearch> {
         let mut comparison_string: String = "%".to_owned();
-        comparison_string.push_str(query.as_str());
+        comparison_string.push_str(query);
         comparison_string.push('%');
 
         let results = sqlx::query_as!(

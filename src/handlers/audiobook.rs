@@ -8,7 +8,7 @@ use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
-use crate::forms::audiobook::{AudiobookCreateForm, AudiobookUploadForm};
+use crate::forms::audiobook::{AudiobookCreateForm, AudiobookSearchQuery, AudiobookUploadForm};
 use crate::handlers::utilities::{
     get_metadata_from_session, get_user_from_identity, remove_file, save_file, validate_file,
     AudiobookCreateSessionKeys,
@@ -221,4 +221,17 @@ pub async fn change_like(
         .body(likes.to_string()))
 }
 
+#[get("/search")]
+pub async fn search (
+    identity: Option<Identity>,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    q: web::Query<(AudiobookSearchQuery,)>,
+) -> Result<HttpResponse, AppError> {
 
+    authorized!(identity);
+    let books = audiobook_repo.quick_search("Loo").await?;
+    for b in books {
+        println!("{:?}", b);
+    }
+    Ok(HttpResponse::Ok().finish())
+}

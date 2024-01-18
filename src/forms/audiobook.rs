@@ -16,3 +16,8 @@ pub struct AudiobookUploadForm {
     #[multipart(rename = "file")]
     pub audio_file: TempFile,
 }
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AudiobookSearchQuery {
+    pub name: String
+}
