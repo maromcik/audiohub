@@ -11,6 +11,7 @@ use actix_web::web;
 use actix_web::web::ServiceConfig;
 use sqlx::PgPool;
 use crate::handlers::audiobook::change_like;
+use crate::handlers::rating::{create_rating, create_rating_form, get_ratings_by_audiobook};
 
 pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let user_repository = UserRepository::new(PoolHandler::new(pool.clone()));
