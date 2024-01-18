@@ -285,16 +285,16 @@ impl UserRepository {
                 g.name AS genre_name
 
             FROM
-                "Bookmark" B
-                    LEFT JOIN
-                "Audiobook" AS a ON a.id = B.audiobook_id
+                "Bookmark" b
+                    INNER JOIN
+                "Audiobook" AS a ON a.id = b.audiobook_id
                     INNER JOIN
                 "User" AS u ON u.id = a.author_id
                     INNER JOIN
                 "Genre" AS g
                     ON a.genre_id = g.id
             WHERE
-                B.user_id = $1
+                b.user_id = $1
             "#,
             user_id,
         ).fetch_all(&self.pool_handler.pool)
