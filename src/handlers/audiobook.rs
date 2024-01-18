@@ -23,7 +23,7 @@ use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::common::query_parameters::DbQueryParams;
 use crate::database::models::chapter::{ChapterDisplay, ChaptersGetByBookId};
 use uuid::Uuid;
-use crate::database::models::active_audiobook::SetActiveAudiobook;
+use crate::database::models::active_audiobook::{RemoveActiveAudiobook, SetActiveAudiobook};
 use crate::database::models::bookmark::BookmarkOperation;
 use crate::database::models::user::UserGetById;
 
@@ -257,5 +257,16 @@ pub async fn set_active_audiobook(
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity);
     user_repo.set_active_audiobook(&SetActiveAudiobook::new(parse_user_id(identity)?, form.audiobook_id, form.position)).await?;
+    todo!()
+}
+
+#[get("{id}/active/delete")]
+pub async fn remove_active_audiobook(
+    identity: Option<Identity>,
+    user_repo: web::Data<UserRepository>,
+    path: web::Path<(Id,)>,
+) -> Result<HttpResponse, AppError> {
+    let identity = authorized!(identity);
+    user_repo.remove_active_audiobook(&RemoveActiveAudiobook::new(parse_user_id(identity)?, path.into_inner().0)).await?;
     todo!()
 }
