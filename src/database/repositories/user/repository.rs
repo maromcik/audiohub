@@ -140,7 +140,6 @@ impl UserRepository {
                 a.genre_id,
                 g.name AS genre_name,
 
-                ab.playback_chapter_id,
                 ab.playback_position,
                 ab.edited_at AS active_audiobook_edited_at
             FROM
@@ -172,12 +171,11 @@ impl UserRepository {
             ActiveAudiobook,
             r#"
             DELETE FROM "Active_Audiobook"
-            WHERE user_id = $1 AND audiobook_id = $2 AND playback_chapter_id = $3
+            WHERE user_id = $1 AND audiobook_id = $2
             RETURNING *
             "#,
             params.user_id,
             params.audiobook_id,
-            params.playback_chapter_id,
         )
         .fetch_one(&self.pool_handler.pool)
         .await?;
@@ -196,13 +194,12 @@ impl UserRepository {
             SET
                 playback_position = $1,
                 edited_at = current_timestamp
-            WHERE user_id = $2 AND audiobook_id = $3 AND playback_chapter_id = $4
+            WHERE user_id = $2 AND audiobook_id = $3
             RETURNING *
             "#,
             params.playback_position,
             params.user_id,
             params.audiobook_id,
-            params.playback_chapter_id
         )
         .fetch_all(&self.pool_handler.pool)
         .await?;
@@ -214,13 +211,12 @@ impl UserRepository {
         let new_active_audiobook = sqlx::query_as!(
             ActiveAudiobook,
             r#"
-            INSERT INTO "Active_Audiobook" (user_id, audiobook_id, playback_chapter_id, playback_position)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO "Active_Audiobook" (user_id, audiobook_id, playback_position)
+            VALUES ($1, $2, $3)
             RETURNING *
             "#,
             params.user_id,
             params.audiobook_id,
-            params.playback_chapter_id,
             params.playback_position
         )
             .fetch_one(&self.pool_handler.pool)

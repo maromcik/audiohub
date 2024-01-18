@@ -1,0 +1,1 @@
+ALTER TABLE "Active_Audiobook" DROP COLUMN IF EXISTS playback_chapter_id;

@@ -74,7 +74,6 @@ pub struct ActiveAudiobookDetail {
 
     pub genre_name: String,
 
-    pub playback_chapter_id: Id,
     pub playback_position: f64,
     pub active_audiobook_edited_at: DateTime<Utc>
 }
