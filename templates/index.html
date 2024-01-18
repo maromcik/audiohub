@@ -20,10 +20,10 @@
     <!-- Main Content -->
     <main class="flex-1 pl-64 p-10">
         <div id="add_book" class="flex justify-end px-5">
-            <button hx-push-url="true" hx-boost="true" hx-get="/audiobook/create" hx-target="#lajks" hx-swap="innerHTML">
+            <button hx-push-url="true" hx-boost="true" hx-get="/audiobook/create" hx-target="#add-book" hx-swap="innerHTML">
                 Add audiobook
             </button>
-            <div id="lajks"></div>
+            <div id="add-book"></div>
         </div>
         <div id="content-area" class="flex flex-col items-center justify-center text-center min-h-full">
             {% include "index_content.html" %}

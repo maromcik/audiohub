@@ -6,7 +6,7 @@ use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::error::AppError;
 use crate::forms::chapter::{ChapterCreateAudiobookInfoForm, ChapterCreateForm};
 use crate::templates::chapter::{
-    ChapterCreateFormTemplate, ChapterDetailTemplate, ChaptersByAudiobookTemplate,
+    ChapterCreateFormTemplate, ChapterDetailTemplate,
 };
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
@@ -43,23 +43,6 @@ pub async fn create_chapter(
         .await?;
 
     let template = ChapterDetailTemplate { chapter };
-    let body = template.render()?;
-    Ok(HttpResponse::Ok().content_type("text/html").body(body))
-}
-
-#[get("/audiobook/{id}")]
-pub async fn get_chapters_by_audiobook(
-    identity: Option<Identity>,
-    chapter_repo: web::Data<ChapterRepository>,
-    path: web::Path<(Id,)>,
-) -> Result<HttpResponse, AppError> {
-    authorized!(identity);
-    let chapters = chapter_repo
-        .read_many(&ChaptersGetByBookId {
-            audiobook_id: path.into_inner().0,
-        })
-        .await?;
-    let template = ChaptersByAudiobookTemplate { chapters };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }

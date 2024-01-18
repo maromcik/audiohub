@@ -51,25 +51,25 @@ impl AudiobookRepository {
         Err(DbError::from(BackendError::new(AudiobookDoesNotExist)))
     }
 
-    pub async fn quick_search(&self, query: String) -> DbResultMultiple<AudiobookQuickSearch> {
-        let mut comparison_string: String = "%".to_owned();
-        comparison_string.push_str(query.as_str());
-        comparison_string.push_str("%");
-
-        let results = sqlx::query_as!(
-            AudiobookQuickSearch,
-            r#"
-            SELECT id, name FROM "Audiobook"
-            WHERE name LIKE $1
-            LIMIT 5
-            "#,
-            comparison_string
-        )
-            .fetch_many(&self.pool_handler.pool)
-            .await?;
-
-        return Ok(results);
-    }
+    // pub async fn quick_search(&self, query: String) -> DbResultMultiple<AudiobookQuickSearch> {
+    //     let mut comparison_string: String = "%".to_owned();
+    //     comparison_string.push_str(query.as_str());
+    //     comparison_string.push_str("%");
+    //
+    //     let results = sqlx::query_as!(
+    //         AudiobookQuickSearch,
+    //         r#"
+    //         SELECT id, name FROM "Audiobook"
+    //         WHERE name LIKE $1
+    //         LIMIT 5
+    //         "#,
+    //         comparison_string
+    //     )
+    //         .fetch_many(&self.pool_handler.pool)
+    //         .await?;
+    //
+    //     return Ok(results);
+    // }
 }
 
 #[async_trait]

@@ -114,13 +114,11 @@ pub async fn upload_audiobook(
 #[get("/{id}/detail")]
 pub async fn get_audiobook(
     identity: Option<Identity>,
-    user_repo: web::Data<UserRepository>,
     audiobook_repo: web::Data<AudiobookRepository>,
     chapter_repo: web::Data<ChapterRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
-    let identity = authorized!(identity);
-    let user = get_user_from_identity(identity, &user_repo).await?;
+    let _ = authorized!(identity);
     let book_id = path.into_inner().0;
     let audiobook = audiobook_repo
         .read_one(&AudiobookGetByIdJoin::new(&book_id))
@@ -129,19 +127,6 @@ pub async fn get_audiobook(
     let chapters = chapter_repo
         .read_many(&ChaptersGetByBookId::new(book_id))
         .await?;
-
-    // let body = match audiobook.author_id == user.id {
-    //     true => (AudiobookDetailCreatorTemplate {
-    //         audiobook,
-    //         chapters,
-    //     })
-    //     .render()?,
-    //     false => (AudiobookDetailVisitorTemplate {
-    //         audiobook,
-    //         chapters,
-    //     })
-    //     .render()?,
-    // };
 
     let displayed_chapters : Vec<ChapterDisplay> = chapters.into_iter().enumerate()
         .map(|(order, ch)| ChapterDisplay{ name: ch.name,

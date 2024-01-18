@@ -13,19 +13,6 @@ pub struct AudiobookCreateFormTemplate {
 #[template(path = "audiobook/audiobook_upload.html")]
 pub struct AudiobookUploadFormTemplate {}
 
-#[derive(Template)]
-#[template(path = "audiobook/audiobook_detail_creator.html")]
-pub struct AudiobookDetailCreatorTemplate {
-    pub audiobook: AudiobookDetail,
-    pub chapters: Vec<Chapter>,
-}
-
-#[derive(Template)]
-#[template(path = "audiobook/audiobook_detail_visitor.html")]
-pub struct AudiobookDetailVisitorTemplate {
-    pub audiobook: AudiobookDetail,
-    pub chapters: Vec<Chapter>,
-}
 
 #[derive(Template)]
 #[template(path = "audiobook/releases.html")]

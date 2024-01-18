@@ -17,7 +17,10 @@ pub async fn index(
     let audiobooks = user_repo.get_bookmarked(&parse_user_id(u)?).await?;
 
 
-    let template = LibraryPageTemplate {audiobooks};
+    // TODO : change audiobook to active book
+    let tmp_book = audiobooks[0].clone();
+    let template = LibraryPageTemplate {audiobooks, audiobook:tmp_book};
+
     let body = template.render()?;
 
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
