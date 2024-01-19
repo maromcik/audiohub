@@ -153,11 +153,11 @@ pub fn get_active_audiobooks(audiobooks: &[AudiobookDetail]) ->Vec<ActiveAudiobo
         }).collect()
 }
 
-pub fn is_audiobook_finished(length: &f64, pos:&Option<f64>) -> bool {
-    match pos {
+pub fn is_audiobook_finished(audiobook: &AudiobookDetail) -> bool {
+    match audiobook.playback_position {
         None => false,
         Some(p) => {
-            if (length - p) <= CONSIDER_AUDIOBOOK_FINISHED {
+            if (audiobook.length - p) <= CONSIDER_AUDIOBOOK_FINISHED {
                 return true
             }
             false

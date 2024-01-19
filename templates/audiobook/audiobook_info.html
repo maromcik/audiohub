@@ -15,7 +15,7 @@
                     <!--                    Description: {{ audiobook.description }}-->
                     <!--                </p>-->
 
-                    {% if crate::handlers::utilities::is_audiobook_finished(audiobook.length, audiobook.playback_position) %}
+                    {% if crate::handlers::utilities::is_audiobook_finished(audiobook) %}
                     <p class="text-gray-300 text-sm">Finished</p>
                     {% endif %}
 
