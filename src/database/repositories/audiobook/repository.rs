@@ -197,7 +197,7 @@ impl AudiobookRepository {
         let last_active_book = sqlx::query_as!(
             PlayedAudiobook,
             r#"
-            SELECT A.file_path AS path, A.name AS name, ACT.playback_position AS playback_position
+            SELECT A.id as book_id, A.file_path AS path, A.name AS name, ACT.playback_position AS playback_position
             FROM "Active_Audiobook" ACT
                 LEFT JOIN "Audiobook" A ON
                 ACT.audiobook_id = A.id
@@ -213,6 +213,62 @@ impl AudiobookRepository {
         Ok(last_active_book)
     }
 
+    /// TODO: refactor this
+    pub async fn get_or_create_active_audiobook(
+        &self,
+        user_id: &Id,
+        book_id: &Id,
+    ) -> DbResultSingle<PlayedAudiobook> {
+
+        let exists = sqlx::query_as!(
+            ActiveAudiobook,
+            r#"
+            SELECT *
+            FROM "Active_Audiobook"
+            WHERE user_id = $1 AND audiobook_id = $2
+            "#,
+            user_id,
+            book_id,
+        ).fetch_optional(&self.pool_handler.pool).await?;
+
+        if let Some(book) = exists {
+            let played_audiobook = sqlx::query_as!(
+                PlayedAudiobook,
+                r#"
+                SELECT A.id as book_id, A.file_path AS path, A.name AS name, ACT.playback_position AS playback_position
+                FROM "Active_Audiobook" ACT
+                    LEFT JOIN "Audiobook" A ON ACT.audiobook_id = A.id
+                WHERE ACT.user_id = $1 AND ACT.audiobook_id = $2
+                "#,
+                user_id,
+                book_id
+            ).fetch_one(&self.pool_handler.pool).await?;
+            return Ok(played_audiobook);
+        }
+
+        sqlx::query_as!(
+            ActiveAudiobook,
+            r#"
+            INSERT INTO "Active_Audiobook" (user_id, audiobook_id, playback_position)
+            VALUES ($1, $2, 0) ON CONFLICT DO NOTHING
+            "#,
+            user_id,
+            book_id,
+        ).execute(&self.pool_handler.pool).await?;
+
+        let played_audiobook = sqlx::query_as!(
+                PlayedAudiobook,
+                r#"
+                SELECT A.id as book_id, A.file_path AS path, A.name AS name, ACT.playback_position AS playback_position
+                FROM "Active_Audiobook" ACT
+                    LEFT JOIN "Audiobook" A ON ACT.audiobook_id = A.id
+                WHERE ACT.user_id = $1 AND ACT.audiobook_id = $2
+                "#,
+                user_id,
+                book_id
+            ).fetch_one(&self.pool_handler.pool).await?;
+        Ok(played_audiobook)
+    }
 }
 
 #[async_trait]

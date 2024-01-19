@@ -28,13 +28,42 @@
 </body>
 
 <script>
-    const setPlayedBook = (file_path) => {
-        console.log(file_path);
-        const audio = document.getElementById('audiobook-player');
-        audio.src = file_path;
-        audio.load();
-        audio.play();
+    let playerIntervalId = 0;
+    let currentBookId = -1;
+
+    const getCurrentPlayerTime = () => {
+        return document.getElementById('audiobook-player').currentTime;
     }
+
+    document.addEventListener("htmx:afterRequest", (e) => {
+        if (e.detail.target.id === 'audiobook-player' && e.detail.elt.id === 'play-from-detail-btn') {
+            let audio = document.getElementById('audiobook-player');
+            let book_id = audio.lastElementChild.id;
+            currentBookId = parseBookIdFromSource(book_id);
+            createInterval();
+            audio.play();
+        }
+    });
+
+    const attachInterval = (bookId) => {
+        currentBookId = bookId;
+        document.getElementById('audiobook-player').onplay = () => {
+            createInterval(bookId)
+        }
+    };
+
+    // TODO: prolong interval
+    const createInterval = () => {
+        playerIntervalId  = setInterval(() => {
+            fetch(`/audiobook/${currentBookId}/active?position=${getCurrentPlayerTime()}`, {
+                method: "PUT",
+            });
+        }, 5_000);
+    }
+
+    const parseBookIdFromSource = (sourceId ) => {
+        return sourceId.slice(7, sourceId.length);
+    };
 
 </script>
 </html>

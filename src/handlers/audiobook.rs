@@ -23,8 +23,10 @@ use actix_multipart::form::MultipartForm;
 use actix_session::Session;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, patch, post, web, HttpResponse, put};
+use actix_web::web::patch;
 use askama::Template;
 use lofty::AudioFile;
+use serde::Deserialize;
 
 use crate::authorized;
 use crate::database::common::error::{BackendError, BackendErrorKind};
@@ -310,21 +312,30 @@ pub async fn search(
     Ok(HttpResponse::Ok().finish())
 }
 
-#[post("/active")]
+
+#[derive(Deserialize)]
+struct Position {
+    position: f64,
+}
+
+#[put("/{id}/active")]
 pub async fn set_active_audiobook(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
-    form: web::Form<AudiobookSetActiveForm>,
+    query: web::Query<Position>,
+    path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity);
+
     audiobook_repo
         .set_active_audiobook(&SetActiveAudiobook::new(
             parse_user_id(identity)?,
-            form.audiobook_id,
-            form.position,
+            path.into_inner().0,
+            query.position,
         ))
         .await?;
-    todo!()
+
+    Ok(HttpResponse::Ok().finish())
 }
 
 #[get("/last-played")]
@@ -339,7 +350,7 @@ pub async fn get_last_active_audiobook(
 
     if latest.is_none() {
         // TODO: solve no listened book
-        let template = PlayerTemplate {last_played: PlayedAudiobook{playback_position: 0 as f64,
+        let template = PlayerTemplate {last_played: PlayedAudiobook{book_id: 0, playback_position: 0 as f64,
             path: String::from(""), name: String::from("")}};
 
         return Ok(HttpResponse::Ok()
@@ -353,24 +364,19 @@ pub async fn get_last_active_audiobook(
         .body(template.render()?))
 }
 
-#[put("/{id}/play")]
-pub async fn set_played_audiobook(
+#[get("/{id}/player")]
+pub async fn get_audiobook_player(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
+    path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity);
-    let id = parse_user_id(identity)?;
-    let latest = audiobook_repo.get_latest_active_audiobook(&id)
+    let user_id = parse_user_id(identity)?;
+    let played = audiobook_repo.get_or_create_active_audiobook(
+        &user_id, &path.into_inner().0)
         .await?;
 
-    if latest.is_none() {
-
-        return Ok(HttpResponse::Ok()
-            .content_type("text/html")
-            .body("xd"));
-    }
-
-    let template = PlayerTemplate {last_played: latest.unwrap()};
+    let template = PlayerTemplate {last_played: played};
     Ok(HttpResponse::Ok()
         .content_type("text/html")
         .body(template.render()?))

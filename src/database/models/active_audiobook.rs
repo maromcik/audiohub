@@ -37,6 +37,7 @@ pub struct SetActiveAudiobook {
 
 #[derive(Debug, Clone)]
 pub struct PlayedAudiobook {
+    pub book_id: Id,
     pub path: String,
     pub name: String,
     pub playback_position: f64,

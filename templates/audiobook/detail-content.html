@@ -22,7 +22,10 @@
     </div>
 </div>
 <div class="flex flex-row justify-center">
-    <button onclick="setPlayedBook('{{audiobook.file_path}}')" class="bg-cyan-950 rounded-md p-4 text-2xl font-bold">Play</button>
+    <button id="play-from-detail-btn" hx-get="/audiobook/{{audiobook.id}}/player"
+            hx-target="#audiobook-player"
+            hx-swap="outerHTML"
+            class="bg-cyan-950 rounded-md p-4 text-2xl font-bold">Play</button>
 </div>
 <div class="flex flex-row">
     <div class="flex-1 pt-5 pl-10">
