@@ -153,7 +153,7 @@ impl UserRepository {
                 "Genre" AS g
                     ON a.genre_id = g.id
             WHERE
-                ab.user_id = $1
+                ab.user_id = $1 AND (a.length - ab.playback_position) > 5
             ORDER BY ab.edited_at DESC
             "#,
             params.id
@@ -309,17 +309,20 @@ impl UserRepository {
                 u.bio,
 
                 a.genre_id,
-                g.name AS genre_name
+                g.name AS genre_name,
 
+                ab.playback_position AS "playback_position?",
+                ab.edited_at AS "active_audiobook_edited_at?"
             FROM
-                "Bookmark" b
-                    INNER JOIN
-                "Audiobook" AS a ON a.id = b.audiobook_id
+                "Audiobook" AS a
                     INNER JOIN
                 "User" AS u ON u.id = a.author_id
                     INNER JOIN
-                "Genre" AS g
-                    ON a.genre_id = g.id
+                "Genre" AS g ON a.genre_id = g.id
+                    INNER JOIN
+                "Bookmark" b ON b.audiobook_id = a.id
+                    LEFT JOIN
+                "Active_Audiobook" AS ab ON a.id = ab.audiobook_id AND u.id = ab.user_id
             WHERE
                 b.user_id = $1
             ORDER BY b.edited_at DESC

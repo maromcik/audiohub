@@ -381,21 +381,3 @@ pub async fn set_played_audiobook(
         .content_type("text/html")
         .body(template.render()?))
 }
-
-
-
-#[get("{id}/active/delete")]
-pub async fn remove_active_audiobook(
-    identity: Option<Identity>,
-    user_repo: web::Data<UserRepository>,
-    path: web::Path<(Id,)>,
-) -> Result<HttpResponse, AppError> {
-    let identity = authorized!(identity);
-    user_repo
-        .remove_active_audiobook(&RemoveActiveAudiobook::new(
-            parse_user_id(identity)?,
-            path.into_inner().0,
-        ))
-        .await?;
-    todo!()
-}

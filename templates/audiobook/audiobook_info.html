@@ -13,6 +13,13 @@
 <!--                <p class="text-gray-300 text-sm">-->
 <!--                    Description: {{ audiobook.description }}-->
 <!--                </p>-->
+                {% match audiobook.playback_position %}
+                    {% when Some with (pos) %}
+                        {% if (audiobook.length - pos) < 5.0 %}
+                            <p class="text-gray-300 text-sm">Finished</p>
+                        {% endif %}
+                    {% when None %}
+                {% endmatch %}
                 <p class="text-gray-300 text-sm">
                     Likes: {{ audiobook.like_count }}
                 </p>

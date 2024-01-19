@@ -48,6 +48,9 @@ pub struct AudiobookDetail {
     pub profile_picture: String,
 
     pub genre_name: String,
+
+    pub playback_position: Option<f64>,
+    pub active_audiobook_edited_at: Option<DateTime<Utc>>,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq)]
