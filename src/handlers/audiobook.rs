@@ -17,7 +17,7 @@ use crate::handlers::utilities::{
     get_metadata_from_session, get_user_from_identity, parse_user_id, remove_file, save_file,
     validate_file, AudiobookCreateSessionKeys,
 };
-use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate};
+use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailBase, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_session::Session;
@@ -142,31 +142,13 @@ pub async fn get_audiobook(
     chapter_repo: web::Data<ChapterRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
-    let _ = authorized!(identity);
-    let book_id = path.into_inner().0;
-    let audiobook = audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(&book_id))
-        .await?;
-
-    let chapters = chapter_repo
-        .read_many(&ChaptersGetByBookId::new(book_id))
-        .await?;
-
-    let displayed_chapters: Vec<ChapterDisplay> = chapters
-        .into_iter()
-        .enumerate()
-        .map(|(order, ch)| ChapterDisplay {
-            name: ch.name,
-            order: order + 1,
-            position: ch.position,
-        })
-        .collect();
-
+    authorized!(identity);
+    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, path.into_inner().0).await?;
     let body = AudiobookDetailPageTemplate {
-        audiobook,
-        chapters: displayed_chapters,
+        audiobook: base.audiobook,
+        chapters: base.chapters,
     }
-    .render()?;
+        .render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
@@ -178,8 +160,22 @@ pub async fn get_audiobook_detail_content(
     chapter_repo: web::Data<ChapterRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
-    let _ = authorized!(identity);
-    let book_id = path.into_inner().0;
+    authorized!(identity);
+    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, path.into_inner().0).await?;
+    let body = AudiobookDetailContentTemplate {
+        audiobook: base.audiobook,
+        chapters: base.chapters,
+    }
+        .render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+
+async fn get_audiobook_detail_base (
+    audiobook_repo: web::Data<AudiobookRepository>,
+    chapter_repo: web::Data<ChapterRepository>,
+    book_id: Id
+) -> Result<AudiobookDetailBase, AppError>  {
     let audiobook = audiobook_repo
         .read_one(&AudiobookGetByIdJoin::new(&book_id))
         .await?;
@@ -198,12 +194,10 @@ pub async fn get_audiobook_detail_content(
         })
         .collect();
 
-    let body = AudiobookDetailContentTemplate {
+    Ok(AudiobookDetailBase {
         audiobook,
-        chapters: displayed_chapters,
-    }
-        .render()?;
-    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+        chapters: displayed_chapters
+    })
 }
 
 #[get("/releases")]

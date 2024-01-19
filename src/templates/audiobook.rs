@@ -58,3 +58,28 @@ pub struct AudiobookDetailContentTemplate {
 pub struct PlayerTemplate {
     pub last_played: PlayedAudiobook,
 }
+
+
+
+pub struct AudiobookDetailBase {
+    pub audiobook: AudiobookDetail,
+    pub chapters: Vec<ChapterDisplay>,
+}
+
+impl From<AudiobookDetailPageTemplate> for AudiobookDetailBase {
+    fn from(value: AudiobookDetailPageTemplate) -> Self {
+        Self {
+            audiobook: value.audiobook,
+            chapters: value.chapters
+        }
+    }
+}
+
+impl From<AudiobookDetailContentTemplate> for AudiobookDetailBase {
+    fn from(value: AudiobookDetailContentTemplate) -> Self {
+        Self {
+            audiobook: value.audiobook,
+            chapters: value.chapters
+        }
+    }
+}

@@ -20,7 +20,7 @@ pub async fn index(
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
-    let base = get_index_base_template(u, user_repo, book_repo).await?;
+    let base = get_index_base(u, user_repo, book_repo).await?;
     let body = IndexTemplate::from(base).render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -33,12 +33,12 @@ pub async fn index_content(
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
 
-    let base = get_index_base_template(u, user_repo, book_repo).await?;
+    let base = get_index_base(u, user_repo, book_repo).await?;
     let body = IndexContentTemplate::from(base).render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
-async fn get_index_base_template(u: Identity, user_repo: web::Data<UserRepository>, book_repo: web::Data<AudiobookRepository>) -> Result<IndexBase, AppError> {
+async fn get_index_base(u: Identity, user_repo: web::Data<UserRepository>, book_repo: web::Data<AudiobookRepository>) -> Result<IndexBase, AppError> {
     let mut audiobooks = book_repo.read_many(&AudiobookSearch::default()).await?;
     let user = user_repo
         .read_one(&UserGetById::new(&parse_user_id(u)?))
