@@ -2,7 +2,7 @@ use crate::database::models::genre::Genre;
 use askama::Template;
 
 #[derive(Template)]
-#[template(path = "pages/genres.html")]
+#[template(path = "genres.html")]
 pub struct GenresPageTemplate {
     pub genres: Vec<Genre>,
 }

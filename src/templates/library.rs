@@ -2,7 +2,7 @@ use crate::database::models::audiobook::AudiobookDetail;
 use askama::Template;
 
 #[derive(Template)]
-#[template(path = "pages/library.html")]
+#[template(path = "library.html")]
 pub struct LibraryPageTemplate {
     pub audiobooks: Vec<AudiobookDetail>,
 }

@@ -29,7 +29,7 @@ use lofty::AudioFile;
 use crate::authorized;
 use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::common::query_parameters::DbQueryParams;
-use crate::database::models::active_audiobook::{RemoveActiveAudiobook, SetActiveAudiobook};
+use crate::database::models::active_audiobook::{PlayedAudiobook, RemoveActiveAudiobook, SetActiveAudiobook};
 use crate::database::models::bookmark::BookmarkOperation;
 use crate::database::models::chapter::{ChapterDisplay, ChaptersGetByBookId};
 use uuid::Uuid;
@@ -344,10 +344,13 @@ pub async fn get_last_active_audiobook(
         .await?;
 
     if latest.is_none() {
+        // TODO: solve no listened book
+        let template = PlayerTemplate {last_played: PlayedAudiobook{playback_position: 0 as f64,
+            path: String::from(""), name: String::from("")}};
 
         return Ok(HttpResponse::Ok()
             .content_type("text/html")
-            .body("xd"));
+            .body(template.render()?));
     }
 
     let template = PlayerTemplate {last_played: latest.unwrap()};

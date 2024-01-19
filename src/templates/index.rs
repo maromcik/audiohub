@@ -2,7 +2,7 @@ use crate::database::models::audiobook::{ActiveAudiobookDetail, AudiobookDetail}
 use askama::Template;
 
 #[derive(Template)]
-#[template(path = "pages/index.html")]
+#[template(path = "index.html")]
 pub struct IndexTemplate {
     pub logged_in: bool,
     pub username: String,
