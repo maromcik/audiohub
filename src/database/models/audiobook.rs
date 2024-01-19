@@ -68,8 +68,9 @@ impl AudiobookDetail {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct AudiobookSearch {
+    pub user_id: Id,
     pub name: Option<String>,
     pub author_name: Option<String>,
     pub genre_name: Option<String>,
@@ -88,6 +89,7 @@ impl AudiobookSearch {
     #[must_use]
     #[inline]
     pub fn new(
+        user_id: Id,
         name: Option<&str>,
         author_id: Option<Id>,
         author_name: Option<&str>,
@@ -102,6 +104,7 @@ impl AudiobookSearch {
         query_params: DbQueryParams,
     ) -> Self {
         Self {
+            user_id,
             name: name.map(|n| n.to_owned()),
             genre_name: genre_name.map(|n| n.to_owned()),
             author_name: author_name.map(|n| n.to_owned()),
@@ -116,9 +119,26 @@ impl AudiobookSearch {
             query_params,
         }
     }
-
-    pub fn with_params(query_params: DbQueryParams) -> Self {
+    pub fn default(user_id: Id) -> Self {
         Self {
+            user_id,
+            name: None,
+            author_name: None,
+            genre_name: None,
+            author_id: None,
+            genre_id: None,
+            min_stream_count: None,
+            max_stream_count: None,
+            min_like_count: None,
+            max_like_count: None,
+            min_overall_rating: None,
+            max_overall_rating: None,
+            query_params: Default::default(),
+        }
+    }
+    pub fn with_params(query_params: DbQueryParams, user_id: Id) -> Self {
+        Self {
+            user_id,
             name: None,
             genre_name: None,
             author_name: None,
@@ -134,8 +154,9 @@ impl AudiobookSearch {
         }
     }
 
-    pub fn search_by_genre_id(genre_id: Id) -> Self {
+    pub fn search_by_genre_id(genre_id: Id, user_id: Id) -> Self {
         Self {
+            user_id,
             name: None,
             genre_name: None,
             author_name: None,
@@ -151,8 +172,9 @@ impl AudiobookSearch {
         }
     }
 
-    pub fn search_by_author_id(author_id: Id) -> Self {
+    pub fn search_by_author_id(author_id: Id, user_id: Id) -> Self {
         Self {
+            user_id,
             name: None,
             genre_name: None,
             author_name: None,
@@ -168,8 +190,9 @@ impl AudiobookSearch {
         }
     }
 
-    pub fn search_by_book_name(name: &str) -> Self {
+    pub fn search_by_book_name(name: &str, user_id: Id) -> Self {
         Self {
+            user_id,
             name: Some(name.to_owned()),
             genre_name: None,
             author_name: None,
@@ -184,8 +207,9 @@ impl AudiobookSearch {
             query_params: DbQueryParams::default(),
         }
     }
-    pub fn search_by_genre_name(name: &str) -> Self {
+    pub fn search_by_genre_name(name: &str, user_id: Id) -> Self {
         Self {
+            user_id,
             name: None,
             genre_name: Some(name.to_owned()),
             author_name: None,
@@ -200,8 +224,9 @@ impl AudiobookSearch {
             query_params: DbQueryParams::default(),
         }
     }
-    pub fn search_by_author_name(name: &str) -> Self {
+    pub fn search_by_author_name(name: &str, user_id: Id) -> Self {
         Self {
+            user_id,
             name: None,
             genre_name: None,
             author_name: Some(name.to_owned()),

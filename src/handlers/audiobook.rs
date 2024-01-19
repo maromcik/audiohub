@@ -31,7 +31,7 @@ use serde::Deserialize;
 use crate::authorized;
 use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::common::query_parameters::DbQueryParams;
-use crate::database::models::active_audiobook::{PlayedAudiobook, RemoveActiveAudiobook, SetActiveAudiobook};
+use crate::database::models::active_audiobook::{PlayedAudiobook, SetActiveAudiobook};
 use crate::database::models::bookmark::BookmarkOperation;
 use crate::database::models::chapter::{ChapterDisplay, ChaptersGetByBookId};
 use uuid::Uuid;
@@ -208,9 +208,9 @@ async fn releases_page(
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
     //add functionality for ordering audiobooks
-    authorized!(identity);
+    let u = authorized!(identity);
     let books = book_repo
-        .read_many(&AudiobookSearch::with_params(DbQueryParams::limit(5, 0)))
+        .read_many(&AudiobookSearch::with_params(DbQueryParams::limit(5, 0), parse_user_id(u)?))
         .await?;
 
     let template = NewReleasesPageTemplate { audiobooks: books };
@@ -224,9 +224,9 @@ async fn releases_content(
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
     //add functionality for ordering audiobooks
-    authorized!(identity);
+    let u = authorized!(identity);
     let books = book_repo
-        .read_many(&AudiobookSearch::with_params(DbQueryParams::limit(5, 0)))
+        .read_many(&AudiobookSearch::with_params(DbQueryParams::limit(5, 0), parse_user_id(u)?))
         .await?;
 
     let template = NewReleasesContentTemplate { audiobooks: books };
