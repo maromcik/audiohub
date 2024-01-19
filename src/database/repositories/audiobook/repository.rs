@@ -9,11 +9,11 @@ use async_trait::async_trait;
 
 use crate::database::common::utilities::generate_query_param_string;
 use sqlx::{Postgres, Transaction};
-use crate::database::models::active_audiobook::{ActiveAudiobook, ActiveAudiobookDetail, PlayedAudiobook, RemoveActiveAudiobook, SetActiveAudiobook};
+use crate::database::models::active_audiobook::{ActiveAudiobook, PlayedAudiobook, RemoveActiveAudiobook, SetActiveAudiobook};
 
 use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookGetById, AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookSearch, AudiobookUpdate};
 use crate::database::models::Id;
-use crate::database::models::user::UserGetById;
+
 
 #[derive(Clone)]
 pub struct AudiobookRepository {
@@ -377,7 +377,7 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
                     INNER JOIN
                 "Genre" AS g ON a.genre_id = g.id
                     LEFT JOIN
-                "Active_Audiobook" AS ab ON ab.audiobook_id = a.id AND u.id = ab.user_id
+                "Active_Audiobook" AS ab ON ab.audiobook_id = a.id
             WHERE
                 a.deleted_at IS NULL
                 AND u.deleted_at IS NULL
@@ -393,6 +393,7 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
                 AND (overall_rating <= $9 OR $9 IS NULL)
                 AND (u.name = $10 OR $10 IS NULL)
                 AND (g.name = $11 OR $11 IS NULL)
+                AND (ab.user_id IS NULL or ab.user_id = $12)
             "#
         .to_owned();
 
@@ -410,6 +411,7 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
             .bind(params.max_overall_rating)
             .bind(&params.author_name)
             .bind(&params.genre_name)
+            .bind(params.user_id)
             .fetch_all(&self.pool_handler.pool)
             .await?;
         Ok(audiobooks)

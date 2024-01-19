@@ -39,10 +39,11 @@ pub async fn index_content(
 }
 
 async fn get_index_base(u: Identity, user_repo: web::Data<UserRepository>, book_repo: web::Data<AudiobookRepository>) -> Result<IndexBase, AppError> {
-    let mut audiobooks = book_repo.read_many(&AudiobookSearch::default()).await?;
     let user = user_repo
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
+
+    let mut audiobooks = book_repo.read_many(&AudiobookSearch::default(user.id)).await?;
 
     let active_audiobooks = get_active_audiobooks(&audiobooks);
     audiobooks.retain(|a|

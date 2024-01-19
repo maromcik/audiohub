@@ -12,6 +12,7 @@ use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, web, HttpResponse};
 use askama::Template;
+use crate::handlers::utilities::parse_user_id;
 
 #[get("/all")]
 async fn get_genres_page(
@@ -49,9 +50,9 @@ async fn get_audiobooks_by_genre(
     genre_repo: web::Data<GenreRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
-    authorized!(identity);
+    let user = authorized!(identity);
     let genre_id = path.into_inner().0;
-    let book_search = AudiobookSearch::search_by_genre_id(genre_id);
+    let book_search = AudiobookSearch::search_by_genre_id(genre_id, parse_user_id(user)?);
     let books = audiobook_repo.read_many(&book_search).await?;
 
     let genre = genre_repo.read_one(&GenreGetById::new(&genre_id)).await?;
