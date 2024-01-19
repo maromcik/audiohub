@@ -60,9 +60,9 @@ impl AudiobookDetail {
             None => false,
             Some(pos) => {
                 if (self.length - pos) <= CONSIDER_AUDIOBOOK_FINISHED {
-                    return false
+                    return true
                 }
-                true
+                false
             }
         }
     }
