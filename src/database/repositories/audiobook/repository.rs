@@ -197,10 +197,17 @@ impl AudiobookRepository {
         let last_active_book = sqlx::query_as!(
             PlayedAudiobook,
             r#"
-            SELECT A.id as book_id, A.file_path AS path, A.name AS name, ACT.playback_position AS playback_position
+            SELECT A.id as book_id, A.file_path AS path, A.thumbnail as thumbnail,
+                A.name AS name, ACT.playback_position AS playback_position,
+                B.edited_at IS NOT NULL AS is_liked, U.id as author_id,
+                U.name AS author_name, U.surname As author_surname
             FROM "Active_Audiobook" ACT
-                LEFT JOIN "Audiobook" A ON
+            LEFT JOIN "Audiobook" A ON
                 ACT.audiobook_id = A.id
+            LEFT JOIN "User" U ON
+                A.author_id = U.id
+            LEFT JOIN "Bookmark" B ON
+                A.id = B.audiobook_id
             WHERE
                 ACT.user_id = $1
             ORDER BY ACT.edited_at DESC
@@ -235,9 +242,14 @@ impl AudiobookRepository {
             let played_audiobook = sqlx::query_as!(
                 PlayedAudiobook,
                 r#"
-                SELECT A.id as book_id, A.file_path AS path, A.name AS name, ACT.playback_position AS playback_position
+                SELECT A.id as book_id, A.file_path AS path, A.thumbnail as thumbnail,
+                    A.name AS name, ACT.playback_position AS playback_position,
+                    B.edited_at IS NOT NULL AS is_liked, U.id as author_id,
+                    U.name AS author_name, U.surname As author_surname
                 FROM "Active_Audiobook" ACT
                     LEFT JOIN "Audiobook" A ON ACT.audiobook_id = A.id
+                    LEFT JOIN "User" U ON A.author_id = U.id
+                    LEFT JOIN "Bookmark" B ON A.id = B.audiobook_id
                 WHERE ACT.user_id = $1 AND ACT.audiobook_id = $2
                 "#,
                 user_id,
@@ -259,9 +271,14 @@ impl AudiobookRepository {
         let played_audiobook = sqlx::query_as!(
                 PlayedAudiobook,
                 r#"
-                SELECT A.id as book_id, A.file_path AS path, A.name AS name, ACT.playback_position AS playback_position
+                SELECT A.id as book_id, A.file_path AS path, A.thumbnail as thumbnail,
+                    A.name AS name, ACT.playback_position AS playback_position,
+                    B.edited_at IS NOT NULL AS is_liked, U.id as author_id,
+                    U.name AS author_name, U.surname As author_surname
                 FROM "Active_Audiobook" ACT
                     LEFT JOIN "Audiobook" A ON ACT.audiobook_id = A.id
+                    LEFT JOIN "User" U ON A.author_id = U.id
+                    LEFT JOIN "Bookmark" B ON A.id = B.audiobook_id
                 WHERE ACT.user_id = $1 AND ACT.audiobook_id = $2
                 "#,
                 user_id,

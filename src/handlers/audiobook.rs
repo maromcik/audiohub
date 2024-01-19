@@ -349,16 +349,13 @@ pub async fn get_last_active_audiobook(
         .await?;
 
     if latest.is_none() {
-        // TODO: solve no listened book
-        let template = PlayerTemplate {last_played: PlayedAudiobook{book_id: 0, playback_position: 0 as f64,
-            path: String::from(""), name: String::from("")}};
-
+        // return empty container
         return Ok(HttpResponse::Ok()
             .content_type("text/html")
-            .body(template.render()?));
+            .body("<div id='player-container'></div>"));
     }
 
-    let template = PlayerTemplate {last_played: latest.unwrap()};
+    let template = PlayerTemplate { played_book: latest.unwrap()};
     Ok(HttpResponse::Ok()
         .content_type("text/html")
         .body(template.render()?))
@@ -376,7 +373,7 @@ pub async fn get_audiobook_player(
         &user_id, &path.into_inner().0)
         .await?;
 
-    let template = PlayerTemplate {last_played: played};
+    let template = PlayerTemplate { played_book: played};
     Ok(HttpResponse::Ok()
         .content_type("text/html")
         .body(template.render()?))

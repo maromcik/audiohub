@@ -11,8 +11,8 @@ use actix_web::http::header::LOCATION;
 use actix_web::{web, HttpResponse};
 
 use uuid::Uuid;
-use crate::CONSIDER_AUDIOBOOK_FINISHED;
-use crate::database::models::active_audiobook::ActiveAudiobookDetail;
+use crate::{CONSIDER_AUDIOBOOK_FINISHED, CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE};
+use crate::database::models::active_audiobook::{ActiveAudiobookDetail, PlayedAudiobook};
 
 pub fn parse_user_id(identity: Identity) -> Result<Id, AppError> {
     Ok(identity.id()?.parse::<i64>()?)
@@ -166,7 +166,7 @@ pub fn is_audiobook_finished(audiobook: &AudiobookDetail) -> bool {
 }
 
 pub fn is_active_audiobook_finished(audiobook: &ActiveAudiobookDetail) -> bool {
-    return audiobook.progress > 99.0;
+    return audiobook.progress > CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE;
 }
 
 #[macro_export]
