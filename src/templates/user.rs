@@ -28,5 +28,11 @@ pub struct UserManageProfileContentTemplate {
 }
 
 #[derive(Template)]
-#[template(path = "user/profile_picture.html")]
+#[template(path = "user/profile_picture_update.html")]
 pub struct UserManageProfilePictureFormTemplate {}
+
+#[derive(Template)]
+#[template(path = "user/profile_picture.html")]
+pub struct UserManageProfilePictureTemplate {
+    pub user: User,
+}

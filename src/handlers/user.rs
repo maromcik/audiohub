@@ -1,7 +1,11 @@
 use crate::authorized;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
-use crate::templates::user::{LoginTemplate, RegistrationTemplate, UserManagePasswordTemplate, UserManageProfilePictureFormTemplate, UserManageProfilePageTemplate, UserManageProfileContentTemplate};
+use crate::templates::user::{
+    LoginTemplate, RegistrationTemplate, UserManagePasswordTemplate,
+    UserManageProfileContentTemplate, UserManageProfilePageTemplate,
+    UserManageProfilePictureFormTemplate, UserManageProfilePictureTemplate,
+};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_web::http::header::LOCATION;
@@ -219,11 +223,17 @@ pub async fn user_manage_picture(
         None,
     );
 
-    user_repo.update(&user_update).await?;
+    let mut users = user_repo.update(&user_update).await?;
     save_file(form.picture, path)?;
-    // Ok(HttpResponse::Ok()
-    //     .insert_header(("HX-Redirect", "/user/manage"))
-    //     .finish())
+    // // Ok(HttpResponse::Ok()
+    // //     .insert_header(("HX-Redirect", "/user/manage"))
+    // //     .finish())
+
+    if let Some(user) = users.pop() {
+        let template = UserManageProfilePictureTemplate { user };
+        let body = template.render()?;
+        return Ok(HttpResponse::Ok().content_type("text/html").body(body));
+    }
     // TEMPORARY SOLUTION
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/"))

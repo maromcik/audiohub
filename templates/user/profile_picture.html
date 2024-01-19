@@ -1,20 +1,8 @@
-<div class="container mx-auto p-6 bg-black">
-    <form method="post" action="/user/manage/picture" enctype="multipart/form-data"
-          class="bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h2 class="block text-gray-300 text-xl font-bold mb-2">Upload new profile picture</h2>
-        <div class="mb-4">
-            <label class="block text-gray-300 text-sm font-bold mb-2" for="profile_picture">
-            </label>
-            <input class="shadow appearance-none border rounded py-2 px-3 text-gray-300 leading-tight focus:outline-none focus:shadow-outline"
-                   id="profile_picture" type="file" multiple name="picture">
-
-        </div>
-
-        <div class="flex items-center justify-between">
-            <button hx-target="#content-area" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    type="submit">
-                Upload
-            </button>
-        </div>
-    </form>
-</div>
+<img class="w-48 h-48 md:w-72 md:h-72 lg:w-108 lg:h-108 object-cover rounded-full mb-4" src="{{ user.profile_picture }}" alt="Profile Picture" onerror="this.style.filter='grayscale(1)'">
+<button hx-get="/user/manage/picture" hx-push-url="true" hx-target="#profile-picture-box" hx-swap="innerHTML" class="absolute bottom-[32px] right-[32px] md:bottom-[48px] md:right-[48px] lg:bottom-[72px] lg:right-[72px] hidden transform translate-x-1/2 translate-y-1/2 bg-green-500 text-white rounded-full p-2 hover:bg-green-600 focus:outline-none group-hover:block">
+    <svg class="w-12 h-12 md:w-18 md:h-18 lg:w-27 lg:h-27" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+         xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 5v14m-7-7h14"></path>
+    </svg>
+</button>
