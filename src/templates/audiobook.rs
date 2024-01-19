@@ -56,7 +56,7 @@ pub struct AudiobookDetailContentTemplate {
 #[derive(Template)]
 #[template(path = "components/player.html")]
 pub struct PlayerTemplate {
-    pub last_played: PlayedAudiobook,
+    pub played_book: PlayedAudiobook,
 }
 
 

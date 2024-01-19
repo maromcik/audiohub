@@ -24,6 +24,7 @@ const DEFAULT_HOSTNAME: &str = "localhost";
 const DEFAULT_PORT: &str = "8000";
 
 const CONSIDER_AUDIOBOOK_FINISHED: f64 = 5f64;
+const CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE: f64 = 98.0;
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
