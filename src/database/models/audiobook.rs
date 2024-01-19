@@ -1,6 +1,7 @@
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
+use crate::CONSIDER_AUDIOBOOK_FINISHED;
 
 use crate::database::common::query_parameters::DbQueryParams;
 
@@ -53,6 +54,19 @@ pub struct AudiobookDetail {
     pub active_audiobook_edited_at: Option<DateTime<Utc>>,
 }
 
+impl AudiobookDetail {
+    pub fn is_finished(&self) -> bool {
+        match self.playback_position {
+            None => false,
+            Some(pos) => {
+                if (self.length - pos) <= CONSIDER_AUDIOBOOK_FINISHED {
+                    return false
+                }
+                true
+            }
+        }
+    }
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct AudiobookSearch {

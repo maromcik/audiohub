@@ -82,6 +82,7 @@ pub struct ActiveAudiobookDetail {
 
     pub playback_position: f64,
     pub active_audiobook_edited_at: DateTime<Utc>,
+    pub progress: f64
 }
 
 impl ActiveAudiobookDetail {
@@ -110,7 +111,8 @@ impl ActiveAudiobookDetail {
             genre_name: audiobook.genre_name.to_owned(),
 
             playback_position,
-            active_audiobook_edited_at
+            active_audiobook_edited_at,
+            progress: playback_position / audiobook.length * 100f64
         }
     }
 }

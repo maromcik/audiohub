@@ -11,6 +11,7 @@ use actix_web::http::header::LOCATION;
 use actix_web::{web, HttpResponse};
 
 use uuid::Uuid;
+use crate::CONSIDER_AUDIOBOOK_FINISHED;
 use crate::database::models::active_audiobook::ActiveAudiobookDetail;
 
 pub fn parse_user_id(identity: Identity) -> Result<Id, AppError> {
@@ -141,7 +142,7 @@ pub fn remove_file(path: &str) -> Result<(), AppError> {
     Ok(())
 }
 
-pub fn get_active_audiobooks(audiobooks: &Vec<AudiobookDetail>) ->Vec<ActiveAudiobookDetail> {
+pub fn get_active_audiobooks(audiobooks: &[AudiobookDetail]) ->Vec<ActiveAudiobookDetail> {
     audiobooks
         .iter()
         .filter_map(|a| match (a.playback_position, a.active_audiobook_edited_at) {
@@ -150,6 +151,18 @@ pub fn get_active_audiobooks(audiobooks: &Vec<AudiobookDetail>) ->Vec<ActiveAudi
             } else { None }
             (_, _) => None
         }).collect()
+}
+
+pub fn is_audiobook_finished(length: &f64, pos:&Option<f64>) -> bool {
+    match pos {
+        None => false,
+        Some(p) => {
+            if (length - p) <= CONSIDER_AUDIOBOOK_FINISHED {
+                return false
+            }
+            true
+        }
+    }
 }
 
 #[macro_export]

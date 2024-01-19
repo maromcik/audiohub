@@ -1,4 +1,4 @@
-use crate::authorized;
+use crate::{authorized, CONSIDER_AUDIOBOOK_FINISHED};
 use crate::database::common::{DbReadMany, DbReadOne};
 use crate::database::models::audiobook::AudiobookSearch;
 use crate::database::models::user::UserGetById;
@@ -11,7 +11,7 @@ use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, web, HttpResponse};
 use askama::Template;
-use crate::handlers::CONSIDER_AUDIOBOOK_FINISHED;
+
 
 #[get("/")]
 pub async fn index(

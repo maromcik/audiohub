@@ -74,58 +74,58 @@ impl AudiobookRepository {
         Ok(results)
     }
 
-    pub async fn get_all_active_audiobooks(
-        &self,
-        params: &UserGetById,
-    ) -> DbResultMultiple<ActiveAudiobookDetail> {
-        let active_audiobooks = sqlx::query_as!(
-            ActiveAudiobookDetail,
-            r#"
-            SELECT
-                a.id,
-                a.name,
-                a.description,
-                a.file_path,
-                a.length,
-                a.thumbnail,
-                a.overall_rating,
-                a.stream_count,
-                a.like_count,
-                a.created_at,
-                a.edited_at,
-
-                a.author_id,
-                u.name AS author_name,
-                u.surname,
-                u.username,
-                u.email,
-                u.profile_picture,
-                u.bio,
-
-                a.genre_id,
-                g.name AS genre_name,
-
-                ab.playback_position,
-                ab.edited_at AS active_audiobook_edited_at
-            FROM
-                "Active_Audiobook" AS ab
-                    INNER JOIN
-                "Audiobook" AS a ON a.id = ab.audiobook_id
-                    INNER JOIN
-                "User" AS u ON u.id = a.author_id
-                    INNER JOIN
-                "Genre" AS g
-                    ON a.genre_id = g.id
-            WHERE
-                ab.user_id = $1 AND (a.length - ab.playback_position) > 5
-            ORDER BY ab.edited_at DESC
-            "#,
-            params.id
-        )
-            .fetch_all(&self.pool_handler.pool)
-            .await?;
-        Ok(active_audiobooks)
-    }
+    // pub async fn get_all_active_audiobooks(
+    //     &self,
+    //     params: &UserGetById,
+    // ) -> DbResultMultiple<ActiveAudiobookDetail> {
+    //     let active_audiobooks = sqlx::query_as!(
+    //         ActiveAudiobookDetail,
+    //         r#"
+    //         SELECT
+    //             a.id,
+    //             a.name,
+    //             a.description,
+    //             a.file_path,
+    //             a.length,
+    //             a.thumbnail,
+    //             a.overall_rating,
+    //             a.stream_count,
+    //             a.like_count,
+    //             a.created_at,
+    //             a.edited_at,
+    //
+    //             a.author_id,
+    //             u.name AS author_name,
+    //             u.surname,
+    //             u.username,
+    //             u.email,
+    //             u.profile_picture,
+    //             u.bio,
+    //
+    //             a.genre_id,
+    //             g.name AS genre_name,
+    //
+    //             ab.playback_position,
+    //             ab.edited_at AS active_audiobook_edited_at
+    //         FROM
+    //             "Active_Audiobook" AS ab
+    //                 INNER JOIN
+    //             "Audiobook" AS a ON a.id = ab.audiobook_id
+    //                 INNER JOIN
+    //             "User" AS u ON u.id = a.author_id
+    //                 INNER JOIN
+    //             "Genre" AS g
+    //                 ON a.genre_id = g.id
+    //         WHERE
+    //             ab.user_id = $1 AND (a.length - ab.playback_position) > 5
+    //         ORDER BY ab.edited_at DESC
+    //         "#,
+    //         params.id
+    //     )
+    //         .fetch_all(&self.pool_handler.pool)
+    //         .await?;
+    //     Ok(active_audiobooks)
+    // }
 
     pub async fn remove_active_audiobook(
         &self,
