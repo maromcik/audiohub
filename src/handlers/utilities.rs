@@ -146,7 +146,7 @@ pub fn get_active_audiobooks(audiobooks: &[AudiobookDetail]) ->Vec<ActiveAudiobo
     audiobooks
         .iter()
         .filter_map(|a| match (a.playback_position, a.active_audiobook_edited_at) {
-            (Some(pos), Some(edited)) => if (a.length - pos) > 5f64 {
+            (Some(pos), Some(edited)) => if (a.length - pos) > CONSIDER_AUDIOBOOK_FINISHED {
                 Some(ActiveAudiobookDetail::from_audiobook(a, pos, edited))
             } else { None }
             (_, _) => None
