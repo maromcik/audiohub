@@ -165,6 +165,10 @@ pub fn is_audiobook_finished(audiobook: &AudiobookDetail) -> bool {
     }
 }
 
+pub fn is_active_audiobook_finished(audiobook: &ActiveAudiobookDetail) -> bool {
+    return audiobook.progress > 99.0;
+}
+
 #[macro_export]
 macro_rules! authorized {
     ($e:expr) => {
