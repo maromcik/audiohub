@@ -158,9 +158,9 @@ pub fn is_audiobook_finished(length: &f64, pos:&Option<f64>) -> bool {
         None => false,
         Some(p) => {
             if (length - p) <= CONSIDER_AUDIOBOOK_FINISHED {
-                return false
+                return true
             }
-            true
+            false
         }
     }
 }
