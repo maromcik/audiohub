@@ -319,11 +319,11 @@ pub async fn search(
 #[post("/active")]
 pub async fn set_active_audiobook(
     identity: Option<Identity>,
-    user_repo: web::Data<UserRepository>,
+    audiobook_repo: web::Data<AudiobookRepository>,
     form: web::Form<AudiobookSetActiveForm>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity);
-    user_repo
+    audiobook_repo
         .set_active_audiobook(&SetActiveAudiobook::new(
             parse_user_id(identity)?,
             form.audiobook_id,
@@ -336,11 +336,11 @@ pub async fn set_active_audiobook(
 #[get("/last-played")]
 pub async fn get_last_active_audiobook(
     identity: Option<Identity>,
-    user_repo: web::Data<UserRepository>
+    audiobook_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity);
     let id = parse_user_id(identity)?;
-    let latest = user_repo.get_latest_active_audiobook(&id)
+    let latest = audiobook_repo.get_latest_active_audiobook(&id)
         .await?;
 
     if latest.is_none() {
@@ -362,11 +362,11 @@ pub async fn get_last_active_audiobook(
 #[put("/{id}/play")]
 pub async fn set_played_audiobook(
     identity: Option<Identity>,
-    user_repo: web::Data<UserRepository>
+    audiobook_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity);
     let id = parse_user_id(identity)?;
-    let latest = user_repo.get_latest_active_audiobook(&id)
+    let latest = audiobook_repo.get_latest_active_audiobook(&id)
         .await?;
 
     if latest.is_none() {

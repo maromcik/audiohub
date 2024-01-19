@@ -9,11 +9,11 @@ use async_trait::async_trait;
 
 use crate::database::common::utilities::generate_query_param_string;
 use sqlx::{Postgres, Transaction};
+use crate::database::models::active_audiobook::{ActiveAudiobook, ActiveAudiobookDetail, PlayedAudiobook, RemoveActiveAudiobook, SetActiveAudiobook};
 
-use crate::database::models::audiobook::{
-    Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookGetById,
-    AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookSearch, AudiobookUpdate,
-};
+use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookGetById, AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookSearch, AudiobookUpdate};
+use crate::database::models::Id;
+use crate::database::models::user::UserGetById;
 
 #[derive(Clone)]
 pub struct AudiobookRepository {
@@ -73,6 +73,146 @@ impl AudiobookRepository {
 
         Ok(results)
     }
+
+    pub async fn get_all_active_audiobooks(
+        &self,
+        params: &UserGetById,
+    ) -> DbResultMultiple<ActiveAudiobookDetail> {
+        let active_audiobooks = sqlx::query_as!(
+            ActiveAudiobookDetail,
+            r#"
+            SELECT
+                a.id,
+                a.name,
+                a.description,
+                a.file_path,
+                a.length,
+                a.thumbnail,
+                a.overall_rating,
+                a.stream_count,
+                a.like_count,
+                a.created_at,
+                a.edited_at,
+
+                a.author_id,
+                u.name AS author_name,
+                u.surname,
+                u.username,
+                u.email,
+                u.profile_picture,
+                u.bio,
+
+                a.genre_id,
+                g.name AS genre_name,
+
+                ab.playback_position,
+                ab.edited_at AS active_audiobook_edited_at
+            FROM
+                "Active_Audiobook" AS ab
+                    INNER JOIN
+                "Audiobook" AS a ON a.id = ab.audiobook_id
+                    INNER JOIN
+                "User" AS u ON u.id = a.author_id
+                    INNER JOIN
+                "Genre" AS g
+                    ON a.genre_id = g.id
+            WHERE
+                ab.user_id = $1 AND (a.length - ab.playback_position) > 5
+            ORDER BY ab.edited_at DESC
+            "#,
+            params.id
+        )
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
+        Ok(active_audiobooks)
+    }
+
+    pub async fn remove_active_audiobook(
+        &self,
+        params: &RemoveActiveAudiobook,
+    ) -> DbResultSingle<ActiveAudiobook> {
+        let removed_active_audiobook = sqlx::query_as!(
+            ActiveAudiobook,
+            r#"
+            DELETE FROM "Active_Audiobook"
+            WHERE user_id = $1 AND audiobook_id = $2
+            RETURNING *
+            "#,
+            params.user_id,
+            params.audiobook_id,
+        )
+            .fetch_one(&self.pool_handler.pool)
+            .await?;
+
+        Ok(removed_active_audiobook)
+    }
+
+    pub async fn set_active_audiobook(
+        &self,
+        params: &SetActiveAudiobook,
+    ) -> DbResultSingle<ActiveAudiobook> {
+        let updated_active_audiobook = sqlx::query_as!(
+            ActiveAudiobook,
+            r#"
+            UPDATE "Active_Audiobook"
+            SET
+                playback_position = $1,
+                edited_at = current_timestamp
+            WHERE user_id = $2 AND audiobook_id = $3
+            RETURNING *
+            "#,
+            params.playback_position,
+            params.user_id,
+            params.audiobook_id,
+        )
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
+
+        if let Some(updated) = updated_active_audiobook.into_iter().nth(0) {
+            return Ok(updated);
+        }
+
+        let new_active_audiobook = sqlx::query_as!(
+            ActiveAudiobook,
+            r#"
+            INSERT INTO "Active_Audiobook" (user_id, audiobook_id, playback_position)
+            VALUES ($1, $2, $3)
+            RETURNING *
+            "#,
+            params.user_id,
+            params.audiobook_id,
+            params.playback_position
+        )
+            .fetch_one(&self.pool_handler.pool)
+            .await?;
+
+        Ok(new_active_audiobook)
+    }
+
+    /// Returns most currently listened users book
+    pub async fn get_latest_active_audiobook(
+        &self,
+        user_id: &Id,
+    ) -> DbResultSingle<Option<PlayedAudiobook>> {
+        let last_active_book = sqlx::query_as!(
+            PlayedAudiobook,
+            r#"
+            SELECT A.file_path AS path, A.name AS name, ACT.playback_position AS playback_position
+            FROM "Active_Audiobook" ACT
+                LEFT JOIN "Audiobook" A ON
+                ACT.audiobook_id = A.id
+            WHERE
+                ACT.user_id = $1
+            ORDER BY ACT.edited_at DESC
+            LIMIT 1
+            "#,
+            user_id,
+        )
+            .fetch_optional(&self.pool_handler.pool)
+            .await?;
+        Ok(last_active_book)
+    }
+
 }
 
 #[async_trait]

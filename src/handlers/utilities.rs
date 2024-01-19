@@ -1,5 +1,5 @@
 use crate::database::common::DbReadOne;
-use crate::database::models::audiobook::{ActiveAudiobookDetail, AudiobookDetail, AudiobookMetadataForm};
+use crate::database::models::audiobook::{AudiobookDetail, AudiobookMetadataForm};
 use crate::database::models::user::{User, UserGetById};
 use crate::database::models::Id;
 use crate::database::repositories::user::repository::UserRepository;
@@ -11,6 +11,7 @@ use actix_web::http::header::LOCATION;
 use actix_web::{web, HttpResponse};
 
 use uuid::Uuid;
+use crate::database::models::active_audiobook::ActiveAudiobookDetail;
 
 pub fn parse_user_id(identity: Identity) -> Result<Id, AppError> {
     Ok(identity.id()?.parse::<i64>()?)

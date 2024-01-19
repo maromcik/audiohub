@@ -1,5 +1,6 @@
-use crate::database::models::audiobook::{ActiveAudiobookDetail, AudiobookDetail};
+use crate::database::models::audiobook::AudiobookDetail;
 use askama::Template;
+use crate::database::models::active_audiobook::ActiveAudiobookDetail;
 
 #[derive(Template)]
 #[template(path = "index.html")]

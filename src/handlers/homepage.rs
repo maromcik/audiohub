@@ -1,6 +1,6 @@
 use crate::authorized;
 use crate::database::common::{DbReadMany, DbReadOne};
-use crate::database::models::audiobook::{ActiveAudiobookDetail, AudiobookSearch};
+use crate::database::models::audiobook::AudiobookSearch;
 use crate::database::models::user::UserGetById;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::user::repository::UserRepository;
