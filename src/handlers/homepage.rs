@@ -1,16 +1,17 @@
 use crate::authorized;
 use crate::database::common::{DbReadMany, DbReadOne};
-use crate::database::models::audiobook::AudiobookSearch;
+use crate::database::models::audiobook::{ActiveAudiobookDetail, AudiobookSearch};
 use crate::database::models::user::UserGetById;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
-use crate::handlers::utilities::parse_user_id;
+use crate::handlers::utilities::{get_active_audiobooks, parse_user_id};
 use crate::templates::index::{IndexContentTemplate, IndexTemplate};
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, web, HttpResponse};
 use askama::Template;
+use crate::handlers::CONSIDER_AUDIOBOOK_FINISHED;
 
 #[get("/")]
 pub async fn index(
@@ -20,14 +21,16 @@ pub async fn index(
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
 
-    let audiobooks = book_repo.read_many(&AudiobookSearch::default()).await?;
+    let mut audiobooks = book_repo.read_many(&AudiobookSearch::default()).await?;
     let user = user_repo
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
 
-    let active_audiobooks = user_repo
-        .get_all_active_audiobooks(&UserGetById::new(&user.id))
-        .await?;
+    let active_audiobooks = get_active_audiobooks(&audiobooks);
+
+    audiobooks.retain(|a|
+        a.playback_position.is_some_and(|pos| (a.length - pos) <= CONSIDER_AUDIOBOOK_FINISHED)
+            || a.playback_position.is_none());
 
     let template = IndexTemplate {
         username: user.name,
@@ -48,14 +51,15 @@ pub async fn index_content(
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
 
-    let audiobooks = book_repo.read_many(&AudiobookSearch::default()).await?;
+    let mut audiobooks = book_repo.read_many(&AudiobookSearch::default()).await?;
     let user = user_repo
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
 
-    let active_audiobooks = user_repo
-        .get_all_active_audiobooks(&UserGetById::new(&user.id))
-        .await?;
+    let active_audiobooks = get_active_audiobooks(&audiobooks);
+    audiobooks.retain(|a|
+        a.playback_position.is_some_and(|pos| (a.length - pos) <= CONSIDER_AUDIOBOOK_FINISHED)
+            || a.playback_position.is_none());
 
     let template = IndexContentTemplate {
         username: user.name,

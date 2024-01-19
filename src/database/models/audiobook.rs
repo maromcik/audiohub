@@ -83,6 +83,37 @@ pub struct ActiveAudiobookDetail {
     pub active_audiobook_edited_at: DateTime<Utc>,
 }
 
+impl ActiveAudiobookDetail {
+    pub fn from_audiobook(audiobook: &AudiobookDetail, playback_position: f64, active_audiobook_edited_at: DateTime<Utc>) -> Self {
+        Self {
+            id: audiobook.id,
+            name: audiobook.name.to_owned(),
+            author_id: audiobook.author_id,
+            genre_id: audiobook.genre_id,
+            file_path: audiobook.file_path.to_owned(),
+            length: audiobook.length,
+            thumbnail: audiobook.thumbnail.to_owned(),
+            description: audiobook.description.to_owned(),
+            stream_count: audiobook.stream_count,
+            like_count: audiobook.like_count,
+            overall_rating: audiobook.overall_rating,
+            created_at: audiobook.created_at,
+            edited_at: audiobook.edited_at,
+
+            username: audiobook.username.to_owned(),
+            email: audiobook.email.to_owned(),
+            author_name: audiobook.author_name.to_owned(),
+            surname: audiobook.surname.to_owned(),
+            bio: audiobook.bio.to_owned(),
+            profile_picture: audiobook.profile_picture.to_owned(),
+            genre_name: audiobook.genre_name.to_owned(),
+
+            playback_position,
+            active_audiobook_edited_at
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct AudiobookSearch {
     pub name: Option<String>,
@@ -384,6 +415,7 @@ impl AudiobookGetByIdJoin {
         Self { id: *id }
     }
 }
+
 #[derive(Debug, Clone)]
 pub struct AudiobookMetadataForm {
     pub name: String,

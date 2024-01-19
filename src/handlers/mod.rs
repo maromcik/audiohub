@@ -36,3 +36,5 @@ pub use crate::handlers::chapter::create_chapter_form;
 
 pub use crate::handlers::genre::get_audiobooks_by_genre;
 pub use crate::handlers::genre::get_genres_page;
+
+const CONSIDER_AUDIOBOOK_FINISHED: f64 = 5f64;

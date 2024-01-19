@@ -1,5 +1,5 @@
 use crate::database::common::DbReadOne;
-use crate::database::models::audiobook::AudiobookMetadataForm;
+use crate::database::models::audiobook::{ActiveAudiobookDetail, AudiobookDetail, AudiobookMetadataForm};
 use crate::database::models::user::{User, UserGetById};
 use crate::database::models::Id;
 use crate::database::repositories::user::repository::UserRepository;
@@ -138,6 +138,17 @@ pub fn remove_file(path: &str) -> Result<(), AppError> {
         std::fs::remove_file(path)?;
     }
     Ok(())
+}
+
+pub fn get_active_audiobooks(audiobooks: &Vec<AudiobookDetail>) ->Vec<ActiveAudiobookDetail> {
+    audiobooks
+        .iter()
+        .filter_map(|a| match (a.playback_position, a.active_audiobook_edited_at) {
+            (Some(pos), Some(edited)) => if (a.length - pos) > 5f64 {
+                Some(ActiveAudiobookDetail::from_audiobook(a, pos, edited))
+            } else { None }
+            (_, _) => None
+        }).collect()
 }
 
 #[macro_export]
