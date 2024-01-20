@@ -167,11 +167,24 @@ pub async fn get_audiobook(
 pub async fn manage_audiobook(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
+    user_repo: web::Data<UserRepository>,
     chapter_repo: web::Data<ChapterRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
-    let u = authorized!(identity);
-    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, parse_user_id(u)?, path.into_inner().0).await?;
+    let identity = authorized!(identity);
+    let user = get_user_from_identity(identity, &user_repo).await?;
+    let book_id = path.into_inner().0;
+    let audiobook = audiobook_repo
+        .read_one(&AudiobookGetByIdJoin::new(user.id, book_id))
+        .await?;
+
+    if user.id != audiobook.author_id {
+        return Err(AppError::from(BackendError::new(
+            BackendErrorKind::UnauthorizedOperation,
+        )));
+    }
+
+    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, user.id, book_id).await?;
     let body = AudiobookDetailAuthorPageTemplate {
         audiobook: base.audiobook,
         chapters: base.chapters,
@@ -184,12 +197,25 @@ pub async fn manage_audiobook(
 pub async fn get_audiobook_manage_content(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
+    user_repo: web::Data<UserRepository>,
     chapter_repo: web::Data<ChapterRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
-    let u = authorized!(identity);
-    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, parse_user_id(u)?, path.into_inner().0).await?;
-    let body = AudiobookDetailAuthorContentTemplate {
+    let identity = authorized!(identity);
+    let user = get_user_from_identity(identity, &user_repo).await?;
+    let book_id = path.into_inner().0;
+    let audiobook = audiobook_repo
+        .read_one(&AudiobookGetByIdJoin::new(user.id, book_id))
+        .await?;
+
+    if user.id != audiobook.author_id {
+        return Err(AppError::from(BackendError::new(
+            BackendErrorKind::UnauthorizedOperation,
+        )));
+    }
+
+    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, user.id, book_id).await?;
+    let body = AudiobookDetailAuthorPageTemplate {
         audiobook: base.audiobook,
         chapters: base.chapters,
     }
