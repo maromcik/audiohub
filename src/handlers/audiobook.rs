@@ -18,6 +18,7 @@ use crate::handlers::utilities::{
 use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailBase, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
+use actix_multipart::form::tempfile::TempFile;
 use actix_session::Session;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, patch, post, web, HttpResponse, put};
@@ -103,29 +104,37 @@ pub async fn upload_audiobook(
     let u = authorized!(identity);
     let user = get_user_from_identity(u, &user_repo).await?;
     let session_keys = AudiobookCreateSessionKeys::new(user.id);
-    let thumbnail_path = validate_file(&form.thumbnail, uuid, "image", "audiobook", AppErrorKind::AudiobookUploadError)?;
-    let audiobook_path = validate_file(&form.audio_file, uuid, "audio", "audiobook", AppErrorKind::AudiobookUploadError)?;
 
+    let audiobook_path = validate_file(&form.audio_file, uuid, "audio", "audiobook", AppErrorKind::AudiobookUploadError)?;
+    let thumbnail_path = match &form.thumbnail {
+        None => None,
+        Some(thumb) => {
+            Some(validate_file(thumb, uuid, "image", "audiobook", AppErrorKind::AudiobookUploadError)?)
+        }
+    };
     let metadata = get_metadata_from_session(&session, &session_keys)?;
 
     let audio_file = form.audio_file.file.as_file_mut();
     let lofty_audio_file = lofty::read_from(audio_file)?;
     let properties = lofty_audio_file.properties();
     let length = properties.duration().as_secs_f64();
-
+    if let (Some(thumb_path), Some(thumbnail)) = (&thumbnail_path, form.thumbnail) {
+        save_file(thumbnail, thumb_path, AppErrorKind::AudiobookUploadError)?;
+    }
     let book_crate = AudiobookCreate::new(
         &metadata.name,
         &user.id,
         &metadata.genre_id,
         &audiobook_path,
         &length,
-        &thumbnail_path,
+        thumbnail_path.clone(),
         &metadata.description,
     );
     let book = audiobook_repo.create(&book_crate).await?;
 
-    save_file(form.thumbnail, thumbnail_path, AppErrorKind::AudiobookUploadError)?;
-    save_file(form.audio_file, audiobook_path, AppErrorKind::AudiobookUploadError)?;
+
+
+    save_file(form.audio_file, &audiobook_path, AppErrorKind::AudiobookUploadError)?;
 
     session.remove(session_keys.name.as_str());
     session.remove(session_keys.description.as_str());
@@ -259,7 +268,10 @@ pub async fn remove_audiobook(
         )));
     }
     remove_file(&audiobook.file_path)?;
-    remove_file(&audiobook.thumbnail)?;
+
+    if let Some(thumbnail) = &audiobook.thumbnail {
+        remove_file(thumbnail)?;
+    }
     audiobook_repo
         .delete(&AudiobookDelete::new(&audiobook.id))
         .await?;

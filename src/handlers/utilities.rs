@@ -113,7 +113,7 @@ pub fn validate_file(
     Ok(file_path)
 }
 
-pub fn save_file(file: TempFile, path: String, error_type: AppErrorKind) -> Result<(), AppError> {
+pub fn save_file(file: TempFile, path: &str, error_type: AppErrorKind) -> Result<(), AppError> {
     log::info!("saving file to .{path}");
     let path = format!(".{path}");
     if let Err(e) = file.file.persist(path) {

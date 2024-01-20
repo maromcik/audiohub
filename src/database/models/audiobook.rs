@@ -4,7 +4,7 @@ use serde::Deserialize;
 use crate::CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE;
 
 use crate::database::common::query_parameters::DbQueryParams;
-use crate::database::models::utilities::get_default_profile_picture;
+use crate::database::models::utilities::{get_default_profile_picture, get_default_thumbnail};
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq)]
 pub struct Audiobook {
@@ -18,7 +18,7 @@ pub struct Audiobook {
     pub stream_count: i64,
     pub like_count: i64,
     pub overall_rating: i16,
-    pub thumbnail: String,
+    pub thumbnail: Option<String>,
     pub description: String,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
@@ -37,7 +37,7 @@ pub struct AudiobookDetail {
     pub stream_count: i64,
     pub like_count: i64,
     pub overall_rating: i16,
-    pub thumbnail: String,
+    pub thumbnail: Option<String>,
     pub description: String,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
@@ -125,7 +125,7 @@ impl AudiobookDisplay {
             genre_id: audiobook.genre_id,
             file_path: audiobook.file_path.to_owned(),
             length: audiobook.length,
-            thumbnail: audiobook.thumbnail.to_owned(),
+            thumbnail: get_default_thumbnail(&audiobook.thumbnail),
             description: audiobook.description.to_owned(),
             stream_count: audiobook.stream_count,
             like_count: audiobook.like_count,
@@ -161,7 +161,7 @@ impl From<AudiobookDetail> for AudiobookDisplay {
             genre_id: audiobook.genre_id,
             file_path: audiobook.file_path,
             length: audiobook.length,
-            thumbnail: audiobook.thumbnail,
+            thumbnail: get_default_thumbnail(&audiobook.thumbnail),
             description: audiobook.description,
             stream_count: audiobook.stream_count,
             like_count: audiobook.like_count,
@@ -364,7 +364,7 @@ pub struct AudiobookCreate {
     pub genre_id: Id,
     pub file_path: String,
     pub length: f64,
-    pub thumbnail: String,
+    pub thumbnail: Option<String>,
     pub description: String,
 }
 
@@ -378,16 +378,17 @@ impl AudiobookCreate {
         genre_id: &Id,
         file_path: &str,
         length: &f64,
-        thumbnail: &str,
+        thumbnail: Option<String>,
         description: &str,
     ) -> Self {
+        let change_to_owned = |value: &str| Some(value.to_owned());
         Self {
             name: name.to_owned(),
             author_id: *author_id,
             genre_id: *genre_id,
             file_path: file_path.to_owned(),
             length: *length,
-            thumbnail: thumbnail.to_owned(),
+            thumbnail,
             description: description.to_owned(),
         }
     }
@@ -420,7 +421,7 @@ impl AudiobookUpdate {
         stream_count: Option<&i64>,
         like_count: Option<&i64>,
         overall_rating: Option<&i16>,
-        thumbnail: Option<&str>,
+        thumbnail: Option<String>,
         description: Option<&str>,
     ) -> Self {
         let change_to_owned = |value: &str| Some(value.to_owned());
@@ -434,7 +435,7 @@ impl AudiobookUpdate {
             stream_count: stream_count.copied(),
             like_count: like_count.copied(),
             overall_rating: overall_rating.copied(),
-            thumbnail: thumbnail.and_then(change_to_owned),
+            thumbnail,
             description: description.and_then(change_to_owned),
         }
     }

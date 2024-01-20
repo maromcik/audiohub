@@ -9,7 +9,7 @@ use async_trait::async_trait;
 
 use crate::database::common::utilities::generate_query_param_string;
 use sqlx::{Postgres, Transaction};
-use crate::database::models::active_audiobook::{ActiveAudiobook, PlayedAudiobook, RemoveActiveAudiobook, SetActiveAudiobook};
+use crate::database::models::active_audiobook::{ActiveAudiobook, PlayedAudiobook, PlayedAudiobookDb, RemoveActiveAudiobook, SetActiveAudiobook};
 
 use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookGetById, AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookSearch, AudiobookUpdate};
 use crate::database::models::Id;
@@ -142,7 +142,7 @@ impl AudiobookRepository {
         user_id: &Id,
     ) -> DbResultSingle<Option<PlayedAudiobook>> {
         let last_active_book = sqlx::query_as!(
-            PlayedAudiobook,
+            PlayedAudiobookDb,
             r#"
             SELECT A.id as book_id, A.file_path AS path, A.thumbnail as thumbnail,
                 A.name AS name, ACT.playback_position AS playback_position,
@@ -164,7 +164,7 @@ impl AudiobookRepository {
         )
             .fetch_optional(&self.pool_handler.pool)
             .await?;
-        Ok(last_active_book)
+        Ok(last_active_book.and_then(|a| Some(PlayedAudiobook::from(a))))
     }
 
     /// TODO: refactor this
@@ -187,7 +187,7 @@ impl AudiobookRepository {
 
         if let Some(book) = exists {
             let played_audiobook = sqlx::query_as!(
-                PlayedAudiobook,
+                PlayedAudiobookDb,
                 r#"
                 SELECT A.id as book_id, A.file_path AS path, A.thumbnail as thumbnail,
                     A.name AS name, ACT.playback_position AS playback_position,
@@ -202,7 +202,7 @@ impl AudiobookRepository {
                 user_id,
                 book_id
             ).fetch_one(&self.pool_handler.pool).await?;
-            return Ok(played_audiobook);
+            return Ok(PlayedAudiobook::from(played_audiobook));
         }
 
         sqlx::query_as!(
@@ -216,7 +216,7 @@ impl AudiobookRepository {
         ).execute(&self.pool_handler.pool).await?;
 
         let played_audiobook = sqlx::query_as!(
-                PlayedAudiobook,
+                PlayedAudiobookDb,
                 r#"
                 SELECT A.id as book_id, A.file_path AS path, A.thumbnail as thumbnail,
                     A.name AS name, ACT.playback_position AS playback_position,
@@ -231,7 +231,7 @@ impl AudiobookRepository {
                 user_id,
                 book_id
             ).fetch_one(&self.pool_handler.pool).await?;
-        Ok(played_audiobook)
+        Ok(PlayedAudiobook::from(played_audiobook))
     }
 }
 

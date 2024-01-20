@@ -225,8 +225,8 @@ pub async fn user_manage_picture(
     let u = authorized!(identity);
     let path = validate_file(&form.picture, Uuid::new_v4(), "image", "user", AppErrorKind::ProfilePictureUploadError)?;
     let user = get_user_from_identity(u, &user_repo).await?;
-    if let Some(pic) = user.profile_picture {
-        remove_file(pic.as_str())?;
+    if let Some(pic) = &user.profile_picture {
+        remove_file(pic)?;
     }
     let user_update = UserUpdate::new(
         &user.id,
@@ -240,7 +240,7 @@ pub async fn user_manage_picture(
     );
 
     let users = user_repo.update(&user_update).await?;
-    save_file(form.picture, path, AppErrorKind::ProfilePictureUploadError)?;
+    save_file(form.picture, &path, AppErrorKind::ProfilePictureUploadError)?;
     // // Ok(HttpResponse::Ok()
     // //     .insert_header(("HX-Redirect", "/user/manage"))
     // //     .finish())
