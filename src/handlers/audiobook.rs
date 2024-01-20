@@ -15,12 +15,12 @@ use crate::handlers::utilities::{
     get_metadata_from_session, get_user_from_identity, parse_user_id, remove_file, save_file,
     validate_file, AudiobookCreateSessionKeys,
 };
-use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailAuthorContentTemplate, AudiobookDetailAuthorPageTemplate, AudiobookDetailBase, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate};
+use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailAuthorContentTemplate, AudiobookDetailAuthorPageTemplate, AudiobookDetailBase, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate, QuickSearchResults};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_multipart::form::tempfile::TempFile;
 use actix_session::Session;
-use actix_web::http::header::LOCATION;
+use actix_web::http::header::{LOCATION, q};
 use actix_web::{get, patch, post, web, HttpResponse, put};
 use actix_web::web::patch;
 use askama::Template;
@@ -353,15 +353,21 @@ pub async fn change_like(
         .body(likes.to_string()))
 }
 
+#[derive(Deserialize)]
+struct SearchQuery {
+    query: String,
+}
 #[get("/search")]
 pub async fn search(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
-    q: web::Query<AudiobookSearchQuery>,
+    query: web::Query<SearchQuery>,
 ) -> Result<HttpResponse, AppError> {
     authorized!(identity);
-    let _books = audiobook_repo.quick_search(&q.name).await?;
-    Ok(HttpResponse::Ok().finish())
+    let quicksearch = audiobook_repo.quick_search(&query.query).await?;
+    let template = QuickSearchResults {results: quicksearch};
+    Ok(HttpResponse::Ok().content_type("text/html")
+        .body(template.render()?))
 }
 
 

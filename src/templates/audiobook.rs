@@ -1,4 +1,4 @@
-use crate::database::models::audiobook::{AudiobookDetail, AudiobookDisplay};
+use crate::database::models::audiobook::{AudiobookDetail, AudiobookDisplay, AudiobookQuickSearch};
 use crate::database::models::chapter::ChapterDisplay;
 use crate::database::models::genre::Genre;
 use askama::Template;
@@ -75,7 +75,11 @@ pub struct PlayerTemplate {
     pub played_book: PlayedAudiobook,
 }
 
-
+#[derive(Template)]
+#[template(path = "components/search-results.html")]
+pub struct QuickSearchResults {
+    pub results: Vec<AudiobookQuickSearch>,
+}
 
 pub struct AudiobookDetailBase {
     pub audiobook: AudiobookDisplay,

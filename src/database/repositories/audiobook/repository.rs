@@ -64,7 +64,7 @@ impl AudiobookRepository {
             r#"
             SELECT id, name FROM "Audiobook"
             WHERE name ILIKE $1
-            LIMIT 10
+            LIMIT 5
             "#,
             comparison_string
         )
