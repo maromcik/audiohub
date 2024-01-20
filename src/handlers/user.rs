@@ -20,9 +20,7 @@ use uuid::Uuid;
 
 use crate::database::common::{DbCreate, DbReadOne, DbUpdate};
 
-use crate::database::models::user::{
-    UserCreate, UserGetById, UserLogin, UserUpdate, UserUpdatePassword,
-};
+use crate::database::models::user::{UserCreate, UserDisplay, UserGetById, UserLogin, UserUpdate, UserUpdatePassword};
 use crate::forms::user::{
     ProfilePictureUploadForm, UserCreateForm, UserUpdateForm, UserUpdatePasswordForm,
 };
@@ -63,7 +61,7 @@ pub async fn register_user(
         name: form.name.to_string(),
         surname: form.surname.to_string(),
         bio: String::new(),
-        profile_picture: String::new(),
+        profile_picture: None,
         password: form.password.clone(),
     };
 
@@ -122,7 +120,7 @@ pub async fn user_manage_form_page(
     let user = user_repo
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
-    let template = UserManageProfilePageTemplate { user };
+    let template = UserManageProfilePageTemplate { user: UserDisplay::from(user) };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -136,7 +134,7 @@ pub async fn user_manage_form_content(
     let user = user_repo
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
-    let template = UserManageProfileContentTemplate { user };
+    let template = UserManageProfileContentTemplate { user: UserDisplay::from(user) };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -170,7 +168,7 @@ pub async fn user_manage_profile_form(
     let user = user_repo
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
-    let template = UserManageProfileUserFormTemplate { user };
+    let template = UserManageProfileUserFormTemplate { user: UserDisplay::from(user) };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -227,7 +225,9 @@ pub async fn user_manage_picture(
     let u = authorized!(identity);
     let path = validate_file(&form.picture, Uuid::new_v4(), "image", "user")?;
     let user = get_user_from_identity(u, &user_repo).await?;
-    remove_file(&user.profile_picture)?;
+    if let Some(pic) = user.profile_picture {
+        remove_file(pic.as_str())?;
+    }
     let user_update = UserUpdate::new(
         &user.id,
         None,
@@ -246,7 +246,7 @@ pub async fn user_manage_picture(
     // //     .finish())
 
     if let Some(user) = users.pop() {
-        let template = UserManageProfilePictureTemplate { user };
+        let template = UserManageProfilePictureTemplate { user: UserDisplay::from(user) };
         let body = template.render()?;
         return Ok(HttpResponse::Ok().content_type("text/html").body(body));
     }

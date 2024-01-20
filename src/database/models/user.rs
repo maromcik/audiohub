@@ -11,12 +11,54 @@ pub struct User {
     pub name: String,
     pub surname: String,
     pub bio: String,
-    pub profile_picture: String,
+    pub profile_picture: Option<String>,
     pub password_hash: String,
     pub password_salt: String,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
+}
+
+impl User {
+    pub fn get_default_profile_picture(&self) -> String {
+        match self.profile_picture.clone() {
+            None => "DEFAULT PATH".to_string(),
+            Some(pic) => pic
+        }
+    }
+}
+
+pub struct UserDisplay {
+    pub id: Id,
+    // --------------
+    pub username: String,
+    pub email: String,
+    pub name: String,
+    pub surname: String,
+    pub bio: String,
+    pub profile_picture: String,
+    pub password_hash: String,
+    pub password_salt: String,
+    pub created_at: DateTime<Utc>,
+    pub edited_at: DateTime<Utc>,
+}
+
+impl From<User> for UserDisplay {
+    fn from(value: User) -> Self {
+        Self {
+            profile_picture: value.get_default_profile_picture(),
+            id: value.id,
+            username: value.username,
+            email: value.email,
+            name: value.name,
+            surname: value.surname,
+            bio: value.bio,
+            password_hash: value.password_hash,
+            password_salt: value.password_salt,
+            created_at: value.created_at,
+            edited_at: value.edited_at,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -26,7 +68,7 @@ pub struct UserCreate {
     pub name: String,
     pub surname: String,
     pub bio: String,
-    pub profile_picture: String,
+    pub profile_picture: Option<String>,
     pub password: String,
 }
 
@@ -41,8 +83,9 @@ impl UserCreate {
         surname: &str,
         password: &str,
         bio: &str,
-        profile_picture: &str,
+        profile_picture: Option<&str>,
     ) -> Self {
+        let change_to_owned = |value: &str| Some(value.to_owned());
         Self {
             username: username.to_owned(),
             email: email.to_owned(),
@@ -50,7 +93,7 @@ impl UserCreate {
             surname: surname.to_owned(),
             password: password.to_owned(),
             bio: bio.to_owned(),
-            profile_picture: profile_picture.to_owned(),
+            profile_picture: profile_picture.and_then(change_to_owned),
         }
     }
 }
