@@ -8,7 +8,7 @@ use actix_web::http::header::LOCATION;
 use actix_web::{get, web, HttpResponse};
 use askama::Template;
 use crate::database::common::query_parameters::DbQueryParams;
-use crate::database::models::audiobook::AudiobookSearch;
+use crate::database::models::audiobook::{AudiobookDisplay, AudiobookSearch};
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::templates::studio::{StudioPageTemplate, StudioContentTemplate};
@@ -24,7 +24,10 @@ pub async fn studio_index(
     let user_id = parse_user_id(u)?;
     let audiobooks = book_repo
         .read_many(&AudiobookSearch::search_by_author_id(user_id, user_id))
-        .await?;
+        .await?
+        .into_iter()
+        .map(AudiobookDisplay::from)
+        .collect();
 
     let template = StudioPageTemplate { audiobooks };
 
@@ -43,7 +46,10 @@ pub async fn studio_get_content(
     let user_id = parse_user_id(u)?;
     let audiobooks = book_repo
         .read_many(&AudiobookSearch::search_by_author_id(user_id, user_id))
-        .await?;
+        .await?
+        .into_iter()
+        .map(AudiobookDisplay::from)
+        .collect();
 
     let template = StudioContentTemplate { audiobooks };
 
