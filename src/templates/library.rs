@@ -1,4 +1,4 @@
-use crate::database::models::audiobook::{AudiobookDetail, AudiobookDisplay};
+use crate::database::models::audiobook::AudiobookDisplay;
 use askama::Template;
 
 #[derive(Template)]

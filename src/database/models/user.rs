@@ -1,7 +1,7 @@
+use crate::database::models::utilities::get_default_profile_picture;
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use crate::database::models::utilities::get_default_profile_picture;
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
 pub struct User {
@@ -19,7 +19,6 @@ pub struct User {
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
 }
-
 
 pub struct UserDisplay {
     pub id: Id,

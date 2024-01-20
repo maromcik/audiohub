@@ -14,7 +14,7 @@ use crate::database::common::error::{DbResultMultiple, DbResultSingle};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
-use crate::database::models::audiobook::{AudiobookDetail};
+use crate::database::models::audiobook::AudiobookDetail;
 
 use crate::database::models::bookmark::{Bookmark, BookmarkOperation};
 use crate::database::models::user::{
@@ -108,7 +108,6 @@ impl UserRepository {
             Err(e) => Err(e),
         }
     }
-
 
     pub async fn get_all_bookmarks(&self, params: &UserGetById) -> DbResultMultiple<Bookmark> {
         let bookmarks = sqlx::query_as!(

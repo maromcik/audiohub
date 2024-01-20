@@ -1,5 +1,7 @@
 use crate::database::common::DbReadOne;
-use crate::database::models::audiobook::{AudiobookDetail, AudiobookDisplay, AudiobookMetadataForm};
+use crate::database::models::audiobook::{
+    AudiobookDetail, AudiobookDisplay, AudiobookMetadataForm,
+};
 use crate::database::models::user::{User, UserGetById};
 use crate::database::models::Id;
 use crate::database::repositories::user::repository::UserRepository;
@@ -11,11 +13,9 @@ use actix_web::web;
 
 use uuid::Uuid;
 
-
 pub fn parse_user_id(identity: Identity) -> Result<Id, AppError> {
     Ok(identity.id()?.parse::<i64>()?)
 }
-
 
 pub fn get_metadata_from_session(
     session: &Session,
@@ -79,7 +79,7 @@ pub fn validate_file(
     uuid: Uuid,
     mime: &str,
     handler: &str,
-    error_type: AppErrorKind
+    error_type: AppErrorKind,
 ) -> Result<String, AppError> {
     let extension = match file.file_name.clone() {
         None => "".to_owned(),
@@ -117,10 +117,7 @@ pub fn save_file(file: TempFile, path: &str, error_type: AppErrorKind) -> Result
     log::info!("saving file to .{path}");
     let path = format!(".{path}");
     if let Err(e) = file.file.persist(path) {
-        return Err(AppError::new(
-            error_type,
-            e.to_string().as_str(),
-        ));
+        return Err(AppError::new(error_type, e.to_string().as_str()));
     };
     Ok(())
 }
@@ -132,14 +129,13 @@ pub fn remove_file(path: &str) -> Result<(), AppError> {
     Ok(())
 }
 
-pub fn get_active_audiobooks(audiobooks: &[AudiobookDetail]) ->Vec<AudiobookDisplay> {
+pub fn get_active_audiobooks(audiobooks: &[AudiobookDetail]) -> Vec<AudiobookDisplay> {
     audiobooks
         .iter()
         .filter(|a| a.is_active())
         .map(AudiobookDisplay::from_reference)
         .collect()
 }
-
 
 #[macro_export]
 macro_rules! authorized {

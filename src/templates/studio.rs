@@ -1,6 +1,5 @@
+use crate::database::models::audiobook::AudiobookDisplay;
 use askama::Template;
-use crate::database::models::audiobook::{AudiobookDisplay};
-use crate::database::models::chapter::ChapterDisplay;
 
 #[derive(Template)]
 #[template(path = "studio.html")]
