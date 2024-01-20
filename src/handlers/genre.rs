@@ -1,6 +1,6 @@
 use crate::authorized;
 use crate::database::common::{DbReadMany, DbReadOne};
-use crate::database::models::audiobook::AudiobookSearch;
+use crate::database::models::audiobook::{AudiobookDisplay, AudiobookSearch};
 use crate::database::models::genre::{GenreGetById, GenreSearch};
 use crate::database::models::Id;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
@@ -53,7 +53,12 @@ async fn get_audiobooks_by_genre(
     let user = authorized!(identity);
     let genre_id = path.into_inner().0;
     let book_search = AudiobookSearch::search_by_genre_id(genre_id, parse_user_id(user)?);
-    let books = audiobook_repo.read_many(&book_search).await?;
+    let books = audiobook_repo
+        .read_many(&book_search)
+        .await?
+        .into_iter()
+        .map(AudiobookDisplay::from)
+        .collect();
 
     let genre = genre_repo.read_one(&GenreGetById::new(&genre_id)).await?;
 

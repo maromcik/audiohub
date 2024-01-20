@@ -1,6 +1,6 @@
 use crate::{authorized};
 use crate::database::common::{DbReadMany, DbReadOne};
-use crate::database::models::audiobook::AudiobookSearch;
+use crate::database::models::audiobook::{AudiobookDisplay, AudiobookSearch};
 use crate::database::models::user::UserGetById;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::user::repository::UserRepository;
@@ -47,7 +47,7 @@ async fn get_index_base(u: Identity, user_repo: web::Data<UserRepository>, book_
 
     let active_audiobooks = get_active_audiobooks(&audiobooks);
     audiobooks.retain(|a| a.is_finished() || a.is_never_started());
-
+    let audiobooks = audiobooks.into_iter().map(AudiobookDisplay::from).collect();
     let template = IndexBase {
         username: user.name,
         logged_in: true,

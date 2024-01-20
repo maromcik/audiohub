@@ -1,14 +1,13 @@
-use crate::database::models::audiobook::AudiobookDetail;
+use crate::database::models::audiobook::AudiobookDisplay;
 use askama::Template;
-use crate::database::models::active_audiobook::ActiveAudiobookDetail;
 
 #[derive(Template)]
 #[template(path = "index.html")]
 pub struct IndexTemplate {
     pub logged_in: bool,
     pub username: String,
-    pub audiobooks: Vec<AudiobookDetail>,
-    pub active_audiobooks: Vec<ActiveAudiobookDetail>,
+    pub audiobooks: Vec<AudiobookDisplay>,
+    pub active_audiobooks: Vec<AudiobookDisplay>,
 }
 
 #[derive(Template)]
@@ -16,15 +15,15 @@ pub struct IndexTemplate {
 pub struct IndexContentTemplate {
     pub logged_in: bool,
     pub username: String,
-    pub audiobooks: Vec<AudiobookDetail>,
-    pub active_audiobooks: Vec<ActiveAudiobookDetail>,
+    pub audiobooks: Vec<AudiobookDisplay>,
+    pub active_audiobooks: Vec<AudiobookDisplay>,
 }
 
 pub struct IndexBase {
     pub logged_in: bool,
     pub username: String,
-    pub audiobooks: Vec<AudiobookDetail>,
-    pub active_audiobooks: Vec<ActiveAudiobookDetail>,
+    pub audiobooks: Vec<AudiobookDisplay>,
+    pub active_audiobooks: Vec<AudiobookDisplay>,
 }
 
 impl From<IndexBase> for IndexContentTemplate {

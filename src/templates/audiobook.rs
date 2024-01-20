@@ -1,4 +1,4 @@
-use crate::database::models::audiobook::AudiobookDetail;
+use crate::database::models::audiobook::{AudiobookDetail, AudiobookDisplay};
 use crate::database::models::chapter::ChapterDisplay;
 use crate::database::models::genre::Genre;
 use askama::Template;
@@ -23,33 +23,33 @@ pub struct AudiobookUploadFormTemplate {}
 #[derive(Template)]
 #[template(path = "releases.html")]
 pub struct NewReleasesPageTemplate {
-    pub audiobooks: Vec<AudiobookDetail>,
+    pub audiobooks: Vec<AudiobookDisplay>,
 }
 
 #[derive(Template)]
 #[template(path = "audiobook/releases-content.html")]
 pub struct NewReleasesContentTemplate {
-    pub audiobooks: Vec<AudiobookDetail>,
+    pub audiobooks: Vec<AudiobookDisplay>,
 }
 
 #[derive(Template)]
 #[template(path = "audiobook/audiobooks_by_genre.html")]
 pub struct AudiobooksByGenreTemplate {
-    pub audiobooks: Vec<AudiobookDetail>,
+    pub audiobooks: Vec<AudiobookDisplay>,
     pub genre_name: String,
 }
 
 #[derive(Template)]
 #[template(path = "detail.html")]
 pub struct AudiobookDetailPageTemplate {
-    pub audiobook: AudiobookDetail,
+    pub audiobook: AudiobookDisplay,
     pub chapters: Vec<ChapterDisplay>,
 }
 
 #[derive(Template)]
 #[template(path = "audiobook/detail-content.html")]
 pub struct AudiobookDetailContentTemplate {
-    pub audiobook: AudiobookDetail,
+    pub audiobook: AudiobookDisplay,
     pub chapters: Vec<ChapterDisplay>,
 }
 
@@ -62,7 +62,7 @@ pub struct PlayerTemplate {
 
 
 pub struct AudiobookDetailBase {
-    pub audiobook: AudiobookDetail,
+    pub audiobook: AudiobookDisplay,
     pub chapters: Vec<ChapterDisplay>,
 }
 
