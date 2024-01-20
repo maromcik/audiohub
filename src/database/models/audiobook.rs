@@ -1,7 +1,7 @@
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use crate::CONSIDER_AUDIOBOOK_FINISHED;
+use crate::CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE;
 
 use crate::database::common::query_parameters::DbQueryParams;
 
@@ -59,8 +59,23 @@ impl AudiobookDetail {
         match self.playback_position {
             None => false,
             Some(pos) => {
-                if (self.length - pos) <= CONSIDER_AUDIOBOOK_FINISHED {
-                    return true
+                if pos / self.length * 100f64 > CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE {
+                    return true;
+                }
+                false
+            }
+        }
+    }
+    pub fn is_never_started(&self) -> bool {
+        self.playback_position.is_none()
+    }
+
+    pub fn is_active(&self) -> bool {
+        match self.playback_position {
+            None => false,
+            Some(pos) => {
+                if pos / self.length * 100f64 <= CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE {
+                    return true;
                 }
                 false
             }
@@ -384,14 +399,15 @@ impl AudiobookGetById {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct AudiobookGetByIdJoin {
-    pub id: Id,
+    pub user_id: Id,
+    pub audiobook_id: Id,
 }
 
 impl AudiobookGetByIdJoin {
     #[must_use]
     #[inline]
-    pub const fn new(id: &Id) -> Self {
-        Self { id: *id }
+    pub const fn new(user_id: Id, audiobook_id: Id) -> Self {
+        Self { user_id, audiobook_id }
     }
 }
 

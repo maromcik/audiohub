@@ -358,12 +358,13 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
                     INNER JOIN
                 "Genre" AS g ON a.genre_id = g.id
                     LEFT JOIN
-                "Active_Audiobook" AS ab ON ab.audiobook_id = a.id AND u.id = ab.user_id
+                "Active_Audiobook" AS ab ON ab.audiobook_id = a.id AND ab.user_id = $2
             WHERE
                 a.deleted_at IS NULL
                 AND a.id = $1
             "#,
-            params.id
+            params.audiobook_id,
+            params.user_id
         )
             .fetch_optional(&self.pool_handler.pool)
             .await?;
@@ -450,7 +451,7 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
                     INNER JOIN
                 "Genre" AS g ON a.genre_id = g.id
                     LEFT JOIN
-                "Active_Audiobook" AS ab ON ab.audiobook_id = a.id
+                "Active_Audiobook" AS ab ON ab.audiobook_id = a.id AND ab.user_id = $12
             WHERE
                 a.deleted_at IS NULL
                 AND u.deleted_at IS NULL
@@ -466,7 +467,6 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
                 AND (overall_rating <= $9 OR $9 IS NULL)
                 AND (u.name = $10 OR $10 IS NULL)
                 AND (g.name = $11 OR $11 IS NULL)
-                AND (ab.user_id IS NULL or ab.user_id = $12)
             "#
         .to_owned();
 

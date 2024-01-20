@@ -7,26 +7,16 @@ use crate::error::{AppError, AppErrorKind};
 use actix_identity::Identity;
 use actix_multipart::form::tempfile::TempFile;
 use actix_session::Session;
-use actix_web::http::header::LOCATION;
-use actix_web::{web, HttpResponse};
+use actix_web::web;
 
 use uuid::Uuid;
-use crate::{CONSIDER_AUDIOBOOK_FINISHED, CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE};
-use crate::database::models::active_audiobook::{ActiveAudiobookDetail, PlayedAudiobook};
+
+use crate::database::models::active_audiobook::{ActiveAudiobookDetail};
 
 pub fn parse_user_id(identity: Identity) -> Result<Id, AppError> {
     Ok(identity.id()?.parse::<i64>()?)
 }
 
-pub fn is_unauthorized(identity: Option<Identity>) -> bool {
-    identity.is_none()
-}
-
-pub fn redirect_login() -> HttpResponse {
-    HttpResponse::SeeOther()
-        .insert_header((LOCATION, "/user/login"))
-        .finish()
-}
 
 pub fn get_metadata_from_session(
     session: &Session,
@@ -146,7 +136,7 @@ pub fn get_active_audiobooks(audiobooks: &[AudiobookDetail]) ->Vec<ActiveAudiobo
     audiobooks
         .iter()
         .filter_map(|a| match (a.playback_position, a.active_audiobook_edited_at) {
-            (Some(pos), Some(edited)) => if (a.length - pos) > CONSIDER_AUDIOBOOK_FINISHED {
+            (Some(pos), Some(edited)) => if a.is_active() {
                 Some(ActiveAudiobookDetail::from_audiobook(a, pos, edited))
             } else { None }
             (_, _) => None
@@ -154,19 +144,11 @@ pub fn get_active_audiobooks(audiobooks: &[AudiobookDetail]) ->Vec<ActiveAudiobo
 }
 
 pub fn is_audiobook_finished(audiobook: &AudiobookDetail) -> bool {
-    match audiobook.playback_position {
-        None => false,
-        Some(p) => {
-            if (audiobook.length - p) <= CONSIDER_AUDIOBOOK_FINISHED {
-                return true
-            }
-            false
-        }
-    }
+    audiobook.is_finished()
 }
 
 pub fn is_active_audiobook_finished(audiobook: &ActiveAudiobookDetail) -> bool {
-    return audiobook.progress > CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE;
+    audiobook.is_finished()
 }
 
 #[macro_export]
