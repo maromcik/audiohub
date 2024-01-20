@@ -7,7 +7,6 @@ pub struct GenresPageTemplate {
     pub genres: Vec<Genre>,
 }
 
-
 #[derive(Template)]
 #[template(path = "genre/genres-content.html")]
 pub struct GenresContentTemplate {

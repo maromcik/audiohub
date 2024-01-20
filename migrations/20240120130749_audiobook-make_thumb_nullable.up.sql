@@ -1,0 +1,1 @@
+ALTER TABLE "Audiobook" ALTER COLUMN thumbnail DROP NOT NULL;

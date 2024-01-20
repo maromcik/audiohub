@@ -8,12 +8,16 @@ use crate::database::common::{
 use async_trait::async_trait;
 
 use crate::database::common::utilities::generate_query_param_string;
+use crate::database::models::active_audiobook::{
+    ActiveAudiobook, PlayedAudiobook, PlayedAudiobookDb, RemoveActiveAudiobook, SetActiveAudiobook,
+};
 use sqlx::{Postgres, Transaction};
-use crate::database::models::active_audiobook::{ActiveAudiobook, PlayedAudiobook, RemoveActiveAudiobook, SetActiveAudiobook};
 
-use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookGetById, AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookSearch, AudiobookUpdate};
+use crate::database::models::audiobook::{
+    Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookGetById,
+    AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookSearch, AudiobookUpdate,
+};
 use crate::database::models::Id;
-
 
 #[derive(Clone)]
 pub struct AudiobookRepository {
@@ -64,7 +68,7 @@ impl AudiobookRepository {
             r#"
             SELECT id, name FROM "Audiobook"
             WHERE name ILIKE $1
-            LIMIT 10
+            LIMIT 5
             "#,
             comparison_string
         )
@@ -88,8 +92,8 @@ impl AudiobookRepository {
             params.user_id,
             params.audiobook_id,
         )
-            .fetch_one(&self.pool_handler.pool)
-            .await?;
+        .fetch_one(&self.pool_handler.pool)
+        .await?;
 
         Ok(removed_active_audiobook)
     }
@@ -112,8 +116,8 @@ impl AudiobookRepository {
             params.user_id,
             params.audiobook_id,
         )
-            .fetch_all(&self.pool_handler.pool)
-            .await?;
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
 
         if let Some(updated) = updated_active_audiobook.into_iter().nth(0) {
             return Ok(updated);
@@ -130,8 +134,8 @@ impl AudiobookRepository {
             params.audiobook_id,
             params.playback_position
         )
-            .fetch_one(&self.pool_handler.pool)
-            .await?;
+        .fetch_one(&self.pool_handler.pool)
+        .await?;
 
         Ok(new_active_audiobook)
     }
@@ -142,7 +146,7 @@ impl AudiobookRepository {
         user_id: &Id,
     ) -> DbResultSingle<Option<PlayedAudiobook>> {
         let last_active_book = sqlx::query_as!(
-            PlayedAudiobook,
+            PlayedAudiobookDb,
             r#"
             SELECT A.id as book_id, A.file_path AS path, A.thumbnail as thumbnail,
                 A.name AS name, ACT.playback_position AS playback_position,
@@ -162,9 +166,9 @@ impl AudiobookRepository {
             "#,
             user_id,
         )
-            .fetch_optional(&self.pool_handler.pool)
-            .await?;
-        Ok(last_active_book)
+        .fetch_optional(&self.pool_handler.pool)
+        .await?;
+        Ok(last_active_book.map(PlayedAudiobook::from))
     }
 
     /// TODO: refactor this
@@ -173,7 +177,6 @@ impl AudiobookRepository {
         user_id: &Id,
         book_id: &Id,
     ) -> DbResultSingle<PlayedAudiobook> {
-
         let exists = sqlx::query_as!(
             ActiveAudiobook,
             r#"
@@ -183,11 +186,13 @@ impl AudiobookRepository {
             "#,
             user_id,
             book_id,
-        ).fetch_optional(&self.pool_handler.pool).await?;
+        )
+        .fetch_optional(&self.pool_handler.pool)
+        .await?;
 
-        if let Some(book) = exists {
+        if let Some(_book) = exists {
             let played_audiobook = sqlx::query_as!(
-                PlayedAudiobook,
+                PlayedAudiobookDb,
                 r#"
                 SELECT A.id as book_id, A.file_path AS path, A.thumbnail as thumbnail,
                     A.name AS name, ACT.playback_position AS playback_position,
@@ -201,8 +206,10 @@ impl AudiobookRepository {
                 "#,
                 user_id,
                 book_id
-            ).fetch_one(&self.pool_handler.pool).await?;
-            return Ok(played_audiobook);
+            )
+            .fetch_one(&self.pool_handler.pool)
+            .await?;
+            return Ok(PlayedAudiobook::from(played_audiobook));
         }
 
         sqlx::query_as!(
@@ -213,11 +220,13 @@ impl AudiobookRepository {
             "#,
             user_id,
             book_id,
-        ).execute(&self.pool_handler.pool).await?;
+        )
+        .execute(&self.pool_handler.pool)
+        .await?;
 
         let played_audiobook = sqlx::query_as!(
-                PlayedAudiobook,
-                r#"
+            PlayedAudiobookDb,
+            r#"
                 SELECT A.id as book_id, A.file_path AS path, A.thumbnail as thumbnail,
                     A.name AS name, ACT.playback_position AS playback_position,
                     B.edited_at IS NOT NULL AS is_liked, U.id as author_id,
@@ -228,10 +237,12 @@ impl AudiobookRepository {
                     LEFT JOIN "Bookmark" B ON A.id = B.audiobook_id
                 WHERE ACT.user_id = $1 AND ACT.audiobook_id = $2
                 "#,
-                user_id,
-                book_id
-            ).fetch_one(&self.pool_handler.pool).await?;
-        Ok(played_audiobook)
+            user_id,
+            book_id
+        )
+        .fetch_one(&self.pool_handler.pool)
+        .await?;
+        Ok(PlayedAudiobook::from(played_audiobook))
     }
 }
 
@@ -297,7 +308,8 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
                 g.name AS genre_name,
 
                 ab.playback_position AS "playback_position?",
-                ab.edited_at AS "active_audiobook_edited_at?"
+                ab.edited_at AS "active_audiobook_edited_at?",
+                b.audiobook_id IS NOT NULL AS "is_liked!"
             FROM
                 "Audiobook" AS a
                     INNER JOIN
@@ -306,6 +318,8 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
                 "Genre" AS g ON a.genre_id = g.id
                     LEFT JOIN
                 "Active_Audiobook" AS ab ON ab.audiobook_id = a.id AND ab.user_id = $2
+                    LEFT JOIN
+                "Bookmark" as b ON a.id = b.audiobook_id AND b.user_id = $2
             WHERE
                 a.deleted_at IS NULL
                 AND a.id = $1
@@ -313,8 +327,8 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
             params.audiobook_id,
             params.user_id
         )
-            .fetch_optional(&self.pool_handler.pool)
-            .await?;
+        .fetch_optional(&self.pool_handler.pool)
+        .await?;
 
         match maybe_audiobook {
             None => Err(DbError::from(BackendError::new(AudiobookDoesNotExist))),
@@ -390,7 +404,8 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
                 g.name AS genre_name,
 
                 ab.playback_position,
-                ab.edited_at AS active_audiobook_edited_at
+                ab.edited_at AS active_audiobook_edited_at,
+                b.audiobook_id IS NOT NULL AS is_liked
             FROM
                 "Audiobook" AS a
                     INNER JOIN
@@ -399,6 +414,8 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
                 "Genre" AS g ON a.genre_id = g.id
                     LEFT JOIN
                 "Active_Audiobook" AS ab ON ab.audiobook_id = a.id AND ab.user_id = $12
+                    LEFT JOIN
+                "Bookmark" as b ON a.id = b.audiobook_id AND b.user_id = $12
             WHERE
                 a.deleted_at IS NULL
                 AND u.deleted_at IS NULL

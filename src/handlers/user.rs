@@ -20,7 +20,9 @@ use uuid::Uuid;
 
 use crate::database::common::{DbCreate, DbReadOne, DbUpdate};
 
-use crate::database::models::user::{UserCreate, UserDisplay, UserGetById, UserLogin, UserUpdate, UserUpdatePassword};
+use crate::database::models::user::{
+    UserCreate, UserDisplay, UserGetById, UserLogin, UserUpdate, UserUpdatePassword,
+};
 use crate::forms::user::{
     ProfilePictureUploadForm, UserCreateForm, UserUpdateForm, UserUpdatePasswordForm,
 };
@@ -120,7 +122,9 @@ pub async fn user_manage_form_page(
     let user = user_repo
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
-    let template = UserManageProfilePageTemplate { user: UserDisplay::from(user) };
+    let template = UserManageProfilePageTemplate {
+        user: UserDisplay::from(user),
+    };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -134,7 +138,9 @@ pub async fn user_manage_form_content(
     let user = user_repo
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
-    let template = UserManageProfileContentTemplate { user: UserDisplay::from(user) };
+    let template = UserManageProfileContentTemplate {
+        user: UserDisplay::from(user),
+    };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -154,7 +160,9 @@ pub async fn user_manage_picture_form(
     identity: Option<Identity>,
 ) -> Result<impl Responder, AppError> {
     authorized!(identity);
-    let template = UserManageProfilePictureFormTemplate { message: "".to_string() };
+    let template = UserManageProfilePictureFormTemplate {
+        message: "".to_string(),
+    };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -168,7 +176,9 @@ pub async fn user_manage_profile_form(
     let user = user_repo
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
-    let template = UserManageProfileUserFormTemplate { user: UserDisplay::from(user) };
+    let template = UserManageProfileUserFormTemplate {
+        user: UserDisplay::from(user),
+    };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -223,10 +233,16 @@ pub async fn user_manage_picture(
     MultipartForm(form): MultipartForm<ProfilePictureUploadForm>,
 ) -> Result<impl Responder, AppError> {
     let u = authorized!(identity);
-    let path = validate_file(&form.picture, Uuid::new_v4(), "image", "user", AppErrorKind::ProfilePictureUploadError)?;
+    let path = validate_file(
+        &form.picture,
+        Uuid::new_v4(),
+        "image",
+        "user",
+        AppErrorKind::ProfilePictureUploadError,
+    )?;
     let user = get_user_from_identity(u, &user_repo).await?;
-    if let Some(pic) = user.profile_picture {
-        remove_file(pic.as_str())?;
+    if let Some(pic) = &user.profile_picture {
+        remove_file(pic)?;
     }
     let user_update = UserUpdate::new(
         &user.id,
@@ -240,13 +256,15 @@ pub async fn user_manage_picture(
     );
 
     let users = user_repo.update(&user_update).await?;
-    save_file(form.picture, path, AppErrorKind::ProfilePictureUploadError)?;
+    save_file(form.picture, &path, AppErrorKind::ProfilePictureUploadError)?;
     // // Ok(HttpResponse::Ok()
     // //     .insert_header(("HX-Redirect", "/user/manage"))
     // //     .finish())
 
     if let Some(user) = users.into_iter().nth(0) {
-        let template = UserManageProfilePictureTemplate { user: UserDisplay::from(user) };
+        let template = UserManageProfilePictureTemplate {
+            user: UserDisplay::from(user),
+        };
         let body = template.render()?;
         return Ok(HttpResponse::Ok().content_type("text/html").body(body));
     }

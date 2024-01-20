@@ -1,4 +1,5 @@
 use crate::authorized;
+use crate::database::models::audiobook::AudiobookDisplay;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
 use crate::handlers::utilities::parse_user_id;
@@ -7,7 +8,6 @@ use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, web, HttpResponse};
 use askama::Template;
-use crate::database::models::audiobook::AudiobookDisplay;
 
 #[get("/library")]
 pub async fn index(

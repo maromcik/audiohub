@@ -1,0 +1,8 @@
+{% extends "index.html" %}
+{% block title %}
+{{ audiobook.name }}
+{% endblock %}
+
+{% block content %}
+    {% include "audiobook/detail_author-content.html"%}
+{% endblock %}
