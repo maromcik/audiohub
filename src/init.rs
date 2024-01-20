@@ -13,7 +13,7 @@ use actix_web::web;
 use actix_web::web::ServiceConfig;
 use sqlx::PgPool;
 use crate::handlers::genre::get_genres_content;
-use crate::handlers::user::user_manage_form_content;
+use crate::handlers::user::{user_manage_form_content, user_manage_profile_form};
 
 pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let user_repository = UserRepository::new(PoolHandler::new(pool.clone()));
@@ -34,7 +34,8 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(user_manage_picture_form)
         .service(user_manage)
         .service(user_manage_picture)
-        .service(user_manage_password);
+        .service(user_manage_password)
+        .service(user_manage_profile_form);
 
     let audiobook_scope = web::scope("audiobook")
         .app_data(web::Data::new(audiobook_repository.clone()))
