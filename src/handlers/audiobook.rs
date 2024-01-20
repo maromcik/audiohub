@@ -144,8 +144,8 @@ pub async fn get_audiobook(
     chapter_repo: web::Data<ChapterRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
-    authorized!(identity);
-    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, path.into_inner().0).await?;
+    let u = authorized!(identity);
+    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, parse_user_id(u)?, path.into_inner().0).await?;
     let body = AudiobookDetailPageTemplate {
         audiobook: base.audiobook,
         chapters: base.chapters,
@@ -162,8 +162,8 @@ pub async fn get_audiobook_detail_content(
     chapter_repo: web::Data<ChapterRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
-    authorized!(identity);
-    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, path.into_inner().0).await?;
+    let u = authorized!(identity);
+    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, parse_user_id(u)?, path.into_inner().0).await?;
     let body = AudiobookDetailContentTemplate {
         audiobook: base.audiobook,
         chapters: base.chapters,
@@ -176,14 +176,15 @@ pub async fn get_audiobook_detail_content(
 async fn get_audiobook_detail_base (
     audiobook_repo: web::Data<AudiobookRepository>,
     chapter_repo: web::Data<ChapterRepository>,
-    book_id: Id
+    user_id: Id,
+    audiobook_id: Id
 ) -> Result<AudiobookDetailBase, AppError>  {
     let audiobook = audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(&book_id))
+        .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id))
         .await?;
 
     let chapters = chapter_repo
-        .read_many(&ChaptersGetByBookId::new(book_id))
+        .read_many(&ChaptersGetByBookId::new(audiobook_id))
         .await?;
 
     let displayed_chapters: Vec<ChapterDisplay> = chapters
@@ -244,7 +245,7 @@ pub async fn remove_audiobook(
     let identity = authorized!(identity);
     let user = get_user_from_identity(identity, &user_repo).await?;
     let audiobook = audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(&path.into_inner().0))
+        .read_one(&AudiobookGetByIdJoin::new(user.id, path.into_inner().0))
         .await?;
 
     if user.id != audiobook.author_id {
@@ -272,15 +273,15 @@ pub async fn change_like(
     let identity = authorized!(identity);
 
     let user = get_user_from_identity(identity, &user_repo).await?;
-    let book_id = path.into_inner().0;
+    let audiobook_id = path.into_inner().0;
 
-    let liked = user_repo.is_bookmarked(&user.id, &book_id).await?.is_some();
+    let liked = user_repo.is_bookmarked(&user.id, &audiobook_id).await?.is_some();
 
     let audiobook = audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(&book_id))
+        .read_one(&AudiobookGetByIdJoin::new(user.id, audiobook_id))
         .await?;
 
-    let bookmark = BookmarkOperation::new(user.id, book_id);
+    let bookmark = BookmarkOperation::new(user.id, audiobook_id);
     let likes = match liked {
         true => {
             user_repo.unbookmark(&bookmark).await?;
@@ -292,7 +293,7 @@ pub async fn change_like(
         }
     };
 
-    let update = AudiobookUpdate::update_likes(book_id, likes);
+    let update = AudiobookUpdate::update_likes(audiobook_id, likes);
 
     audiobook_repo.update(&update).await?;
 
