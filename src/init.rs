@@ -91,6 +91,8 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
             .service(library::index)
             .service(library::get_content)
             .service(ActixFiles::new("/media", "./media").prefer_utf8(true))
-            .service(ActixFiles::new("/static", "./static").prefer_utf8(true));
+            .service(ActixFiles::new("/static", "./static").prefer_utf8(true))
+            .service(studio::studio_index)
+            .service(studio::studio_get_content);
     })
 }

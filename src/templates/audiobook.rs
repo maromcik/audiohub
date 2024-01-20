@@ -5,7 +5,7 @@ use askama::Template;
 use crate::database::models::active_audiobook::PlayedAudiobook;
 
 #[derive(Template)]
-#[template(path = "studio.html")]
+#[template(path = "studio_create_audiobook.html")]
 pub struct AudiobookCreatePageTemplate {
     pub genres: Vec<Genre>,
 }
@@ -40,14 +40,14 @@ pub struct AudiobooksByGenreTemplate {
 }
 
 #[derive(Template)]
-#[template(path = "detail.html")]
+#[template(path = "audiobook/audiobook_detail.html")]
 pub struct AudiobookDetailPageTemplate {
     pub audiobook: AudiobookDisplay,
     pub chapters: Vec<ChapterDisplay>,
 }
 
 #[derive(Template)]
-#[template(path = "audiobook/detail-content.html")]
+#[template(path = "audiobook/audiobook_detail.html")]
 pub struct AudiobookDetailContentTemplate {
     pub audiobook: AudiobookDisplay,
     pub chapters: Vec<ChapterDisplay>,

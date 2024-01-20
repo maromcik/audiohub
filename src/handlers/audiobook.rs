@@ -206,7 +206,6 @@ async fn releases_page(
     identity: Option<Identity>,
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
-    //add functionality for ordering audiobooks
     let u = authorized!(identity);
     let books = book_repo
         .read_many(&AudiobookSearch::with_params(DbQueryParams::limit(5, 0), parse_user_id(u)?))
