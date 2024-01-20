@@ -308,7 +308,8 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
                 g.name AS genre_name,
 
                 ab.playback_position AS "playback_position?",
-                ab.edited_at AS "active_audiobook_edited_at?"
+                ab.edited_at AS "active_audiobook_edited_at?",
+                b.audiobook_id IS NOT NULL AS "is_liked?"
             FROM
                 "Audiobook" AS a
                     INNER JOIN
@@ -317,6 +318,8 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
                 "Genre" AS g ON a.genre_id = g.id
                     LEFT JOIN
                 "Active_Audiobook" AS ab ON ab.audiobook_id = a.id AND ab.user_id = $2
+                    LEFT JOIN
+                "Bookmark" as b ON a.id = b.audiobook_id AND b.user_id = $2
             WHERE
                 a.deleted_at IS NULL
                 AND a.id = $1
@@ -401,7 +404,8 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
                 g.name AS genre_name,
 
                 ab.playback_position,
-                ab.edited_at AS active_audiobook_edited_at
+                ab.edited_at AS active_audiobook_edited_at,
+                b.audiobook_id IS NOT NULL AS is_liked
             FROM
                 "Audiobook" AS a
                     INNER JOIN
@@ -410,6 +414,8 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
                 "Genre" AS g ON a.genre_id = g.id
                     LEFT JOIN
                 "Active_Audiobook" AS ab ON ab.audiobook_id = a.id AND ab.user_id = $12
+                    LEFT JOIN
+                "Bookmark" as b ON a.id = b.audiobook_id AND b.user_id = $12
             WHERE
                 a.deleted_at IS NULL
                 AND u.deleted_at IS NULL
