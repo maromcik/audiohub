@@ -2,22 +2,22 @@ use crate::authorized;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
 use crate::handlers::utilities::parse_user_id;
-use crate::templates::library::{LibraryContentTemplate, LibraryPageTemplate};
+
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, web, HttpResponse};
 use askama::Template;
-use crate::database::common::query_parameters::DbQueryParams;
+
 use crate::database::models::audiobook::{AudiobookDisplay, AudiobookSearch};
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
-use crate::database::repositories::chapter::repository::ChapterRepository;
-use crate::templates::studio::{StudioPageTemplate, StudioContentTemplate};
+
 use crate::database::common::repository::DbReadMany;
+use crate::templates::studio::{StudioContentTemplate, StudioPageTemplate};
 
 #[get("/studio")]
 pub async fn studio_index(
     identity: Option<Identity>,
-    user_repo: web::Data<UserRepository>,
+    _user_repo: web::Data<UserRepository>,
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
@@ -39,7 +39,7 @@ pub async fn studio_index(
 #[get("/studio-content")]
 pub async fn studio_get_content(
     identity: Option<Identity>,
-    user_repo: web::Data<UserRepository>,
+    _user_repo: web::Data<UserRepository>,
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);

@@ -1,7 +1,7 @@
 use crate::database::models::Id;
+use crate::CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use crate::CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE;
 
 use crate::database::common::query_parameters::DbQueryParams;
 use crate::database::models::utilities::{get_default_profile_picture, get_default_thumbnail};
@@ -112,8 +112,7 @@ pub struct AudiobookDisplay {
     pub playback_position: f64,
     pub progress: f64,
     pub is_finished: bool,
-    pub is_started: bool
-
+    pub is_started: bool,
 }
 
 impl AudiobookDisplay {
@@ -144,7 +143,7 @@ impl AudiobookDisplay {
             playback_position: audiobook.playback_position.unwrap_or_default(),
             progress: audiobook.playback_position.unwrap_or_default() / audiobook.length * 100f64,
             is_finished: audiobook.is_finished(),
-            is_started: !audiobook.is_never_started()
+            is_started: !audiobook.is_never_started(),
         }
     }
 }
@@ -381,7 +380,7 @@ impl AudiobookCreate {
         thumbnail: Option<String>,
         description: &str,
     ) -> Self {
-        let change_to_owned = |value: &str| Some(value.to_owned());
+        let _change_to_owned = |value: &str| Some(value.to_owned());
         Self {
             name: name.to_owned(),
             author_id: *author_id,
@@ -507,7 +506,10 @@ impl AudiobookGetByIdJoin {
     #[must_use]
     #[inline]
     pub const fn new(user_id: Id, audiobook_id: Id) -> Self {
-        Self { user_id, audiobook_id }
+        Self {
+            user_id,
+            audiobook_id,
+        }
     }
 }
 

@@ -1,7 +1,6 @@
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
-use crate::CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE;
-use crate::database::models::audiobook::AudiobookDetail;
+
 use crate::database::models::utilities::get_default_thumbnail;
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Clone)]
@@ -35,7 +34,6 @@ pub struct SetActiveAudiobook {
     pub audiobook_id: Id,
     pub playback_position: f64,
 }
-
 
 #[derive(Debug, Clone)]
 pub struct PlayedAudiobookDb {

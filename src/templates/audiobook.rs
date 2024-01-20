@@ -1,8 +1,8 @@
-use crate::database::models::audiobook::{AudiobookDetail, AudiobookDisplay};
+use crate::database::models::active_audiobook::PlayedAudiobook;
+use crate::database::models::audiobook::AudiobookDisplay;
 use crate::database::models::chapter::ChapterDisplay;
 use crate::database::models::genre::Genre;
 use askama::Template;
-use crate::database::models::active_audiobook::PlayedAudiobook;
 
 #[derive(Template)]
 #[template(path = "studio_create_audiobook.html")]
@@ -61,8 +61,6 @@ pub struct PlayerTemplate {
     pub played_book: PlayedAudiobook,
 }
 
-
-
 pub struct AudiobookDetailBase {
     pub audiobook: AudiobookDisplay,
     pub chapters: Vec<ChapterDisplay>,
@@ -72,7 +70,7 @@ impl From<AudiobookDetailPageTemplate> for AudiobookDetailBase {
     fn from(value: AudiobookDetailPageTemplate) -> Self {
         Self {
             audiobook: value.audiobook,
-            chapters: value.chapters
+            chapters: value.chapters,
         }
     }
 }
@@ -81,7 +79,7 @@ impl From<AudiobookDetailContentTemplate> for AudiobookDetailBase {
     fn from(value: AudiobookDetailContentTemplate) -> Self {
         Self {
             audiobook: value.audiobook,
-            chapters: value.chapters
+            chapters: value.chapters,
         }
     }
 }

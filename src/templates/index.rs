@@ -32,7 +32,7 @@ impl From<IndexBase> for IndexContentTemplate {
             logged_in: value.logged_in,
             username: value.username,
             audiobooks: value.audiobooks,
-            active_audiobooks: value.active_audiobooks
+            active_audiobooks: value.active_audiobooks,
         }
     }
 }
@@ -43,7 +43,7 @@ impl From<IndexBase> for IndexTemplate {
             logged_in: value.logged_in,
             username: value.username,
             audiobooks: value.audiobooks,
-            active_audiobooks: value.active_audiobooks
+            active_audiobooks: value.active_audiobooks,
         }
     }
 }
