@@ -5,6 +5,8 @@ use crate::templates::user::{
     LoginTemplate, RegistrationTemplate, UserManagePasswordTemplate,
     UserManageProfileContentTemplate, UserManageProfilePageTemplate,
     UserManageProfilePictureFormTemplate, UserManageProfilePictureTemplate,
+    UserManageProfileSuccessfulUpdate, UserManageProfileSuccessfulUpdatePassword,
+    UserManageProfileUserFormTemplate,
 };
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
@@ -159,6 +161,20 @@ pub async fn user_manage_picture_form(
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
+#[get("/manage/profile")]
+pub async fn user_manage_profile_form(
+    identity: Option<Identity>,
+    user_repo: web::Data<UserRepository>,
+) -> Result<impl Responder, AppError> {
+    let u = authorized!(identity);
+    let user = user_repo
+        .read_one(&UserGetById::new(&parse_user_id(u)?))
+        .await?;
+    let template = UserManageProfileUserFormTemplate { user };
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
 #[post("/manage")]
 pub async fn user_manage(
     identity: Option<Identity>,
@@ -177,10 +193,9 @@ pub async fn user_manage(
         None,
     );
     user_repo.update(&user_update).await?;
-    // TEMPORARY SOLUTION
-    Ok(HttpResponse::SeeOther()
-        .insert_header((LOCATION, "/"))
-        .finish())
+    let template = UserManageProfileSuccessfulUpdate {};
+    let body = template.render()?;
+    return Ok(HttpResponse::Ok().content_type("text/html").body(body));
 }
 
 #[post("/manage/password")]
@@ -197,9 +212,10 @@ pub async fn user_manage_password(
             &form.new_password,
         ))
         .await?;
-    Ok(HttpResponse::SeeOther()
-        .insert_header((LOCATION, "/"))
-        .finish())
+
+    let template = UserManageProfileSuccessfulUpdatePassword {};
+    let body = template.render()?;
+    return Ok(HttpResponse::Ok().content_type("text/html").body(body));
 }
 
 #[post("/manage/picture")]

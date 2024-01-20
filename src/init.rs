@@ -5,15 +5,18 @@ use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::rating::repository::RatingRepository;
 use crate::database::repositories::user::repository::UserRepository;
-use crate::handlers::audiobook::{change_like, create_audiobook_content, get_audiobook_detail_content, get_audiobook_player, get_last_active_audiobook, releases_content, releases_page};
+use crate::handlers::audiobook::{
+    change_like, create_audiobook_content, get_audiobook_detail_content, get_audiobook_player,
+    get_last_active_audiobook, releases_content, releases_page,
+};
+use crate::handlers::genre::get_genres_content;
 use crate::handlers::rating::{create_rating, create_rating_form, get_ratings_by_audiobook};
+use crate::handlers::user::{user_manage_form_content, user_manage_profile_form};
 use crate::handlers::*;
 use actix_files::Files as ActixFiles;
 use actix_web::web;
 use actix_web::web::ServiceConfig;
 use sqlx::PgPool;
-use crate::handlers::genre::get_genres_content;
-use crate::handlers::user::user_manage_form_content;
 
 pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let user_repository = UserRepository::new(PoolHandler::new(pool.clone()));
@@ -34,7 +37,8 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(user_manage_picture_form)
         .service(user_manage)
         .service(user_manage_picture)
-        .service(user_manage_password);
+        .service(user_manage_password)
+        .service(user_manage_profile_form);
 
     let audiobook_scope = web::scope("audiobook")
         .app_data(web::Data::new(audiobook_repository.clone()))
