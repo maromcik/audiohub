@@ -35,6 +35,20 @@ pub struct NewReleasesContentTemplate {
 }
 
 #[derive(Template)]
+#[template(path = "components/detail_likes.html")]
+pub struct DetailLikesTemplate {
+    pub likes: i64,
+    pub is_liked: bool,
+}
+
+#[derive(Template)]
+#[template(path = "components/card_likes.html")]
+pub struct CardLikesTemplate {
+    pub likes: i64,
+    pub is_liked: bool,
+}
+
+#[derive(Template)]
 #[template(path = "audiobook/audiobooks_by_genre.html")]
 pub struct AudiobooksByGenreTemplate {
     pub audiobooks: Vec<AudiobookDisplay>,
@@ -46,6 +60,7 @@ pub struct AudiobooksByGenreTemplate {
 pub struct AudiobookDetailPageTemplate {
     pub audiobook: AudiobookDisplay,
     pub chapters: Vec<ChapterDisplay>,
+    pub is_liked: bool,
 }
 
 #[derive(Template)]
@@ -53,6 +68,23 @@ pub struct AudiobookDetailPageTemplate {
 pub struct AudiobookDetailContentTemplate {
     pub audiobook: AudiobookDisplay,
     pub chapters: Vec<ChapterDisplay>,
+    pub is_liked: bool,
+}
+
+#[derive(Template)]
+#[template(path = "detail_author.html")]
+pub struct AudiobookDetailAuthorPageTemplate {
+    pub audiobook: AudiobookDisplay,
+    pub chapters: Vec<ChapterDisplay>,
+    pub is_liked: bool,
+}
+
+#[derive(Template)]
+#[template(path = "audiobook/detail_author-content.html")]
+pub struct AudiobookDetailAuthorContentTemplate {
+    pub audiobook: AudiobookDisplay,
+    pub chapters: Vec<ChapterDisplay>,
+    pub is_liked: bool,
 }
 
 #[derive(Template)]

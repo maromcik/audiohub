@@ -261,7 +261,7 @@ pub async fn user_manage_picture(
     // //     .insert_header(("HX-Redirect", "/user/manage"))
     // //     .finish())
 
-    if let Some(user) = users.into_iter().nth(0) {
+    if let Some(user) = users.into_iter().next() {
         let template = UserManageProfilePictureTemplate {
             user: UserDisplay::from(user),
         };

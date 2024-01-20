@@ -53,7 +53,7 @@ pub struct AudiobookDetail {
 
     pub playback_position: Option<f64>,
     pub active_audiobook_edited_at: Option<DateTime<Utc>>,
-    pub is_liked: Option<bool>
+    pub is_liked: bool
 }
 
 impl AudiobookDetail {
@@ -146,7 +146,7 @@ impl AudiobookDisplay {
             progress: audiobook.playback_position.unwrap_or_default() / audiobook.length * 100f64,
             is_finished: audiobook.is_finished(),
             is_started: !audiobook.is_never_started(),
-            is_liked: audiobook.is_liked.unwrap_or_default()
+            is_liked: audiobook.is_liked
         }
     }
 }
@@ -180,7 +180,7 @@ impl From<AudiobookDetail> for AudiobookDisplay {
 
             playback_position: audiobook.playback_position.unwrap_or_default(),
             progress: audiobook.playback_position.unwrap_or_default() / audiobook.length * 100f64,
-            is_liked: audiobook.is_liked.unwrap_or_default()
+            is_liked: audiobook.is_liked
         }
     }
 }

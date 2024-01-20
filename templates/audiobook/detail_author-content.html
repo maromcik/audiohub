@@ -22,10 +22,20 @@
                     {% endif %}
                 </div>
             </button>
-
         </div>
     </div>
 </div>
+<a href="/audiobook/{{ audiobook.id }}/delete">Delete Audiobook</a>
+
+<!--            <div hx-get="/chapter/audiobook/{{ audiobook.id }}" hx-trigger="load" hx-swap="afterend">-->
+<!--                Chapters-->
+<!--            </div>-->
+<form hx-get="/chapter/create/audiobook/{{ audiobook.id }}" hx-swap="afterend" class="mb-4">
+    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
+        Add new chapter
+    </button>
+</form>
+
 <div class="flex flex-row justify-center">
     <button id="play-from-detail-btn" hx-get="/audiobook/{{audiobook.id}}/player"
             hx-target="#player-container"
@@ -50,12 +60,4 @@
             {{audiobook.bio}}
         </p>
     </div>
-</div>
-
-{% include "rating/rating-form.html" %}
-
-<h1 class="pl-10 text-4xl font-bold mb-3">Ratings</h1>
-<div id="ratings-container"
-     hx-get="/rating/audiobook/{{ audiobook.id }}"
-     hx-trigger="load" hx-swap="outerHTML" class="flex flex-col pl-10">
 </div>
