@@ -3,6 +3,10 @@
 {{ audiobook.name }}
 {% endblock %}
 
+{% block navbar %}
+    {% include "components/navbar.html" %}
+{% endblock %}
+
 {% block content %}
     {% include "audiobook/detail-content.html"%}
 {% endblock %}

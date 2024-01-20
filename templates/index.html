@@ -14,7 +14,7 @@
 </head>
 <body class="bg-black text-white">
 {% block navbar %}
-{% include "components/navbar.html" %}
+    {% include "components/navbar.html" %}
 {% endblock %}
 <div class="flex pt-16 flex-col h-screen">
     <!-- Sidebar -->
@@ -41,20 +41,22 @@
         return document.getElementById('audiobook-player').getAttribute("begin-time");
 
     }
-
+    // player init
     document.addEventListener("htmx:load", (e) => {
         if (e.detail.elt.id === 'player-container') {
             clearInterval(playerIntervalId);
             let audio = document.getElementById('audiobook-player');
-            let book_id = audio.lastElementChild.id;
-            attachInterval(parseBookIdFromSource(book_id));
+            let bookId = audio.lastElementChild.id;
+            attachInterval(parseBookIdFromSource(bookId));
 
             audio.play();
 
+            let beginTime = getBeginningPlayerTime();
             // initially set active book to current selection
-            fetch(`/audiobook/${currentBookId}/active?position=${getBeginningPlayerTime()}`, {
+            fetch(`/audiobook/${currentBookId}/active?position=${beginTime}`, {
                 method: "PUT",
             });
+            audio.currentTime = beginTime;
 
             audio.onpause = () => {
                 clearInterval(playerIntervalId);
@@ -90,6 +92,15 @@
         fetch(`/audiobook/${currentBookId}/active?position=${getCurrentPlayerTime()}`, {
             method: "PUT",
         });
+    }
+
+    const attachHideQuickSearchListener = () => {
+        document.body.addEventListener('click', hideQuickSearchResults)
+    }
+    const hideQuickSearchResults = () => {
+        document.getElementById('quick-search-input').value = '';
+        document.getElementById('search-result').style.display = 'none';
+        document.body.removeEventListener('click', this);
     }
 
 </script>

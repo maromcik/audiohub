@@ -17,9 +17,9 @@ pub struct AudiobookUploadForm {
     pub audio_file: TempFile,
 }
 
-#[derive(Debug, Clone, Deserialize)]
-pub struct AudiobookSearchQuery {
-    pub name: String,
+#[derive(Deserialize)]
+pub struct AudiobookQuickSearchQuery {
+    pub query: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]

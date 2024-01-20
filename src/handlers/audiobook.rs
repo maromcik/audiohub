@@ -1,7 +1,7 @@
 use crate::database::common::{DbCreate, DbDelete, DbReadMany, DbReadOne, DbUpdate};
 use crate::database::models::audiobook::{
-    AudiobookCreate, AudiobookDelete, AudiobookDisplay, AudiobookGetByIdJoin, AudiobookSearch,
-    AudiobookUpdate,
+    AudiobookCreate, AudiobookDelete, AudiobookDisplay, AudiobookGetByIdJoin, AudiobookQuickSearch,
+    AudiobookSearch, AudiobookUpdate,
 };
 use crate::database::models::genre::{GenreGetById, GenreSearch};
 
@@ -11,12 +11,19 @@ use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::{AppError, AppErrorKind};
-use crate::forms::audiobook::{AudiobookCreateForm, AudiobookSearchQuery, AudiobookUploadForm};
+use crate::forms::audiobook::{
+    AudiobookCreateForm, AudiobookQuickSearchQuery, AudiobookUploadForm,
+};
 use crate::handlers::utilities::{
     get_metadata_from_session, get_user_from_identity, parse_user_id, remove_file, save_file,
     validate_file, AudiobookCreateSessionKeys,
 };
-use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailAuthorContentTemplate, AudiobookDetailAuthorPageTemplate, AudiobookDetailBase, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, DetailLikesTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate};
+use crate::templates::audiobook::{
+    AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailBase,
+    AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate,
+    NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate, QuickSearchResults,
+};
+use crate::templates::audiobook::{AudiobookDetailAuthorContentTemplate, AudiobookDetailAuthorPageTemplate, DetailLikesTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 
@@ -454,11 +461,16 @@ pub async fn change_like(
 pub async fn search(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
-    q: web::Query<AudiobookSearchQuery>,
+    query: web::Query<AudiobookQuickSearchQuery>,
 ) -> Result<HttpResponse, AppError> {
     authorized!(identity);
-    let _books = audiobook_repo.quick_search(&q.name).await?;
-    Ok(HttpResponse::Ok().finish())
+    let quicksearch = audiobook_repo.quick_search(&query.query).await?;
+    let template = QuickSearchResults {
+        results: quicksearch,
+    };
+    Ok(HttpResponse::Ok()
+        .content_type("text/html")
+        .body(template.render()?))
 }
 
 #[derive(Deserialize)]
