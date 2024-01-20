@@ -96,7 +96,7 @@ pub fn validate_file(
     let Some(file_mime) = &file.content_type else {
         return Err(AppError::new(
             AppErrorKind::FileError,
-            "No thumbnail MIME type found",
+            format!("No MIME type found for {file_path}").as_str(),
         ));
     };
 
@@ -106,7 +106,7 @@ pub fn validate_file(
     {
         return Err(AppError::new(
             AppErrorKind::FileError,
-            "Invalid thumbnail content type",
+            format!("Invalid content type for {file_path}").as_str(),
         ));
     }
     Ok(file_path)
