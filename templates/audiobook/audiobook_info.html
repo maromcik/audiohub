@@ -6,12 +6,15 @@
                 <div class="text-center">
                     <div class="w-48 h-48 relative">
                         <img class="w-full h-full" src="{{ audiobook.thumbnail }}" alt="Audiobook Image">
-                        {% if crate::handlers::utilities::is_audiobook_finished(audiobook) %}
-                            <div class="absolute rounded-full text-sm bg-cyan-800 top-2 right-2 ">
-                                <i class="fa-solid fa-check p-2" style="color: #ffffff;"></i>
-                            </div>
+                        {% if audiobook.is_finished %}
+                        <div class="absolute rounded-full text-sm bg-cyan-800 top-2 right-2 ">
+                            <i class="fa-solid fa-check p-2" style="color: #ffffff;"></i>
+                        </div>
+                        {% else if audiobook.is_started %}
+                        <div class="w-full bg-neutral-700 h-1 absolute bottom-0">
+                            <div class="absolute left-0 bg-cyan-400 h-1" style="width: {{audiobook.progress}}%"></div>
+                        </div>
                         {% endif %}
-
                     </div>
                     <div class="font-bold text-lg text-white mb-2">
                         {{ audiobook.name }}

@@ -83,6 +83,104 @@ impl AudiobookDetail {
     }
 }
 
+pub struct AudiobookDisplay {
+    pub id: Id,
+    // --------------
+    pub name: String,
+    pub author_id: Id,
+    pub genre_id: Id,
+    pub file_path: String,
+    pub length: f64,
+    pub stream_count: i64,
+    pub like_count: i64,
+    pub overall_rating: i16,
+    pub thumbnail: String,
+    pub description: String,
+    pub created_at: DateTime<Utc>,
+    pub edited_at: DateTime<Utc>,
+
+    pub username: String,
+    pub email: String,
+    pub author_name: String,
+    pub surname: String,
+    pub bio: String,
+    pub profile_picture: String,
+
+    pub genre_name: String,
+
+    pub playback_position: f64,
+    pub progress: f64,
+    pub is_finished: bool,
+    pub is_started: bool
+
+}
+
+impl AudiobookDisplay {
+    pub fn from_reference(audiobook: &AudiobookDetail) -> Self {
+        Self {
+            id: audiobook.id,
+            name: audiobook.name.to_owned(),
+            author_id: audiobook.author_id,
+            genre_id: audiobook.genre_id,
+            file_path: audiobook.file_path.to_owned(),
+            length: audiobook.length,
+            thumbnail: audiobook.thumbnail.to_owned(),
+            description: audiobook.description.to_owned(),
+            stream_count: audiobook.stream_count,
+            like_count: audiobook.like_count,
+            overall_rating: audiobook.overall_rating,
+            created_at: audiobook.created_at,
+            edited_at: audiobook.edited_at,
+
+            username: audiobook.username.to_owned(),
+            email: audiobook.email.to_owned(),
+            author_name: audiobook.author_name.to_owned(),
+            surname: audiobook.surname.to_owned(),
+            bio: audiobook.bio.to_owned(),
+            profile_picture: audiobook.profile_picture.to_owned(),
+            genre_name: audiobook.genre_name.to_owned(),
+
+            playback_position: audiobook.playback_position.unwrap_or_default(),
+            progress: audiobook.playback_position.unwrap_or_default() / audiobook.length * 100f64,
+            is_finished: audiobook.is_finished(),
+            is_started: !audiobook.is_never_started()
+        }
+    }
+}
+
+impl From<AudiobookDetail> for AudiobookDisplay {
+    fn from(audiobook: AudiobookDetail) -> Self {
+        Self {
+            is_finished: audiobook.is_finished(),
+            is_started: !audiobook.is_never_started(),
+            id: audiobook.id,
+            name: audiobook.name,
+            author_id: audiobook.author_id,
+            genre_id: audiobook.genre_id,
+            file_path: audiobook.file_path,
+            length: audiobook.length,
+            thumbnail: audiobook.thumbnail,
+            description: audiobook.description,
+            stream_count: audiobook.stream_count,
+            like_count: audiobook.like_count,
+            overall_rating: audiobook.overall_rating,
+            created_at: audiobook.created_at,
+            edited_at: audiobook.edited_at,
+
+            username: audiobook.username,
+            email: audiobook.email,
+            author_name: audiobook.author_name,
+            surname: audiobook.surname,
+            bio: audiobook.bio,
+            profile_picture: audiobook.profile_picture,
+            genre_name: audiobook.genre_name,
+
+            playback_position: audiobook.playback_position.unwrap_or_default(),
+            progress: audiobook.playback_position.unwrap_or_default() / audiobook.length * 100f64,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct AudiobookSearch {
     pub user_id: Id,

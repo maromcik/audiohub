@@ -1,7 +1,5 @@
 use crate::database::common::{DbCreate, DbDelete, DbReadMany, DbReadOne, DbUpdate};
-use crate::database::models::audiobook::{
-    AudiobookCreate, AudiobookDelete, AudiobookGetByIdJoin, AudiobookSearch, AudiobookUpdate,
-};
+use crate::database::models::audiobook::{AudiobookCreate, AudiobookDelete, AudiobookDisplay, AudiobookGetByIdJoin, AudiobookSearch, AudiobookUpdate};
 use crate::database::models::genre::{GenreGetById, GenreSearch};
 
 use crate::database::models::Id;
@@ -198,7 +196,7 @@ async fn get_audiobook_detail_base (
         .collect();
 
     Ok(AudiobookDetailBase {
-        audiobook,
+        audiobook: AudiobookDisplay::from(audiobook),
         chapters: displayed_chapters
     })
 }
@@ -212,7 +210,10 @@ async fn releases_page(
     let u = authorized!(identity);
     let books = book_repo
         .read_many(&AudiobookSearch::with_params(DbQueryParams::limit(5, 0), parse_user_id(u)?))
-        .await?;
+        .await?
+        .into_iter()
+        .map(AudiobookDisplay::from)
+        .collect();
 
     let template = NewReleasesPageTemplate { audiobooks: books };
     let body = template.render()?;
@@ -228,7 +229,10 @@ async fn releases_content(
     let u = authorized!(identity);
     let books = book_repo
         .read_many(&AudiobookSearch::with_params(DbQueryParams::limit(5, 0), parse_user_id(u)?))
-        .await?;
+        .await?
+        .into_iter()
+        .map(AudiobookDisplay::from)
+        .collect();
 
     let template = NewReleasesContentTemplate { audiobooks: books };
     let body = template.render()?;

@@ -7,6 +7,7 @@ use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, web, HttpResponse};
 use askama::Template;
+use crate::database::models::audiobook::AudiobookDisplay;
 
 #[get("/library")]
 pub async fn index(
@@ -14,7 +15,12 @@ pub async fn index(
     user_repo: web::Data<UserRepository>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
-    let audiobooks = user_repo.get_bookmarked(&parse_user_id(u)?).await?;
+    let audiobooks = user_repo
+        .get_bookmarked(&parse_user_id(u)?)
+        .await?
+        .into_iter()
+        .map(AudiobookDisplay::from)
+        .collect();
 
     let template = LibraryPageTemplate { audiobooks };
 
@@ -29,7 +35,12 @@ pub async fn get_content(
     user_repo: web::Data<UserRepository>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
-    let audiobooks = user_repo.get_bookmarked(&parse_user_id(u)?).await?;
+    let audiobooks = user_repo
+        .get_bookmarked(&parse_user_id(u)?)
+        .await?
+        .into_iter()
+        .map(AudiobookDisplay::from)
+        .collect();
 
     let template = LibraryContentTemplate { audiobooks };
 
