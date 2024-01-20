@@ -15,7 +15,7 @@
 
             <button hx-patch="/audiobook/{{audiobook.id}}/likes" hx-target="#like-count" hx-swap="outerHTML">
                 <div id="like-count" class="flex items-center pl-5 text-3xl">
-                    {% if likes %}
+                    {% if is_liked %}
                     <i class="fa-solid fa-heart text-4xl"></i> <p class="pl-5 text-gray-300 text-sm">{{ audiobook.like_count }}</p>
                     {% else %}
                     <i class="fa-regular fa-heart text-4xl"></i> <p class="pl-5 text-gray-300 text-sm">{{ audiobook.like_count }}</p>

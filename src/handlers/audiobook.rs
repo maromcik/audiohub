@@ -187,16 +187,11 @@ pub async fn manage_audiobook(
         )));
     }
 
-    let liked = user_repo
-        .is_bookmarked(&user.id, &book_id)
-        .await?
-        .is_some();
-
     let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, user.id, book_id).await?;
     let body = AudiobookDetailAuthorPageTemplate {
         audiobook: base.audiobook,
         chapters: base.chapters,
-        likes: liked,
+        is_liked: audiobook.is_liked,
     }
     .render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -223,16 +218,11 @@ pub async fn manage_audiobook_content(
         )));
     }
 
-    let liked = user_repo
-        .is_bookmarked(&user.id, &book_id)
-        .await?
-        .is_some();
-
     let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, user.id, book_id).await?;
     let body = AudiobookDetailAuthorContentTemplate {
         audiobook: base.audiobook,
         chapters: base.chapters,
-        likes: liked,
+        is_liked: audiobook.is_liked,
     }
     .render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -258,15 +248,10 @@ pub async fn get_audiobook(
     )
     .await?;
 
-    let liked = user_repo
-        .is_bookmarked(&user.id, &book_id)
-        .await?
-        .is_some();
-
     let body = AudiobookDetailPageTemplate {
+        is_liked: base.audiobook.is_liked,
         audiobook: base.audiobook,
         chapters: base.chapters,
-        likes: liked,
     }
     .render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -293,15 +278,10 @@ pub async fn get_audiobook_detail_content(
     )
     .await?;
 
-    let liked = user_repo
-        .is_bookmarked(&user.id, &book_id)
-        .await?
-        .is_some();
-
     let body = AudiobookDetailContentTemplate {
+        is_liked: base.audiobook.is_liked,
         audiobook: base.audiobook,
         chapters: base.chapters,
-        likes: liked,
     }
     .render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -444,8 +424,8 @@ pub async fn change_like(
     audiobook_repo.update(&update).await?;
 
     let template = DetailLikesTemplate {
-        is_liked: !liked,
-        likes: likes.to_string(),
+        is_liked: !audiobook.is_liked,
+        likes,
     };
     Ok(HttpResponse::Ok()
         .content_type("text/html")
