@@ -168,7 +168,7 @@ impl AudiobookRepository {
         )
         .fetch_optional(&self.pool_handler.pool)
         .await?;
-        Ok(last_active_book.and_then(|a| Some(PlayedAudiobook::from(a))))
+        Ok(last_active_book.map(PlayedAudiobook::from))
     }
 
     /// TODO: refactor this
