@@ -1,5 +1,5 @@
 use crate::database::common::DbReadOne;
-use crate::database::models::audiobook::{AudiobookDetail, AudiobookMetadataForm};
+use crate::database::models::audiobook::{AudiobookDetail, AudiobookDisplay, AudiobookMetadataForm};
 use crate::database::models::user::{User, UserGetById};
 use crate::database::models::Id;
 use crate::database::repositories::user::repository::UserRepository;
@@ -132,24 +132,14 @@ pub fn remove_file(path: &str) -> Result<(), AppError> {
     Ok(())
 }
 
-pub fn get_active_audiobooks(audiobooks: &[AudiobookDetail]) ->Vec<ActiveAudiobookDetail> {
+pub fn get_active_audiobooks(audiobooks: &[AudiobookDetail]) ->Vec<AudiobookDisplay> {
     audiobooks
         .iter()
-        .filter_map(|a| match (a.playback_position, a.active_audiobook_edited_at) {
-            (Some(pos), Some(edited)) => if a.is_active() {
-                Some(ActiveAudiobookDetail::from_audiobook(a, pos, edited))
-            } else { None }
-            (_, _) => None
-        }).collect()
+        .filter(|a| a.is_active())
+        .map(AudiobookDisplay::from_reference)
+        .collect()
 }
 
-pub fn is_audiobook_finished(audiobook: &AudiobookDetail) -> bool {
-    audiobook.is_finished()
-}
-
-pub fn is_active_audiobook_finished(audiobook: &ActiveAudiobookDetail) -> bool {
-    audiobook.is_finished()
-}
 
 #[macro_export]
 macro_rules! authorized {
