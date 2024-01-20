@@ -36,3 +36,7 @@ pub struct UserManageProfilePictureFormTemplate {}
 pub struct UserManageProfilePictureTemplate {
     pub user: User,
 }
+
+#[derive(Template)]
+#[template(path = "user/simple_responses/success_update.html")]
+pub struct UserManageProfileSuccessfulUpdate {}
