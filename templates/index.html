@@ -70,6 +70,7 @@
         }
     });
 
+
     const attachInterval = (bookId) => {
         currentBookId = bookId;
         document.getElementById('audiobook-player').onplay = () => {
@@ -102,6 +103,13 @@
         document.getElementById('search-result').style.display = 'none';
         document.body.removeEventListener('click', this);
     }
+
+    // rating clear
+    document.addEventListener("htmx:afterRequest", (e) => {
+        if (e.detail.elt.id === 'rating-form') {
+            document.getElementById('rating-form').reset();
+        }
+    });
 
 </script>
 </html>

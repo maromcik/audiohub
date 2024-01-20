@@ -6,9 +6,7 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::models::audiobook::AudiobookGetById;
-use crate::database::models::rating::{
-    Rating, RatingCreate, RatingGetById, RatingSearch, RatingUpdate, RatingsGetByBookId,
-};
+use crate::database::models::rating::{Rating, RatingCreate, RatingGetById, RatingSearch, RatingUpdate, RatingsGetByBookId, UserRatingDisplay};
 use crate::database::models::user::UserGetById;
 
 use async_trait::async_trait;
@@ -169,6 +167,48 @@ impl RatingRepository {
         }
 
         Err(DbError::from(BackendError::new(RatingDoesNotExist)))
+    }
+
+    pub async fn create_displayed_rating(&self, params: &RatingCreate) -> DbResultSingle<UserRatingDisplay> {
+        let rating = self.create(params).await?;
+        let displayed_rating = sqlx::query_as!(
+            UserRatingDisplay,
+            r#"
+            SELECT R.audiobook_id AS book_id, U.name AS user_name, U.surname AS user_surname, R.rating AS rating,
+                COALESCE(R.review, '') AS review, R.created_at AS created_at, U.profile_picture AS user_thumbnail
+            FROM "Rating" R LEFT JOIN "User" U ON R.user_id = U.id
+            WHERE R.id = $1
+            "#,
+            rating.id
+        ).fetch_one(&self.pool_handler.pool)
+            .await?;
+
+        Ok(displayed_rating)
+    }
+
+    pub async fn get_ratings_display(&self, params: &RatingSearch) -> DbResultMultiple<UserRatingDisplay> {
+        let ratings = sqlx::query_as!(
+            UserRatingDisplay,
+            r#"
+            SELECT R.audiobook_id AS book_id, U.name AS user_name, U.surname AS user_surname, R.rating AS rating,
+                R.review AS review, R.created_at AS created_at, U.profile_picture AS user_thumbnail
+            FROM "User" U JOIN "Rating" R ON R.user_id = U.id
+            WHERE
+                (R.audiobook_id = $1 OR $1 IS NULL)
+                AND (R.user_id = $2 OR $2 IS NULL)
+                AND (R.rating >= $3 OR $3 IS NULL)
+                AND (R.rating <= $4 OR $4 IS NULL)
+                AND (R.review = $5 OR $5 IS NULL)
+            ORDER BY R.created_at DESC
+            "#,
+            params.audiobook_id,
+            params.user_id,
+            params.min_rating,
+            params.max_rating,
+            params.review,
+        ).fetch_all(&self.pool_handler.pool).await?;
+
+        Ok(ratings)
     }
 }
 

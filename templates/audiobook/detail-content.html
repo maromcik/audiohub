@@ -46,3 +46,11 @@
         </p>
     </div>
 </div>
+
+{% include "rating/rating-form.html" %}
+
+<h1 class="pl-10 text-4xl font-bold mb-3">Ratings</h1>
+<div id="ratings-container"
+     hx-get="/rating/audiobook/{{ audiobook.id }}"
+     hx-trigger="load" hx-swap="outerHTML" class="flex flex-col pl-10">
+</div>

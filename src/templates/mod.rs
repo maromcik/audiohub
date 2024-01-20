@@ -6,3 +6,4 @@ pub mod index;
 pub mod library;
 pub mod studio;
 pub mod user;
+pub mod rating;
