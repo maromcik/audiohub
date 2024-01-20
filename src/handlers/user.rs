@@ -1,7 +1,13 @@
 use crate::authorized;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
-use crate::templates::user::{LoginTemplate, RegistrationTemplate, UserManagePasswordTemplate, UserManageProfileContentTemplate, UserManageProfilePageTemplate, UserManageProfilePictureFormTemplate, UserManageProfilePictureTemplate, UserManageProfileSuccessfulUpdate, UserManageProfileSuccessfulUpdatePassword, UserManageProfileUserFormTemplate};
+use crate::templates::user::{
+    LoginTemplate, RegistrationTemplate, UserManagePasswordTemplate,
+    UserManageProfileContentTemplate, UserManageProfilePageTemplate,
+    UserManageProfilePictureFormTemplate, UserManageProfilePictureTemplate,
+    UserManageProfileSuccessfulUpdate, UserManageProfileSuccessfulUpdatePassword,
+    UserManageProfileUserFormTemplate,
+};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_web::http::header::LOCATION;
@@ -187,7 +193,7 @@ pub async fn user_manage(
         None,
     );
     user_repo.update(&user_update).await?;
-    let template = UserManageProfileSuccessfulUpdate { };
+    let template = UserManageProfileSuccessfulUpdate {};
     let body = template.render()?;
     return Ok(HttpResponse::Ok().content_type("text/html").body(body));
 }
@@ -207,7 +213,7 @@ pub async fn user_manage_password(
         ))
         .await?;
 
-    let template = UserManageProfileSuccessfulUpdatePassword{ };
+    let template = UserManageProfileSuccessfulUpdatePassword {};
     let body = template.render()?;
     return Ok(HttpResponse::Ok().content_type("text/html").body(body));
 }

@@ -50,4 +50,3 @@ pub struct UserManageProfileSuccessfulUpdatePassword {}
 pub struct UserManageProfileUserFormTemplate {
     pub user: User,
 }
-
