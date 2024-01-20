@@ -4,6 +4,7 @@ use serde::Deserialize;
 use crate::CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE;
 
 use crate::database::common::query_parameters::DbQueryParams;
+use crate::database::models::utilities::get_default_profile_picture;
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq)]
 pub struct Audiobook {
@@ -81,13 +82,6 @@ impl AudiobookDetail {
             }
         }
     }
-
-    pub fn get_default_profile_picture(&self) -> String {
-        match self.profile_picture.clone() {
-            None => "DEFAULT PATH".to_string(),
-            Some(pic) => pic
-        }
-    }
 }
 
 pub struct AudiobookDisplay {
@@ -144,7 +138,7 @@ impl AudiobookDisplay {
             author_name: audiobook.author_name.to_owned(),
             surname: audiobook.surname.to_owned(),
             bio: audiobook.bio.to_owned(),
-            profile_picture: audiobook.get_default_profile_picture(),
+            profile_picture: get_default_profile_picture(&audiobook.profile_picture),
             genre_name: audiobook.genre_name.to_owned(),
 
             playback_position: audiobook.playback_position.unwrap_or_default(),
@@ -160,7 +154,7 @@ impl From<AudiobookDetail> for AudiobookDisplay {
         Self {
             is_finished: audiobook.is_finished(),
             is_started: !audiobook.is_never_started(),
-            profile_picture: audiobook.get_default_profile_picture(),
+            profile_picture: get_default_profile_picture(&audiobook.profile_picture),
             id: audiobook.id,
             name: audiobook.name,
             author_id: audiobook.author_id,
