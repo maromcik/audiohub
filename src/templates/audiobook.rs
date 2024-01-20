@@ -18,7 +18,9 @@ pub struct AudiobookCreateContentTemplate {
 
 #[derive(Template)]
 #[template(path = "audiobook/audiobook_upload.html")]
-pub struct AudiobookUploadFormTemplate {}
+pub struct AudiobookUploadFormTemplate {
+    pub message: String,
+}
 
 #[derive(Template)]
 #[template(path = "releases.html")]

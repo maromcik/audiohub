@@ -61,7 +61,9 @@ pub async fn create_audiobook_content(
 #[get("/upload")]
 pub async fn upload_audiobook_form(identity: Option<Identity>) -> Result<HttpResponse, AppError> {
     authorized!(identity);
-    let template = AudiobookUploadFormTemplate {};
+    let template = AudiobookUploadFormTemplate {
+        message: "testik".to_string(),
+    };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
