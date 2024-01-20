@@ -56,6 +56,20 @@ pub struct AudiobookDetailContentTemplate {
 }
 
 #[derive(Template)]
+#[template(path = "audiobook/audiobook_detail_author.html")]
+pub struct AudiobookDetailAuthorPageTemplate {
+    pub audiobook: AudiobookDisplay,
+    pub chapters: Vec<ChapterDisplay>,
+}
+
+#[derive(Template)]
+#[template(path = "audiobook/audiobook_detail_author.html")]
+pub struct AudiobookDetailAuthorContentTemplate {
+    pub audiobook: AudiobookDisplay,
+    pub chapters: Vec<ChapterDisplay>,
+}
+
+#[derive(Template)]
 #[template(path = "components/player.html")]
 pub struct PlayerTemplate {
     pub played_book: PlayedAudiobook,
