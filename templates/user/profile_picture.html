@@ -1,4 +1,8 @@
-<img class="w-48 h-48 md:w-72 md:h-72 lg:w-108 lg:h-108 object-cover rounded-full mb-4" src="{{ user.profile_picture }}" alt="Profile Picture" onerror="this.style.filter='grayscale(1)'">
+{% if user.profile_picture.is_empty() %}
+<img class="w-48 h-48 md:w-72 md:h-72 lg:w-108 lg:h-108 object-cover bg-gray-800 rounded-full mb-4" src="../../static/images/default_profile_picture.png">
+{% else %}
+<img class="w-48 h-48 md:w-72 md:h-72 lg:w-108 lg:h-108 object-cover rounded-full mb-4" src="{{ user.profile_picture }}" alt="Profile Picture">
+{% endif %}
 <button hx-get="/user/manage/picture" hx-push-url="true" hx-target="#profile-picture-box" hx-swap="innerHTML" class="absolute bottom-[32px] right-[32px] md:bottom-[48px] md:right-[48px] lg:bottom-[72px] lg:right-[72px] hidden transform translate-x-1/2 translate-y-1/2 bg-green-500 text-white rounded-full p-2 hover:bg-green-600 focus:outline-none group-hover:block">
     <svg class="w-12 h-12 md:w-18 md:h-18 lg:w-27 lg:h-27" fill="none" stroke="currentColor" viewBox="0 0 24 24"
          xmlns="http://www.w3.org/2000/svg">
