@@ -42,29 +42,15 @@ pub struct AudiobooksByGenreTemplate {
 }
 
 #[derive(Template)]
-#[template(path = "audiobook/audiobook_detail.html")]
+#[template(path = "detail.html")]
 pub struct AudiobookDetailPageTemplate {
     pub audiobook: AudiobookDisplay,
     pub chapters: Vec<ChapterDisplay>,
 }
 
 #[derive(Template)]
-#[template(path = "audiobook/audiobook_detail.html")]
+#[template(path = "audiobook/detail-content.html")]
 pub struct AudiobookDetailContentTemplate {
-    pub audiobook: AudiobookDisplay,
-    pub chapters: Vec<ChapterDisplay>,
-}
-
-#[derive(Template)]
-#[template(path = "audiobook/audiobook_detail_author.html")]
-pub struct AudiobookDetailAuthorPageTemplate {
-    pub audiobook: AudiobookDisplay,
-    pub chapters: Vec<ChapterDisplay>,
-}
-
-#[derive(Template)]
-#[template(path = "audiobook/audiobook_detail_author.html")]
-pub struct AudiobookDetailAuthorContentTemplate {
     pub audiobook: AudiobookDisplay,
     pub chapters: Vec<ChapterDisplay>,
 }

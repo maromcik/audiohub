@@ -15,7 +15,7 @@ use crate::handlers::utilities::{
     get_metadata_from_session, get_user_from_identity, parse_user_id, remove_file, save_file,
     validate_file, AudiobookCreateSessionKeys,
 };
-use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailAuthorContentTemplate, AudiobookDetailAuthorPageTemplate, AudiobookDetailBase, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate};
+use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailBase, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 use actix_multipart::form::tempfile::TempFile;
@@ -146,23 +146,6 @@ pub async fn upload_audiobook(
         .finish())
 }
 
-#[get("/{id}/detail")]
-pub async fn get_audiobook(
-    identity: Option<Identity>,
-    audiobook_repo: web::Data<AudiobookRepository>,
-    chapter_repo: web::Data<ChapterRepository>,
-    path: web::Path<(Id,)>,
-) -> Result<HttpResponse, AppError> {
-    let u = authorized!(identity);
-    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, parse_user_id(u)?, path.into_inner().0).await?;
-    let body = AudiobookDetailPageTemplate {
-        audiobook: base.audiobook,
-        chapters: base.chapters,
-    }
-        .render()?;
-    Ok(HttpResponse::Ok().content_type("text/html").body(body))
-}
-
 #[get("/{id}/manage")]
 pub async fn manage_audiobook(
     identity: Option<Identity>,
@@ -185,7 +168,7 @@ pub async fn manage_audiobook(
     }
 
     let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, user.id, book_id).await?;
-    let body = AudiobookDetailAuthorPageTemplate {
+    let body = AudiobookDetailPageTemplate {
         audiobook: base.audiobook,
         chapters: base.chapters,
     }
@@ -215,7 +198,24 @@ pub async fn get_audiobook_manage_content(
     }
 
     let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, user.id, book_id).await?;
-    let body = AudiobookDetailAuthorPageTemplate {
+    let body = AudiobookDetailContentTemplate {
+        audiobook: base.audiobook,
+        chapters: base.chapters,
+    }
+        .render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+#[get("/{id}/detail")]
+pub async fn get_audiobook(
+    identity: Option<Identity>,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    chapter_repo: web::Data<ChapterRepository>,
+    path: web::Path<(Id,)>,
+) -> Result<HttpResponse, AppError> {
+    let u = authorized!(identity);
+    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, parse_user_id(u)?, path.into_inner().0).await?;
+    let body = AudiobookDetailPageTemplate {
         audiobook: base.audiobook,
         chapters: base.chapters,
     }
@@ -240,7 +240,6 @@ pub async fn get_audiobook_detail_content(
         .render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
-
 
 async fn get_audiobook_detail_base (
     audiobook_repo: web::Data<AudiobookRepository>,
