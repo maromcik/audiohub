@@ -4,7 +4,7 @@
     </div>
     <div class="w-40 h-40 md:w-72 md:h-72 lg:w-108 lg:h-108 bg-gray-800 rounded-full flex items-center justify-center mb-4">
         <label for="profile-picture-input" class="relative w-40 h-40 md:w-72 md:h-72 lg:w-108 lg:h-108 rounded-full flex items-center justify-center mb-4 cursor-pointer">
-            <input type="file" id="profile-picture-input" class="hidden"  multiple name="picture" onchange="handleProfilePictureUpload(this)">
+            <input type="file" id="profile-picture-input" class="hidden" accept="image/*" multiple name="picture" onchange="handleProfilePictureUpload(this)">
             <span id="profile-picture-label-for-file" class="text-white font-bold">Click to Upload</span>
         </label>
     </div>
