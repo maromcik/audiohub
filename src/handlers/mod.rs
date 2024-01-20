@@ -6,6 +6,7 @@ pub mod library;
 pub mod rating;
 pub mod user;
 pub mod utilities;
+mod studio;
 
 pub use crate::handlers::user::login as user_login_page;
 pub use crate::handlers::user::login_user as user_login;
