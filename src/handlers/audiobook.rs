@@ -388,24 +388,19 @@ pub async fn change_like(
     let user = get_user_from_identity(identity, &user_repo).await?;
     let audiobook_id = path.into_inner().0;
 
-    let liked = user_repo
-        .is_bookmarked(&user.id, &audiobook_id)
-        .await?
-        .is_some();
-
     let audiobook = audiobook_repo
         .read_one(&AudiobookGetByIdJoin::new(user.id, audiobook_id))
         .await?;
 
     let bookmark = BookmarkOperation::new(user.id, audiobook_id);
-    let likes = match liked {
-        true => {
-            user_repo.unbookmark(&bookmark).await?;
-            audiobook.like_count - 1
-        }
+    let likes = match audiobook.is_liked {
         false => {
             user_repo.bookmark(&bookmark).await?;
             audiobook.like_count + 1
+        },
+        true => {
+            user_repo.unbookmark(&bookmark).await?;
+            audiobook.like_count - 1
         }
     };
 

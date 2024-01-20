@@ -309,7 +309,7 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
 
                 ab.playback_position AS "playback_position?",
                 ab.edited_at AS "active_audiobook_edited_at?",
-                b.audiobook_id IS NOT NULL AS "is_liked?"
+                b.audiobook_id IS NOT NULL AS "is_liked!"
             FROM
                 "Audiobook" AS a
                     INNER JOIN
