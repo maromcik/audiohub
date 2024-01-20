@@ -7,7 +7,7 @@
     <p>Welcome to AudioHub, your number one source for audiobooks!</p>
 
     {% if active_audiobooks.len() > 0 %}
-    <p>Jump back in</p>
+    <h1 class="text-2xl font-bold mt-4">Jump back in</h1>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {% for audiobook in active_audiobooks %}
             {% include "audiobook/audiobook_info.html" %}
@@ -15,7 +15,7 @@
     </div>
     {% endif %}
 
-    <p>Discover</p>
+    <h1 class="text-2xl font-bold mt-4">Discover</h1>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {% for audiobook in audiobooks %}
             {% include "audiobook/audiobook_info.html" %}

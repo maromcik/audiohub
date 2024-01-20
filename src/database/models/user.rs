@@ -1,6 +1,7 @@
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
+use crate::database::models::utilities::get_default_profile_picture;
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
 pub struct User {
@@ -19,14 +20,6 @@ pub struct User {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-impl User {
-    pub fn get_default_profile_picture(&self) -> String {
-        match self.profile_picture.clone() {
-            None => "DEFAULT PATH".to_string(),
-            Some(pic) => pic
-        }
-    }
-}
 
 pub struct UserDisplay {
     pub id: Id,
@@ -46,7 +39,7 @@ pub struct UserDisplay {
 impl From<User> for UserDisplay {
     fn from(value: User) -> Self {
         Self {
-            profile_picture: value.get_default_profile_picture(),
+            profile_picture: get_default_profile_picture(&value.profile_picture),
             id: value.id,
             username: value.username,
             email: value.email,

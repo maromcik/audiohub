@@ -79,6 +79,7 @@ pub fn validate_file(
     uuid: Uuid,
     mime: &str,
     handler: &str,
+    error_type: AppErrorKind
 ) -> Result<String, AppError> {
     let extension = match file.file_name.clone() {
         None => "".to_owned(),
@@ -95,8 +96,8 @@ pub fn validate_file(
 
     let Some(file_mime) = &file.content_type else {
         return Err(AppError::new(
-            AppErrorKind::FileError,
-            "No thumbnail MIME type found",
+            error_type,
+            format!("No MIME type found for {file_path}").as_str(),
         ));
     };
 
@@ -105,19 +106,19 @@ pub fn validate_file(
         .starts_with(format!("{mime}/").as_str())
     {
         return Err(AppError::new(
-            AppErrorKind::FileError,
-            "Invalid thumbnail content type",
+            error_type,
+            format!("Invalid content type for {file_path}").as_str(),
         ));
     }
     Ok(file_path)
 }
 
-pub fn save_file(file: TempFile, path: String) -> Result<(), AppError> {
+pub fn save_file(file: TempFile, path: String, error_type: AppErrorKind) -> Result<(), AppError> {
     log::info!("saving file to .{path}");
     let path = format!(".{path}");
     if let Err(e) = file.file.persist(path) {
         return Err(AppError::new(
-            AppErrorKind::FileError,
+            error_type,
             e.to_string().as_str(),
         ));
     };

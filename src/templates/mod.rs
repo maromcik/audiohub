@@ -5,3 +5,4 @@ pub mod genre;
 pub mod index;
 pub mod library;
 pub mod user;
+pub mod studio;

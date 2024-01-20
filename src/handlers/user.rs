@@ -1,6 +1,6 @@
 use crate::authorized;
 use crate::database::repositories::user::repository::UserRepository;
-use crate::error::AppError;
+use crate::error::{AppError, AppErrorKind};
 use crate::templates::user::{
     LoginTemplate, RegistrationTemplate, UserManagePasswordTemplate,
     UserManageProfileContentTemplate, UserManageProfilePageTemplate,
@@ -154,7 +154,7 @@ pub async fn user_manage_picture_form(
     identity: Option<Identity>,
 ) -> Result<impl Responder, AppError> {
     authorized!(identity);
-    let template = UserManageProfilePictureFormTemplate {};
+    let template = UserManageProfilePictureFormTemplate { message: "".to_string() };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -223,7 +223,7 @@ pub async fn user_manage_picture(
     MultipartForm(form): MultipartForm<ProfilePictureUploadForm>,
 ) -> Result<impl Responder, AppError> {
     let u = authorized!(identity);
-    let path = validate_file(&form.picture, Uuid::new_v4(), "image", "user")?;
+    let path = validate_file(&form.picture, Uuid::new_v4(), "image", "user", AppErrorKind::ProfilePictureUploadError)?;
     let user = get_user_from_identity(u, &user_repo).await?;
     if let Some(pic) = user.profile_picture {
         remove_file(pic.as_str())?;
@@ -239,13 +239,13 @@ pub async fn user_manage_picture(
         None,
     );
 
-    let mut users = user_repo.update(&user_update).await?;
-    save_file(form.picture, path)?;
+    let users = user_repo.update(&user_update).await?;
+    save_file(form.picture, path, AppErrorKind::ProfilePictureUploadError)?;
     // // Ok(HttpResponse::Ok()
     // //     .insert_header(("HX-Redirect", "/user/manage"))
     // //     .finish())
 
-    if let Some(user) = users.pop() {
+    if let Some(user) = users.into_iter().nth(0) {
         let template = UserManageProfilePictureTemplate { user: UserDisplay::from(user) };
         let body = template.render()?;
         return Ok(HttpResponse::Ok().content_type("text/html").body(body));

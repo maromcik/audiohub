@@ -7,7 +7,7 @@ use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
-use crate::error::AppError;
+use crate::error::{AppError, AppErrorKind};
 use crate::forms::audiobook::{
     AudiobookCreateForm, AudiobookSearchQuery, AudiobookSetActiveForm, AudiobookUploadForm,
 };
@@ -61,7 +61,9 @@ pub async fn create_audiobook_content(
 #[get("/upload")]
 pub async fn upload_audiobook_form(identity: Option<Identity>) -> Result<HttpResponse, AppError> {
     authorized!(identity);
-    let template = AudiobookUploadFormTemplate {};
+    let template = AudiobookUploadFormTemplate {
+        message: "".to_string(),
+    };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -101,8 +103,8 @@ pub async fn upload_audiobook(
     let u = authorized!(identity);
     let user = get_user_from_identity(u, &user_repo).await?;
     let session_keys = AudiobookCreateSessionKeys::new(user.id);
-    let thumbnail_path = validate_file(&form.thumbnail, uuid, "image", "audiobook")?;
-    let audiobook_path = validate_file(&form.audio_file, uuid, "audio", "audiobook")?;
+    let thumbnail_path = validate_file(&form.thumbnail, uuid, "image", "audiobook", AppErrorKind::AudiobookUploadError)?;
+    let audiobook_path = validate_file(&form.audio_file, uuid, "audio", "audiobook", AppErrorKind::AudiobookUploadError)?;
 
     let metadata = get_metadata_from_session(&session, &session_keys)?;
 
@@ -122,8 +124,8 @@ pub async fn upload_audiobook(
     );
     let book = audiobook_repo.create(&book_crate).await?;
 
-    save_file(form.thumbnail, thumbnail_path)?;
-    save_file(form.audio_file, audiobook_path)?;
+    save_file(form.thumbnail, thumbnail_path, AppErrorKind::AudiobookUploadError)?;
+    save_file(form.audio_file, audiobook_path, AppErrorKind::AudiobookUploadError)?;
 
     session.remove(session_keys.name.as_str());
     session.remove(session_keys.description.as_str());
@@ -206,7 +208,6 @@ async fn releases_page(
     identity: Option<Identity>,
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
-    //add functionality for ordering audiobooks
     let u = authorized!(identity);
     let books = book_repo
         .read_many(&AudiobookSearch::with_params(DbQueryParams::limit(5, 0), parse_user_id(u)?))
