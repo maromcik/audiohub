@@ -1,7 +1,7 @@
 use crate::database::common::{DbCreate, DbDelete, DbReadMany, DbReadOne, DbUpdate};
 use crate::database::models::audiobook::{
-    AudiobookCreate, AudiobookDelete, AudiobookDisplay, AudiobookGetByIdJoin, AudiobookSearch,
-    AudiobookUpdate,
+    AudiobookCreate, AudiobookDelete, AudiobookDisplay, AudiobookGetByIdJoin, AudiobookQuickSearch,
+    AudiobookSearch, AudiobookUpdate,
 };
 use crate::database::models::genre::{GenreGetById, GenreSearch};
 
@@ -11,7 +11,9 @@ use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::{AppError, AppErrorKind};
-use crate::forms::audiobook::{AudiobookCreateForm, AudiobookSearchQuery, AudiobookUploadForm};
+use crate::forms::audiobook::{
+    AudiobookCreateForm, AudiobookQuickSearchQuery, AudiobookUploadForm,
+};
 use crate::handlers::utilities::{
     get_metadata_from_session, get_user_from_identity, parse_user_id, remove_file, save_file,
     validate_file, AudiobookCreateSessionKeys,
@@ -19,7 +21,7 @@ use crate::handlers::utilities::{
 use crate::templates::audiobook::{
     AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailBase,
     AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate,
-    NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate,
+    NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate, QuickSearchResults,
 };
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
@@ -416,20 +418,19 @@ pub async fn change_like(
         .body(likes.to_string()))
 }
 
-#[derive(Deserialize)]
-struct SearchQuery {
-    query: String,
-}
 #[get("/search")]
 pub async fn search(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
-    query: web::Query<SearchQuery>,
+    query: web::Query<AudiobookQuickSearchQuery>,
 ) -> Result<HttpResponse, AppError> {
     authorized!(identity);
     let quicksearch = audiobook_repo.quick_search(&query.query).await?;
-    let template = QuickSearchResults {results: quicksearch};
-    Ok(HttpResponse::Ok().content_type("text/html")
+    let template = QuickSearchResults {
+        results: quicksearch,
+    };
+    Ok(HttpResponse::Ok()
+        .content_type("text/html")
         .body(template.render()?))
 }
 

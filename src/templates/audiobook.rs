@@ -1,6 +1,5 @@
 use crate::database::models::active_audiobook::PlayedAudiobook;
-use crate::database::models::audiobook::AudiobookDisplay;
-use crate::database::models::audiobook::{AudiobookDetail, AudiobookDisplay, AudiobookQuickSearch};
+use crate::database::models::audiobook::{AudiobookDisplay, AudiobookQuickSearch};
 use crate::database::models::chapter::ChapterDisplay;
 use crate::database::models::genre::Genre;
 use askama::Template;
