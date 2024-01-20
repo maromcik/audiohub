@@ -10,6 +10,8 @@ use std::io::Error;
 use std::num::ParseIntError;
 
 use thiserror::Error;
+use crate::templates::audiobook::AudiobookUploadFormTemplate;
+use crate::templates::user::UserManageProfilePictureFormTemplate;
 
 /// User facing error type
 #[derive(Error, Debug, Serialize, Clone)]
@@ -32,6 +34,10 @@ pub enum AppErrorKind {
     Conflict,
     #[error("file error")]
     FileError,
+    #[error("audiobook error")]
+    AudiobookUploadError,
+    #[error("audiobook error")]
+    ProfilePictureUploadError,
     #[error("unauthorized")]
     Unauthorized,
 }
@@ -176,19 +182,41 @@ impl ResponseError for AppError {
             | AppErrorKind::IdentityError
             | AppErrorKind::SessionError
             | AppErrorKind::FileError => StatusCode::INTERNAL_SERVER_ERROR,
+            AppErrorKind::AudiobookUploadError
+            | AppErrorKind::ProfilePictureUploadError => StatusCode::OK
         }
     }
 
     fn error_response(&self) -> HttpResponse {
-        render_template(self)
+        match self.app_error_kind {
+            AppErrorKind::AudiobookUploadError => {
+                let template = AudiobookUploadFormTemplate {
+                    message: self.message.to_string(),
+                };
+                let body = template.render().unwrap_or_default();
+                render_custom(body)
+            },
+            AppErrorKind::ProfilePictureUploadError => {
+                let template = UserManageProfilePictureFormTemplate {
+                    message: self.message.to_string(),
+                };
+                let body = template.render().unwrap_or_default();
+                render_custom(body)
+            }
+            _ => render_generic(self)
+        }
     }
 }
 
-fn render_template(error: &AppError) -> HttpResponse {
+fn render_generic(error: &AppError) -> HttpResponse {
     let template = GenericError {
         code: error.status_code().to_string(),
         description: error.message.clone(),
     };
     let body = template.render().unwrap_or_default();
     HttpResponse::build(error.status_code()).body(body)
+}
+
+fn render_custom(body: String) -> HttpResponse {
+    HttpResponse::Ok().body(body)
 }
