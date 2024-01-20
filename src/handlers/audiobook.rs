@@ -1,8 +1,5 @@
 use crate::database::common::{DbCreate, DbDelete, DbReadMany, DbReadOne, DbUpdate};
-use crate::database::models::audiobook::{
-    AudiobookCreate, AudiobookDelete, AudiobookDisplay, AudiobookGetByIdJoin, AudiobookQuickSearch,
-    AudiobookSearch, AudiobookUpdate,
-};
+use crate::database::models::audiobook::{AudiobookCreate, AudiobookDelete, AudiobookGetByIdJoin, AudiobookUpdate};
 use crate::database::models::genre::{GenreGetById, GenreSearch};
 
 use crate::database::models::Id;
@@ -19,7 +16,7 @@ use crate::handlers::utilities::{
     validate_file, AudiobookCreateSessionKeys,
 };
 use crate::templates::audiobook::{
-    AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailBase,
+    AudiobookCreateContentTemplate, AudiobookCreatePageTemplate,
     AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate,
     NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate, QuickSearchResults,
 };
@@ -37,11 +34,11 @@ use serde::Deserialize;
 
 use crate::authorized;
 use crate::database::common::error::{BackendError, BackendErrorKind};
-use crate::database::common::query_parameters::DbQueryParams;
 use crate::database::models::active_audiobook::SetActiveAudiobook;
 use crate::database::models::bookmark::BookmarkOperation;
-use crate::database::models::chapter::{ChapterDisplay, ChaptersGetByBookId};
+
 use uuid::Uuid;
+use crate::handlers::helpers::{get_audiobook_detail_base, get_releases};
 
 #[get("/create")]
 pub async fn create_audiobook_page(
@@ -233,18 +230,14 @@ pub async fn get_audiobook(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
     chapter_repo: web::Data<ChapterRepository>,
-    user_repo: web::Data<UserRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity);
-    let user = get_user_from_identity(identity, &user_repo).await?;
-    let book_id = path.into_inner().0;
-
     let base = get_audiobook_detail_base(
         audiobook_repo,
         chapter_repo,
-        user.id,
-        book_id,
+        parse_user_id(identity)?,
+        path.into_inner().0
     )
     .await?;
 
@@ -263,18 +256,14 @@ pub async fn get_audiobook_detail_content(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
     chapter_repo: web::Data<ChapterRepository>,
-    user_repo: web::Data<UserRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity);
-    let user = get_user_from_identity(identity, &user_repo).await?;
-    let book_id = path.into_inner().0;
-
     let base = get_audiobook_detail_base(
         audiobook_repo,
         chapter_repo,
-        user.id,
-        book_id,
+        parse_user_id(identity)?,
+        path.into_inner().0
     )
     .await?;
 
@@ -287,35 +276,6 @@ pub async fn get_audiobook_detail_content(
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
-async fn get_audiobook_detail_base(
-    audiobook_repo: web::Data<AudiobookRepository>,
-    chapter_repo: web::Data<ChapterRepository>,
-    user_id: Id,
-    audiobook_id: Id,
-) -> Result<AudiobookDetailBase, AppError> {
-    let audiobook = audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id))
-        .await?;
-
-    let chapters = chapter_repo
-        .read_many(&ChaptersGetByBookId::new(audiobook_id))
-        .await?;
-
-    let displayed_chapters: Vec<ChapterDisplay> = chapters
-        .into_iter()
-        .enumerate()
-        .map(|(order, ch)| ChapterDisplay {
-            name: ch.name,
-            order: order + 1,
-            position: ch.position,
-        })
-        .collect();
-
-    Ok(AudiobookDetailBase {
-        audiobook: AudiobookDisplay::from(audiobook),
-        chapters: displayed_chapters,
-    })
-}
 
 #[get("/releases")]
 async fn releases_page(
@@ -323,17 +283,7 @@ async fn releases_page(
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
-    let books = book_repo
-        .read_many(&AudiobookSearch::with_params(
-            DbQueryParams::limit(5, 0),
-            parse_user_id(u)?,
-        ))
-        .await?
-        .into_iter()
-        .map(AudiobookDisplay::from)
-        .collect();
-
-    let template = NewReleasesPageTemplate { audiobooks: books };
+    let template = NewReleasesPageTemplate { audiobooks: get_releases(u, book_repo).await? };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -345,20 +295,11 @@ async fn releases_content(
 ) -> Result<HttpResponse, AppError> {
     //add functionality for ordering audiobooks
     let u = authorized!(identity);
-    let books = book_repo
-        .read_many(&AudiobookSearch::with_params(
-            DbQueryParams::limit(5, 0),
-            parse_user_id(u)?,
-        ))
-        .await?
-        .into_iter()
-        .map(AudiobookDisplay::from)
-        .collect();
-
-    let template = NewReleasesContentTemplate { audiobooks: books };
+    let template = NewReleasesContentTemplate { audiobooks: get_releases(u, book_repo).await? };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
+
 
 #[get("/{id}/delete")]
 pub async fn remove_audiobook(

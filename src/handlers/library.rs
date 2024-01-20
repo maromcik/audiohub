@@ -1,13 +1,12 @@
 use crate::authorized;
-use crate::database::models::audiobook::AudiobookDisplay;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
-use crate::handlers::utilities::parse_user_id;
 use crate::templates::library::{LibraryContentTemplate, LibraryPageTemplate};
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, web, HttpResponse};
 use askama::Template;
+use crate::handlers::helpers::get_library;
 
 #[get("/library")]
 pub async fn index(
@@ -15,14 +14,7 @@ pub async fn index(
     user_repo: web::Data<UserRepository>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
-    let audiobooks = user_repo
-        .get_bookmarked(&parse_user_id(u)?)
-        .await?
-        .into_iter()
-        .map(AudiobookDisplay::from)
-        .collect();
-
-    let template = LibraryPageTemplate { audiobooks };
+    let template = LibraryPageTemplate { audiobooks: get_library(u, user_repo).await? };
 
     let body = template.render()?;
 
@@ -35,16 +27,7 @@ pub async fn get_content(
     user_repo: web::Data<UserRepository>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
-    let audiobooks = user_repo
-        .get_bookmarked(&parse_user_id(u)?)
-        .await?
-        .into_iter()
-        .map(AudiobookDisplay::from)
-        .collect();
-
-    let template = LibraryContentTemplate { audiobooks };
-
+    let template = LibraryContentTemplate { audiobooks: get_library(u, user_repo).await? };
     let body = template.render()?;
-
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
