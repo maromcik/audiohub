@@ -40,3 +40,9 @@ pub struct UserManageProfilePictureTemplate {
 #[derive(Template)]
 #[template(path = "user/simple_responses/success_update.html")]
 pub struct UserManageProfileSuccessfulUpdate {}
+
+#[derive(Template)]
+#[template(path = "user/simple_responses/success_update_password.html")]
+pub struct UserManageProfileSuccessfulUpdatePassword {}
+
+
