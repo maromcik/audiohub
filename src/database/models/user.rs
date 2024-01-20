@@ -21,10 +21,7 @@ pub struct User {
 
 impl User {
     pub fn get_default_profile_picture(&self) -> String {
-        match self.profile_picture.clone() {
-            None => "DEFAULT PATH".to_string(),
-            Some(pic) => pic
-        }
+        self.profile_picture.clone().unwrap_or_else(|| "/static/images/profile_picture.png".to_string())
     }
 }
 
