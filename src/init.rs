@@ -51,7 +51,7 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(upload_audiobook_form)
         .service(get_audiobook)
         .service(manage_audiobook)
-        .service(get_audiobook_manage_content)
+        .service(manage_audiobook_content)
         .service(releases_content)
         .service(releases_page)
         .service(remove_audiobook)

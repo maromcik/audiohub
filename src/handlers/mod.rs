@@ -26,7 +26,7 @@ pub use crate::handlers::homepage::index_content;
 pub use crate::handlers::audiobook::create_audiobook;
 pub use crate::handlers::audiobook::create_audiobook_page;
 pub use crate::handlers::audiobook::get_audiobook;
-pub use crate::handlers::audiobook::get_audiobook_manage_content;
+pub use crate::handlers::audiobook::manage_audiobook_content;
 pub use crate::handlers::audiobook::manage_audiobook;
 pub use crate::handlers::audiobook::remove_audiobook;
 pub use crate::handlers::audiobook::search;
