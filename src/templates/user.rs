@@ -1,4 +1,4 @@
-use crate::database::models::user::User;
+use crate::database::models::user::{User, UserDisplay};
 use askama::Template;
 
 #[derive(Template)]
@@ -18,13 +18,13 @@ pub struct UserManagePasswordTemplate {}
 #[derive(Template)]
 #[template(path = "user-manage.html")]
 pub struct UserManageProfilePageTemplate {
-    pub user: User,
+    pub user: UserDisplay,
 }
 
 #[derive(Template)]
 #[template(path = "user/profile.html")]
 pub struct UserManageProfileContentTemplate {
-    pub user: User,
+    pub user: UserDisplay,
 }
 
 #[derive(Template)]
@@ -34,7 +34,7 @@ pub struct UserManageProfilePictureFormTemplate {}
 #[derive(Template)]
 #[template(path = "user/profile_picture.html")]
 pub struct UserManageProfilePictureTemplate {
-    pub user: User,
+    pub user: UserDisplay,
 }
 
 #[derive(Template)]
@@ -48,5 +48,5 @@ pub struct UserManageProfileSuccessfulUpdatePassword {}
 #[derive(Template)]
 #[template(path = "user/profile_user_form.html")]
 pub struct UserManageProfileUserFormTemplate {
-    pub user: User,
+    pub user: UserDisplay,
 }

@@ -11,7 +11,6 @@ use actix_web::web;
 
 use uuid::Uuid;
 
-use crate::database::models::active_audiobook::{ActiveAudiobookDetail};
 
 pub fn parse_user_id(identity: Identity) -> Result<Id, AppError> {
     Ok(identity.id()?.parse::<i64>()?)

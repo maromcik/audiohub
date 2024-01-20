@@ -46,7 +46,7 @@ pub struct AudiobookDetail {
     pub author_name: String,
     pub surname: String,
     pub bio: String,
-    pub profile_picture: String,
+    pub profile_picture: Option<String>,
 
     pub genre_name: String,
 
@@ -79,6 +79,13 @@ impl AudiobookDetail {
                 }
                 false
             }
+        }
+    }
+
+    pub fn get_default_profile_picture(&self) -> String {
+        match self.profile_picture.clone() {
+            None => "DEFAULT PATH".to_string(),
+            Some(pic) => pic
         }
     }
 }
@@ -137,7 +144,7 @@ impl AudiobookDisplay {
             author_name: audiobook.author_name.to_owned(),
             surname: audiobook.surname.to_owned(),
             bio: audiobook.bio.to_owned(),
-            profile_picture: audiobook.profile_picture.to_owned(),
+            profile_picture: audiobook.get_default_profile_picture(),
             genre_name: audiobook.genre_name.to_owned(),
 
             playback_position: audiobook.playback_position.unwrap_or_default(),
@@ -153,6 +160,7 @@ impl From<AudiobookDetail> for AudiobookDisplay {
         Self {
             is_finished: audiobook.is_finished(),
             is_started: !audiobook.is_never_started(),
+            profile_picture: audiobook.get_default_profile_picture(),
             id: audiobook.id,
             name: audiobook.name,
             author_id: audiobook.author_id,
@@ -172,7 +180,6 @@ impl From<AudiobookDetail> for AudiobookDisplay {
             author_name: audiobook.author_name,
             surname: audiobook.surname,
             bio: audiobook.bio,
-            profile_picture: audiobook.profile_picture,
             genre_name: audiobook.genre_name,
 
             playback_position: audiobook.playback_position.unwrap_or_default(),
