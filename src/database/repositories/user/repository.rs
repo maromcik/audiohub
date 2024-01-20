@@ -183,7 +183,7 @@ impl UserRepository {
                     INNER JOIN
                 "Bookmark" b ON b.audiobook_id = a.id
                     LEFT JOIN
-                "Active_Audiobook" AS ab ON a.id = ab.audiobook_id AND u.id = ab.user_id
+                "Active_Audiobook" AS ab ON ab.audiobook_id = a.id AND ab.user_id = $1
             WHERE
                 b.user_id = $1
             ORDER BY b.edited_at DESC
