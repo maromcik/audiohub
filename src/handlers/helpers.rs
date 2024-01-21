@@ -1,7 +1,7 @@
 use actix_identity::Identity;
 use actix_web::web;
 use crate::database::common::{DbReadMany, DbReadOne};
-use crate::database::common::query_parameters::{BookState, DbQueryParams};
+use crate::database::common::query_parameters::{BookState, DbOrder, DbOrderColumn, DbQueryParams};
 use crate::database::models::audiobook::{AudiobookDisplay, AudiobookGetByIdJoin, AudiobookSearch};
 use crate::database::models::chapter::{Chapter, ChapterDisplay, ChaptersGetByBookId};
 use crate::database::models::Id;
@@ -77,11 +77,19 @@ pub async fn get_index_base(
         .await?;
     let active_audiobooks = book_repo
         .read_many(&AudiobookSearch::with_params(
-            DbQueryParams::state(Some(BookState::Active(true))), user.id))
+            DbQueryParams::new(
+                Some(DbOrderColumn::new("ab.edited_at", DbOrder::Desc)),
+                None,
+                None,
+                Some(BookState::Active(true))), user.id))
         .await?;
     let finished_audiobooks = book_repo
         .read_many(&AudiobookSearch::with_params(
-            DbQueryParams::state(Some(BookState::Finished(true))), user.id))
+            DbQueryParams::new(
+                Some(DbOrderColumn::new("ab.edited_at", DbOrder::Desc)),
+                None,
+                None,
+                Some(BookState::Finished(true))), user.id))
         .await?;
     let template = IndexBase {
         username: user.name,
