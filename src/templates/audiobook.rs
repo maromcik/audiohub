@@ -102,22 +102,25 @@ pub struct QuickSearchResults {
 pub struct AudiobookDetailBase {
     pub audiobook: AudiobookDisplay,
     pub chapters: Vec<ChapterDisplay>,
+    pub is_liked: bool
 }
 
-impl From<AudiobookDetailPageTemplate> for AudiobookDetailBase {
-    fn from(value: AudiobookDetailPageTemplate) -> Self {
+impl From<AudiobookDetailBase> for AudiobookDetailPageTemplate {
+    fn from(value: AudiobookDetailBase) -> Self {
         Self {
             audiobook: value.audiobook,
             chapters: value.chapters,
+            is_liked: value.is_liked,
         }
     }
 }
 
-impl From<AudiobookDetailContentTemplate> for AudiobookDetailBase {
-    fn from(value: AudiobookDetailContentTemplate) -> Self {
+impl From<AudiobookDetailBase> for AudiobookDetailContentTemplate {
+    fn from(value: AudiobookDetailBase) -> Self {
         Self {
             audiobook: value.audiobook,
             chapters: value.chapters,
+            is_liked: value.is_liked,
         }
     }
 }

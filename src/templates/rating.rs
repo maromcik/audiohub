@@ -11,5 +11,5 @@ pub struct UserRatingTemplate {
 #[derive(Template)]
 #[template(path = "rating/book-ratings.html")]
 pub struct AudiobookRatingsTemplate {
-    pub ratings: Vec<UserRatingDisplay>
+    pub ratings: Vec<UserRatingDisplay>,
 }

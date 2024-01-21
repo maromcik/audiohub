@@ -29,6 +29,7 @@
 </div>
 </body>
 
+{% let rating_count = crate::database::models::rating::DISPLAYED_RATINGS_COUNT %}
 <script>
     let playerIntervalId = 0;
     let currentBookId = -1;
@@ -110,6 +111,25 @@
             document.getElementById('rating-form').reset();
         }
     });
+
+
+    // rating button offset handling
+    document.addEventListener("htmx:afterRequest", (e) => {
+        if (e.detail.target.id === 'ratings-container' && e.detail.elt.id === 'load-more-ratings-btn') {
+            incrementRatingButtonOffset()
+        }
+    });
+    const incrementRatingButtonOffset = () => {
+        const button = document.getElementById('load-more-ratings-btn');
+        const hxUrl = button.getAttribute('hx-get');
+        const parts = hxUrl.split('=');
+        let offset = parseInt(parts[1]);
+        offset += {{ rating_count }}
+        const newUrl = `${parts[0]}=${offset}`;
+        console.log(newUrl);
+        button.setAttribute('hx-get', `${parts[0]}=${offset}`)
+        htmx.process(button)
+    }
 
 </script>
 </html>
