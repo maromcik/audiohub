@@ -1,7 +1,7 @@
 use actix_identity::Identity;
 use actix_web::web;
 use crate::database::common::{DbReadMany, DbReadOne};
-use crate::database::common::query_parameters::DbQueryParams;
+use crate::database::common::query_parameters::{BookState, DbQueryParams};
 use crate::database::models::audiobook::{AudiobookDisplay, AudiobookGetByIdJoin, AudiobookSearch};
 use crate::database::models::chapter::{ChapterDisplay, ChaptersGetByBookId};
 use crate::database::models::Id;
@@ -20,9 +20,10 @@ pub async fn get_releases(
 ) -> Result<Vec<AudiobookDisplay>, AppError> {
     Ok(book_repo
         .read_many(&AudiobookSearch::with_params(
-            DbQueryParams::limit(5, 0),
-            parse_user_id(u)?,
-        ))
+            DbQueryParams::limit(5,
+                                 0,
+                                 Some(BookState::Fresh(true))),
+            parse_user_id(u)?))
         .await?
         .into_iter()
         .map(AudiobookDisplay::from)
@@ -68,14 +69,29 @@ pub async fn get_index_base(
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
 
-    let mut audiobooks = book_repo
-        .read_many(&AudiobookSearch::default(user.id))
-        .await?;
 
-    let active_audiobooks = get_active_audiobooks(&audiobooks);
-    let finished_audiobooks = get_finished_audiobooks(&audiobooks);
-    audiobooks.retain(|a| !a.is_started());
-    let audiobooks = audiobooks.into_iter().map(AudiobookDisplay::from).collect();
+
+    let audiobooks = book_repo
+        .read_many(&AudiobookSearch::with_params(
+            DbQueryParams::state(Some(BookState::Fresh(true))), user.id))
+        .await?
+        .into_iter()
+        .map(AudiobookDisplay::from)
+        .collect();
+    let active_audiobooks = book_repo
+        .read_many(&AudiobookSearch::with_params(
+            DbQueryParams::state(Some(BookState::Active(true))), user.id))
+        .await?
+        .into_iter()
+        .map(AudiobookDisplay::from)
+        .collect();
+    let finished_audiobooks = book_repo
+        .read_many(&AudiobookSearch::with_params(
+            DbQueryParams::state(Some(BookState::Finished(true))), user.id))
+        .await?
+        .into_iter()
+        .map(AudiobookDisplay::from)
+        .collect();
     let template = IndexBase {
         username: user.name,
         logged_in: true,
