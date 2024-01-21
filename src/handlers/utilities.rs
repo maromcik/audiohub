@@ -158,6 +158,11 @@ pub fn as_integer(number: &i16) -> i16 {
     return number.to_owned()
 }
 
+pub fn get_percentage(part: &f64, whole: &f64) -> i64 {
+    let fraction = part/whole;
+    (fraction * 100.0).floor() as i64
+}
+
 #[macro_export]
 macro_rules! authorized {
     ($e:expr) => {

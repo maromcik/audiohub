@@ -36,7 +36,6 @@ pub use crate::handlers::audiobook::upload_audiobook;
 pub use crate::handlers::audiobook::upload_audiobook_form;
 
 pub use crate::handlers::chapter::create_chapter;
-pub use crate::handlers::chapter::create_chapter_form;
 
 pub use crate::handlers::genre::get_audiobooks_by_genre;
 pub use crate::handlers::genre::get_genres_page;

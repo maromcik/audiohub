@@ -11,48 +11,18 @@
             {% endif %}
             <div class="text-3xl pl-5">{{ audiobook.author_name }}</div>
         </div>
-        <div class="pt-5 like-count flex flex-row items-center justify-self-end">
-
-            <button hx-patch="/audiobook/{{audiobook.id}}/likes" hx-target="#like-count" hx-swap="outerHTML">
-                <div id="like-count" class="flex items-center pl-5 text-3xl">
-                    {% if is_liked %}
-                    <i class="fa-solid fa-heart text-4xl"></i> <p class="pl-5 text-gray-300 text-sm">{{ audiobook.like_count }}</p>
-                    {% else %}
-                    <i class="fa-regular fa-heart text-4xl"></i> <p class="pl-5 text-gray-300 text-sm">{{ audiobook.like_count }}</p>
-                    {% endif %}
-                </div>
-            </button>
-        </div>
     </div>
 </div>
 <a href="/audiobook/{{ audiobook.id }}/delete">Delete Audiobook</a>
 
-<!--            <div hx-get="/chapter/audiobook/{{ audiobook.id }}" hx-trigger="load" hx-swap="afterend">-->
-<!--                Chapters-->
-<!--            </div>-->
-<form hx-post="/chapter/create/form" hx-swap="afterend" class="mb-4">
-    <input type="hidden" name="audiobook_id" value="{{ audiobook.id }}">
-    <input type="hidden" name="position" value="1">
-    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
-        Add new chapter
-    </button>
-</form>
 
-<div class="flex flex-row justify-center">
-    <button id="play-from-detail-btn" hx-get="/audiobook/{{audiobook.id}}/player"
-            hx-target="#player-container"
-            hx-swap="outerHTML"
-            class="bg-cyan-950 rounded-md p-4 text-2xl font-bold">
-        <i class="fa-solid fa-play pr-2" style="color: #ffffff;"></i>
-        Play
-    </button>
-</div>
+<button type="submit" class="mb-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">Add new chapter</button>
+
+{% include "chapter/chapter_create.html" %}
+
 <div class="flex flex-row">
-    <div class="flex-1 pt-5 pl-10">
-        <h2 class="text-2xl font-bold mb-4">Chapters</h2>
-        {% for chapter in chapters %}
-        {% include "audiobook/chapter.html" %}
-        {% endfor %}
+    <div id="chapters-list" class="flex-1 pt-5 pl-10"
+         hx-get="/chapter/book/{{ audiobook.id }}" hx-swap="outerHTML" hx-target="#chapters-list" hx-trigger="load">
     </div>
     <div class="flex-1 pt-5 pl-10">
         <h2 class="text-2xl font-bold mb-4">Description</h2>
