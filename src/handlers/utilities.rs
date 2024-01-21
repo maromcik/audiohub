@@ -138,6 +138,14 @@ pub fn get_active_audiobooks(audiobooks: &[AudiobookDetail]) -> Vec<AudiobookDis
         .collect()
 }
 
+pub fn get_finished_audiobooks(audiobooks: &[AudiobookDetail]) -> Vec<AudiobookDisplay> {
+    audiobooks
+        .iter()
+        .filter(|a| a.is_finished())
+        .map(AudiobookDisplay::from_reference)
+        .collect()
+}
+
 pub fn format_date(timestamp: &DateTime<Utc>) -> String {
     timestamp.format("%d.%m.%Y").to_string()
 }

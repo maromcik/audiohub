@@ -10,7 +10,7 @@ use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
-use crate::handlers::utilities::{get_active_audiobooks, parse_user_id};
+use crate::handlers::utilities::{get_active_audiobooks, get_finished_audiobooks, parse_user_id};
 use crate::templates::audiobook::AudiobookDetailBase;
 use crate::templates::index::IndexBase;
 
@@ -73,13 +73,15 @@ pub async fn get_index_base(
         .await?;
 
     let active_audiobooks = get_active_audiobooks(&audiobooks);
-    audiobooks.retain(|a| a.is_finished() || a.is_never_started());
+    let finished_audiobooks = get_finished_audiobooks(&audiobooks);
+    audiobooks.retain(|a| !a.is_started());
     let audiobooks = audiobooks.into_iter().map(AudiobookDisplay::from).collect();
     let template = IndexBase {
         username: user.name,
         logged_in: true,
         audiobooks,
         active_audiobooks,
+        finished_audiobooks,
     };
     Ok(template)
 }

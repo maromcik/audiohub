@@ -21,4 +21,11 @@
             {% include "audiobook/audiobook_card.html" %}
         {% endfor %}
     </div>
+
+    <h1 class="text-2xl font-bold mt-4">Stories you've loved</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {% for audiobook in finished_audiobooks %}
+        {% include "audiobook/audiobook_card.html" %}
+        {% endfor %}
+    </div>
 </div>
