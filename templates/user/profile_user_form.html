@@ -51,7 +51,7 @@
         <button type="submit" class="bg-green-500 hover:bg-green-400 text-white font-bold py-3 px-6 rounded mt-4 focus:outline-none focus:shadow-outline-green">Update profile</button>
     </form>
 </div>
-<a hx-get="/user/manage/password" hx-push-url="true" hx-target="#profile-update-fields" hx-swap="innerHTML" hx-boost="true">
+<a hx-get="/user/manage/password" hx-replace-url="false" hx-target="#profile-update-fields" hx-swap="innerHTML" hx-boost="true">
     <button type="submit" class="float-left bg-green-500 hover:bg-green-400 text-white font-bold py-3 px-6 rounded mt-4 focus:outline-none focus:shadow-outline-green">
         Change password
     </button>
