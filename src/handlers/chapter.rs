@@ -19,7 +19,6 @@ pub async fn create_chapter_form(
     authorized!(identity);
     let template = ChapterCreateFormTemplate {
         audiobook_id: form.audiobook_id,
-        position: form.position,
     };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))

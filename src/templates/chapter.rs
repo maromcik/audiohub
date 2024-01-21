@@ -6,7 +6,6 @@ use askama::Template;
 #[template(path = "chapter/chapter_create.html")]
 pub struct ChapterCreateFormTemplate {
     pub audiobook_id: Id,
-    pub position: f64,
 }
 
 #[derive(Template)]

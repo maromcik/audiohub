@@ -3,7 +3,6 @@
         <h2 class="block text-gray-300 text-xl font-bold mb-2">Add New Chapter</h2>
 
         <input type="hidden" name="audiobook_id" value="{{ audiobook_id }}">
-        <input type="hidden" name="position" value="{{ position }}">
 
         <div class="mb-4">
             <label class="block text-gray-300 text-sm font-bold mb-2" for="chapter-name">
@@ -13,7 +12,17 @@
                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                    id="chapter-name" type="text" placeholder="Chapter Name">
         </div>
-        
+
+        <div class="mb-4">
+            <label class="block text-gray-300 text-sm font-bold mb-2" for="chapter-seq-num">
+                Sequential number
+            </label>
+            <input name="position"
+                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                   id="chapter-seq-num" type="number" placeholder="Chapter's sequential number">
+        </div>
+
+
         <div class="flex items-center justify-between">
             <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                     type="submit">

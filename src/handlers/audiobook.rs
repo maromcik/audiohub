@@ -332,6 +332,38 @@ pub async fn remove_audiobook(
         .finish())
 }
 
+
+#[get("/studio/{id}/delete")]
+pub async fn remove_audiobook_in_studio(
+    identity: Option<Identity>,
+    user_repo: web::Data<UserRepository>,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    path: web::Path<(Id,)>,
+) -> Result<HttpResponse, AppError> {
+    let identity = authorized!(identity);
+    let user = get_user_from_identity(identity, &user_repo).await?;
+    let audiobook = audiobook_repo
+        .read_one(&AudiobookGetByIdJoin::new(user.id, path.into_inner().0))
+        .await?;
+
+    if user.id != audiobook.author_id {
+        return Err(AppError::from(BackendError::new(
+            BackendErrorKind::UnauthorizedOperation,
+        )));
+    }
+    remove_file(&audiobook.file_path)?;
+
+    if let Some(thumbnail) = &audiobook.thumbnail {
+        remove_file(thumbnail)?;
+    }
+    audiobook_repo
+        .delete(&AudiobookDelete::new(&audiobook.id))
+        .await?;
+    Ok(HttpResponse::SeeOther()
+        .insert_header((LOCATION, "/studio"))
+        .finish())
+}
+
 #[patch("{id}/likes")]
 pub async fn change_like(
     identity: Option<Identity>,

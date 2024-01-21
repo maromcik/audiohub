@@ -30,6 +30,7 @@ pub use crate::handlers::audiobook::get_audiobook;
 pub use crate::handlers::audiobook::manage_audiobook_content;
 pub use crate::handlers::audiobook::manage_audiobook;
 pub use crate::handlers::audiobook::remove_audiobook;
+pub use crate::handlers::audiobook::remove_audiobook_in_studio;
 pub use crate::handlers::audiobook::search;
 pub use crate::handlers::audiobook::set_active_audiobook;
 pub use crate::handlers::audiobook::upload_audiobook;
