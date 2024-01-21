@@ -6,7 +6,7 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::models::audiobook::AudiobookGetById;
-use crate::database::models::rating::{Rating, RatingCreate, RatingGetById, RatingSearch, RatingUpdate, RatingsGetByBookId, UserRatingDisplay};
+use crate::database::models::rating::{Rating, RatingCreate, RatingGetById, RatingSearch, RatingUpdate, RatingsGetByBookId, UserRatingDisplay, DISPLAYED_RATINGS_COUNT};
 use crate::database::models::user::UserGetById;
 
 use async_trait::async_trait;
@@ -200,12 +200,16 @@ impl RatingRepository {
                 AND (R.rating <= $4 OR $4 IS NULL)
                 AND (R.review = $5 OR $5 IS NULL)
             ORDER BY R.created_at DESC
+            LIMIT $6
+            OFFSET COALESCE($7, 0)
             "#,
             params.audiobook_id,
             params.user_id,
             params.min_rating,
             params.max_rating,
             params.review,
+            DISPLAYED_RATINGS_COUNT,
+            params.offset
         ).fetch_all(&self.pool_handler.pool).await?;
 
         Ok(ratings)

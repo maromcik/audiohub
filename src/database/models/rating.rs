@@ -2,6 +2,8 @@ use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
+pub const DISPLAYED_RATINGS_COUNT: i64 = 5;
+
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]
 pub struct Rating {
     pub id: Id,
@@ -21,6 +23,7 @@ pub struct RatingSearch {
     pub min_rating: Option<i16>,
     pub max_rating: Option<i16>,
     pub review: Option<String>,
+    pub offset: Option<i32>
 }
 
 impl RatingSearch {
@@ -33,6 +36,7 @@ impl RatingSearch {
         min_rating: Option<i16>,
         max_rating: Option<i16>,
         review: Option<&str>,
+        offset: Option<i32>,
     ) -> Self {
         let change_to_owned = |value: &str| Some(value.to_owned());
         Self {
@@ -41,6 +45,7 @@ impl RatingSearch {
             min_rating,
             max_rating,
             review: review.and_then(change_to_owned),
+            offset
         }
     }
 }
