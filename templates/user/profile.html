@@ -1,6 +1,6 @@
 <div class="pl-10" id="user-mgmt-profile">
 
-    <div class="relative">
+    <div class="relative container mx-auto">
         <!-- Include your profile image here -->
         <div class="mx-auto text-center group">
             <div id="profile-picture-box" class="relative inline-block group mx-auto p-5">
@@ -8,9 +8,9 @@
             </div>
         </div>
 
-        <div class="container mx-auto text-center group">
+        <div class="container mx-auto text-center group min-w-lg ">
             <div id="box-profile-updated-msg" class="text-center opacity-90"></div>
-            <div id="profile-update-fields">
+            <div id="profile-update-fields" class="group inline-block">
                 {% include "user/profile_user_form.html"%}
             </div>
         </div>
