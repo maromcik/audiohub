@@ -6,10 +6,12 @@ use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, post, web, HttpResponse};
 use askama::Template;
+use serde::Deserialize;
 
-use crate::database::models::rating::{RatingCreate, RatingSearch, UserRatingDisplay};
+use crate::database::models::rating::{ RatingCreate, RatingSearch, UserRatingDisplay};
 use crate::database::repositories::rating::repository::RatingRepository;
 use crate::forms::rating::RatingCreateForm;
+use crate::handlers::search;
 
 use crate::handlers::utilities::parse_user_id;
 use crate::templates::rating::{AudiobookRatingsTemplate, UserRatingTemplate};
@@ -43,20 +45,26 @@ pub async fn create_rating(
     let template = UserRatingTemplate { rating };
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
 }
+#[derive(Deserialize)]
+struct OffsetQuery {
+    offset: i32,
+}
 
+/// returns DISPLAYED_RATINGS_COUNT ratings transformed to html from query param offset
 #[get("/audiobook/{id}")]
 pub async fn get_ratings_by_audiobook(
     identity: Option<Identity>,
     rating_repo: web::Data<RatingRepository>,
     path: web::Path<(Id,)>,
+    query: web::Query<OffsetQuery>
 ) -> Result<HttpResponse, AppError> {
     authorized!(identity);
 
-    let search_params = RatingSearch::new(Some(path.into_inner().0),None,None,None,None);
+    let search_params = RatingSearch::new(Some(path.into_inner().0),None,None,None,None,Some(query.offset));
     let ratings : Vec<UserRatingDisplay> = rating_repo
         .get_ratings_display(&search_params)
         .await?;
-    let template = AudiobookRatingsTemplate {ratings};
+    let template = AudiobookRatingsTemplate {ratings,};
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
 
 }
