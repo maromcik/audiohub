@@ -11,7 +11,6 @@ use serde::Deserialize;
 use crate::database::models::rating::{ RatingCreate, RatingSearch, UserRatingDisplay};
 use crate::database::repositories::rating::repository::RatingRepository;
 use crate::forms::rating::RatingCreateForm;
-use crate::handlers::search;
 
 use crate::handlers::utilities::parse_user_id;
 use crate::templates::rating::{AudiobookRatingsTemplate, UserRatingTemplate};

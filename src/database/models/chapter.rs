@@ -72,3 +72,10 @@ pub struct ChapterUpdate {
 pub struct ChapterGetById {
     pub id: Id,
 }
+
+#[derive(Debug, Clone)]
+pub struct CreateChapterForm {
+    pub book_id: Id,
+    pub current_chapters: Vec<ChapterDisplay>,
+    pub book_filepath: String,
+}

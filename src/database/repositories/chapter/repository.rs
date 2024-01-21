@@ -6,9 +6,7 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::models::audiobook::AudiobookGetById;
-use crate::database::models::chapter::{
-    Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate, ChaptersGetByBookId,
-};
+use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate, ChaptersGetByBookId, ChapterDisplay};
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
@@ -49,7 +47,7 @@ impl ChapterRepository {
         Err(DbError::from(BackendError::new(ChapterDoesNotExist)))
     }
 
-    /// Function which retrieves all chapters for book with given id, usable within a transaction
+    /// Function which retrieves all chapters in displayable form for book with given id
     ///
     /// # Params
     /// - `params`: structure containing the id of the book
@@ -58,19 +56,20 @@ impl ChapterRepository {
     /// # Returns
     /// - `Ok(chapters)`: on successful connection and retrieval
     /// - `Err(_)`: otherwise
-    pub async fn get_book_chapters<'a>(
-        params: AudiobookGetById,
-        transaction_handle: &mut Transaction<'a, Postgres>,
+    pub async fn get_book_chapters(&self,
+        params: &AudiobookGetById,
     ) -> DbResultMultiple<Chapter> {
         let chapters = sqlx::query_as!(
             Chapter,
             r#"
                 SELECT * FROM "Chapter"
                 WHERE audiobook_id = $1
+                AND deleted_at IS NULL
+                ORDER BY position
                 "#,
             params.id
         )
-        .fetch_all(transaction_handle.as_mut())
+        .fetch_all(&self.pool_handler.pool)
         .await?;
 
         Ok(chapters)

@@ -3,7 +3,7 @@ use actix_web::web;
 use crate::database::common::{DbReadMany, DbReadOne};
 use crate::database::common::query_parameters::{BookState, DbQueryParams};
 use crate::database::models::audiobook::{AudiobookDisplay, AudiobookGetByIdJoin, AudiobookSearch};
-use crate::database::models::chapter::{ChapterDisplay, ChaptersGetByBookId};
+use crate::database::models::chapter::{Chapter, ChapterDisplay, ChaptersGetByBookId};
 use crate::database::models::Id;
 use crate::database::models::user::UserGetById;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
@@ -41,15 +41,7 @@ pub async fn get_audiobook_detail_base(
         .read_many(&ChaptersGetByBookId::new(audiobook_id))
         .await?;
 
-    let displayed_chapters: Vec<ChapterDisplay> = chapters
-        .into_iter()
-        .enumerate()
-        .map(|(order, ch)| ChapterDisplay {
-            name: ch.name,
-            order: order + 1,
-            position: ch.position,
-        })
-        .collect();
+    let displayed_chapters = transform_to_displayable_chapters(chapters);
 
     Ok(AudiobookDetailBase {
         is_liked: audiobook.is_liked,
@@ -58,6 +50,18 @@ pub async fn get_audiobook_detail_base(
     })
 }
 
+
+pub fn transform_to_displayable_chapters(chapters: Vec<Chapter>) -> Vec<ChapterDisplay> {
+   chapters
+        .into_iter()
+        .enumerate()
+        .map(|(order, ch)| ChapterDisplay {
+            name: ch.name,
+            order: order + 1,
+            position: ch.position,
+        })
+        .collect()
+}
 pub async fn get_index_base(
     u: Identity,
     user_repo: web::Data<UserRepository>,
