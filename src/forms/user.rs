@@ -7,6 +7,7 @@ pub struct UserCreateForm {
     pub username: String,
     pub email: String,
     pub password: String,
+    pub confirm_password: String,
     pub name: String,
     pub surname: String,
 }

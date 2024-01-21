@@ -27,7 +27,7 @@ pub async fn create_rating_form(identity: Option<Identity>) -> Result<HttpRespon
 pub async fn create_rating(
     identity: Option<Identity>,
     rating_repo: web::Data<RatingRepository>,
-    path: web::Path<(Id)>,
+    path: web::Path<Id>,
     form: web::Form<RatingCreateForm>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity);
