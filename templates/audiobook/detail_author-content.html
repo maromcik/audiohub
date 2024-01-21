@@ -32,6 +32,7 @@
 <!--            </div>-->
 <form hx-post="/chapter/create/form" hx-swap="afterend" class="mb-4">
     <input type="hidden" name="audiobook_id" value="{{ audiobook.id }}">
+    <input type="hidden" name="position" value="1">
     <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
         Add new chapter
     </button>
