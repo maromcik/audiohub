@@ -64,6 +64,10 @@ pub async fn get_ratings_by_audiobook(
     let ratings : Vec<UserRatingDisplay> = rating_repo
         .get_ratings_display(&search_params)
         .await?;
+
+    if ratings.len() == 0 {
+        return Ok(HttpResponse::PreconditionFailed().finish());
+    }
     let template = AudiobookRatingsTemplate {ratings,};
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
 

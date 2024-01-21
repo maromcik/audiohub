@@ -116,6 +116,9 @@
     // rating button offset handling
     document.addEventListener("htmx:afterRequest", (e) => {
         if (e.detail.target.id === 'ratings-container' && e.detail.elt.id === 'load-more-ratings-btn') {
+            if (e.detail.failed) {
+                document.getElementById('load-more-ratings-btn').remove()
+            }
             incrementRatingButtonOffset()
         }
     });
@@ -130,6 +133,5 @@
         button.setAttribute('hx-get', `${parts[0]}=${offset}`)
         htmx.process(button)
     }
-
 </script>
 </html>
