@@ -37,14 +37,14 @@ pub struct NewReleasesContentTemplate {
 #[derive(Template)]
 #[template(path = "components/detail_likes.html")]
 pub struct DetailLikesTemplate {
-    pub likes: String,
+    pub likes: i64,
     pub is_liked: bool,
 }
 
 #[derive(Template)]
 #[template(path = "components/card_likes.html")]
 pub struct CardLikesTemplate {
-    pub likes: String,
+    pub likes: i64,
     pub is_liked: bool,
 }
 
@@ -60,7 +60,7 @@ pub struct AudiobooksByGenreTemplate {
 pub struct AudiobookDetailPageTemplate {
     pub audiobook: AudiobookDisplay,
     pub chapters: Vec<ChapterDisplay>,
-    pub likes: bool,
+    pub is_liked: bool,
 }
 
 #[derive(Template)]
@@ -68,7 +68,7 @@ pub struct AudiobookDetailPageTemplate {
 pub struct AudiobookDetailContentTemplate {
     pub audiobook: AudiobookDisplay,
     pub chapters: Vec<ChapterDisplay>,
-    pub likes: bool,
+    pub is_liked: bool,
 }
 
 #[derive(Template)]
@@ -76,7 +76,7 @@ pub struct AudiobookDetailContentTemplate {
 pub struct AudiobookDetailAuthorPageTemplate {
     pub audiobook: AudiobookDisplay,
     pub chapters: Vec<ChapterDisplay>,
-    pub likes: bool,
+    pub is_liked: bool,
 }
 
 #[derive(Template)]
@@ -84,7 +84,7 @@ pub struct AudiobookDetailAuthorPageTemplate {
 pub struct AudiobookDetailAuthorContentTemplate {
     pub audiobook: AudiobookDisplay,
     pub chapters: Vec<ChapterDisplay>,
-    pub likes: bool,
+    pub is_liked: bool,
 }
 
 #[derive(Template)]
@@ -102,22 +102,25 @@ pub struct QuickSearchResults {
 pub struct AudiobookDetailBase {
     pub audiobook: AudiobookDisplay,
     pub chapters: Vec<ChapterDisplay>,
+    pub is_liked: bool
 }
 
-impl From<AudiobookDetailPageTemplate> for AudiobookDetailBase {
-    fn from(value: AudiobookDetailPageTemplate) -> Self {
+impl From<AudiobookDetailBase> for AudiobookDetailPageTemplate {
+    fn from(value: AudiobookDetailBase) -> Self {
         Self {
             audiobook: value.audiobook,
             chapters: value.chapters,
+            is_liked: value.is_liked,
         }
     }
 }
 
-impl From<AudiobookDetailContentTemplate> for AudiobookDetailBase {
-    fn from(value: AudiobookDetailContentTemplate) -> Self {
+impl From<AudiobookDetailBase> for AudiobookDetailContentTemplate {
+    fn from(value: AudiobookDetailBase) -> Self {
         Self {
             audiobook: value.audiobook,
             chapters: value.chapters,
+            is_liked: value.is_liked,
         }
     }
 }

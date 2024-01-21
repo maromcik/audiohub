@@ -68,8 +68,8 @@ impl AudiobookDetail {
             }
         }
     }
-    pub fn is_never_started(&self) -> bool {
-        self.playback_position.is_none()
+    pub fn is_started(&self) -> bool {
+        self.playback_position.is_some()
     }
 
     pub fn is_active(&self) -> bool {
@@ -145,7 +145,7 @@ impl AudiobookDisplay {
             playback_position: audiobook.playback_position.unwrap_or_default(),
             progress: audiobook.playback_position.unwrap_or_default() / audiobook.length * 100f64,
             is_finished: audiobook.is_finished(),
-            is_started: !audiobook.is_never_started(),
+            is_started: audiobook.is_started(),
             is_liked: audiobook.is_liked
         }
     }
@@ -155,7 +155,7 @@ impl From<AudiobookDetail> for AudiobookDisplay {
     fn from(audiobook: AudiobookDetail) -> Self {
         Self {
             is_finished: audiobook.is_finished(),
-            is_started: !audiobook.is_never_started(),
+            is_started: audiobook.is_started(),
             profile_picture: get_default_profile_picture(&audiobook.profile_picture),
             id: audiobook.id,
             name: audiobook.name,

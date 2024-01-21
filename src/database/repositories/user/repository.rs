@@ -14,7 +14,7 @@ use crate::database::common::error::{DbResultMultiple, DbResultSingle};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
-use crate::database::models::audiobook::AudiobookDetail;
+use crate::database::models::audiobook::{AudiobookDetail, AudiobookDisplay};
 
 use crate::database::models::bookmark::{Bookmark, BookmarkOperation};
 use crate::database::models::user::{
@@ -141,59 +141,6 @@ impl UserRepository {
         .await?;
 
         Ok(bookmark)
-    }
-
-    pub async fn get_bookmarked(&self, user_id: &Id) -> DbResultMultiple<AudiobookDetail> {
-        let bookmarked = sqlx::query_as!(
-            AudiobookDetail,
-            r#"
-            SELECT
-                a.id,
-                a.name,
-                a.description,
-                a.file_path,
-                a.length,
-                a.thumbnail,
-                a.overall_rating,
-                a.stream_count,
-                a.like_count,
-                a.created_at,
-                a.edited_at,
-
-                a.author_id,
-                u.name AS author_name,
-                u.surname,
-                u.username,
-                u.email,
-                u.profile_picture,
-                u.bio,
-
-                a.genre_id,
-                g.name AS genre_name,
-
-                ab.playback_position AS "playback_position?",
-                ab.edited_at AS "active_audiobook_edited_at?",
-                b.audiobook_id IS NOT NULL AS "is_liked!"
-            FROM
-                "Audiobook" AS a
-                    INNER JOIN
-                "User" AS u ON u.id = a.author_id
-                    INNER JOIN
-                "Genre" AS g ON a.genre_id = g.id
-                    INNER JOIN
-                "Bookmark" b ON b.audiobook_id = a.id
-                    LEFT JOIN
-                "Active_Audiobook" AS ab ON ab.audiobook_id = a.id AND ab.user_id = $1
-            WHERE
-                b.user_id = $1
-            ORDER BY b.edited_at DESC
-            "#,
-            user_id,
-        )
-        .fetch_all(&self.pool_handler.pool)
-        .await?;
-
-        Ok(bookmarked)
     }
 
     pub async fn bookmark(&self, params: &BookmarkOperation) -> DbResultSingle<Bookmark> {

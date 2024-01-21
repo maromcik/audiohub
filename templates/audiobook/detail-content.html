@@ -1,3 +1,4 @@
+{% let rating_count = crate::database::models::rating::DISPLAYED_RATINGS_COUNT %}
 <div class="w-full pt-5 pl-10 flex flex-row">
     <img class="bg-cyan-900 w-80 h-80" src="{{ audiobook.thumbnail }}" alt="book-cover">
     <div class="flex pl-5 flex-col">
@@ -15,7 +16,7 @@
 
             <button hx-patch="/audiobook/{{audiobook.id}}/likes" hx-target="#like-count" hx-swap="outerHTML">
                 <div id="like-count" class="flex items-center pl-5 text-3xl">
-                    {% if likes %}
+                    {% if is_liked %}
                     <i class="fa-solid fa-heart text-4xl"></i> <p class="pl-5 text-gray-300 text-sm">{{ audiobook.like_count }}</p>
                     {% else %}
                     <i class="fa-regular fa-heart text-4xl"></i> <p class="pl-5 text-gray-300 text-sm">{{ audiobook.like_count }}</p>
@@ -50,4 +51,28 @@
             {{audiobook.bio}}
         </p>
     </div>
+</div>
+
+
+
+<div class="pl-10 mb-3 flex flex-row justify-between">
+    <div class="text-4xl font-bold ">Ratings</div>
+    <button id="write-review-btn"
+            class="w-1/6 bg-cyan-500 hover:bg-cyan-400 text-white font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline-cyan">
+        <i class="fa-solid fa-pen pr-1" style="color: #ffffff;"></i> Write review
+    </button>
+</div>
+
+{% include "rating/rating-form.html" %}
+<div id="ratings-container"
+     hx-get="/rating/audiobook/{{ audiobook.id }}?offset=0"
+     hx-trigger="load" hx-swap="innerHTML" class="flex flex-col pl-10">
+</div>
+
+<div class="pl-10 flex flex-col items-center">
+    <button id="load-more-ratings-btn" hx-target="#ratings-container" hx-swap="beforeend"
+            hx-get="/rating/audiobook/{{audiobook.id}}?offset={{ rating_count }}"
+            class="w-1/6 bg-cyan-500 hover:bg-cyan-400 text-white font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline-cyan">
+        Load more
+    </button>
 </div>

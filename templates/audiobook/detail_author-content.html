@@ -15,7 +15,7 @@
 
             <button hx-patch="/audiobook/{{audiobook.id}}/likes" hx-target="#like-count" hx-swap="outerHTML">
                 <div id="like-count" class="flex items-center pl-5 text-3xl">
-                    {% if likes %}
+                    {% if is_liked %}
                     <i class="fa-solid fa-heart text-4xl"></i> <p class="pl-5 text-gray-300 text-sm">{{ audiobook.like_count }}</p>
                     {% else %}
                     <i class="fa-regular fa-heart text-4xl"></i> <p class="pl-5 text-gray-300 text-sm">{{ audiobook.like_count }}</p>
@@ -30,7 +30,9 @@
 <!--            <div hx-get="/chapter/audiobook/{{ audiobook.id }}" hx-trigger="load" hx-swap="afterend">-->
 <!--                Chapters-->
 <!--            </div>-->
-<form hx-get="/chapter/create/audiobook/{{ audiobook.id }}" hx-swap="afterend" class="mb-4">
+<form hx-post="/chapter/create/form" hx-swap="afterend" class="mb-4">
+    <input type="hidden" name="audiobook_id" value="{{ audiobook.id }}">
+    <input type="hidden" name="position" value="1">
     <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
         Add new chapter
     </button>

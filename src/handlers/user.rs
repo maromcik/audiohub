@@ -33,7 +33,9 @@ use crate::handlers::utilities::{
 
 #[get("/register")]
 pub async fn register() -> Result<HttpResponse, AppError> {
-    let template = RegistrationTemplate {};
+    let template = RegistrationTemplate {
+        message: "".to_string(),
+    };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -57,6 +59,15 @@ pub async fn register_user(
     form: web::Form<UserCreateForm>,
     user_repo: web::Data<UserRepository>,
 ) -> Result<impl Responder, AppError> {
+
+    if form.password != form.confirm_password {
+        let template = RegistrationTemplate {
+            message: "Passwords do not match".to_string(),
+        };
+        let body = template.render()?;
+        return Ok(HttpResponse::Ok().content_type("text/html").body(body));
+    }
+
     let new_user = UserCreate {
         username: form.username.to_string(),
         email: form.email.to_string(),
@@ -68,7 +79,8 @@ pub async fn register_user(
     };
 
     user_repo.create(&new_user).await?;
-    Ok(Redirect::to("/user/login").using_status_code(StatusCode::FOUND))
+    Ok(HttpResponse::Found().header("Location", "/user/login").finish())
+
 }
 
 #[post("/login")]
@@ -261,7 +273,7 @@ pub async fn user_manage_picture(
     // //     .insert_header(("HX-Redirect", "/user/manage"))
     // //     .finish())
 
-    if let Some(user) = users.into_iter().nth(0) {
+    if let Some(user) = users.into_iter().next() {
         let template = UserManageProfilePictureTemplate {
             user: UserDisplay::from(user),
         };

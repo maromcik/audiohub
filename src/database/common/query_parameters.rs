@@ -1,34 +1,54 @@
 use std::fmt::{Debug, Display, Formatter};
 
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BookState {
+    Finished(bool),
+    Fresh(bool),
+    Active(bool),
+}
+
 #[derive(Debug, Clone)]
 pub struct DbQueryParams {
     pub order: Option<DbOrderColumn>,
     pub limit: Option<i64>,
     pub offset: Option<i64>,
+    pub book_state: Option<BookState>
 }
 
 impl DbQueryParams {
-    pub fn new(order: Option<DbOrderColumn>, limit: Option<i64>, offset: Option<i64>) -> Self {
+    pub fn new(order: Option<DbOrderColumn>, limit: Option<i64>, offset: Option<i64>, book_state: Option<BookState>) -> Self {
         Self {
             order,
             limit,
             offset,
+            book_state
         }
     }
 
-    pub fn limit(limit: i64, offset: i64) -> Self {
+    pub fn limit(limit: i64, offset: i64, book_state: Option<BookState>) -> Self {
         Self {
             order: Some(DbOrderColumn::default()),
             limit: Some(limit),
             offset: Some(offset),
+            book_state
         }
     }
 
-    pub fn order(order: DbOrderColumn) -> Self {
+    pub fn order(order: DbOrderColumn, book_state: Option<BookState>) -> Self {
         Self {
             order: Some(order),
             limit: None,
             offset: None,
+            book_state
+        }
+    }
+    pub fn state(book_state: Option<BookState>) -> Self {
+        Self {
+            order: Some(DbOrderColumn::default()),
+            limit: None,
+            offset: None,
+            book_state
         }
     }
 }
@@ -39,6 +59,7 @@ impl Default for DbQueryParams {
             order: Some(DbOrderColumn::default()),
             limit: None,
             offset: None,
+            book_state: None
         }
     }
 }

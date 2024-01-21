@@ -10,8 +10,9 @@ use actix_identity::Identity;
 use actix_multipart::form::tempfile::TempFile;
 use actix_session::Session;
 use actix_web::web;
+use chrono::{DateTime, Utc};
 
-use uuid::Uuid;
+use uuid::{Timestamp, Uuid};
 
 pub fn parse_user_id(identity: Identity) -> Result<Id, AppError> {
     Ok(identity.id()?.parse::<i64>()?)
@@ -135,6 +136,26 @@ pub fn get_active_audiobooks(audiobooks: &[AudiobookDetail]) -> Vec<AudiobookDis
         .filter(|a| a.is_active())
         .map(AudiobookDisplay::from_reference)
         .collect()
+}
+
+pub fn get_finished_audiobooks(audiobooks: &[AudiobookDetail]) -> Vec<AudiobookDisplay> {
+    audiobooks
+        .iter()
+        .filter(|a| a.is_finished())
+        .map(AudiobookDisplay::from_reference)
+        .collect()
+}
+
+pub fn format_date(timestamp: &DateTime<Utc>) -> String {
+    timestamp.format("%d.%m.%Y").to_string()
+}
+
+pub fn display_optional(value : &Option<String>) -> String {
+    value.to_owned().unwrap_or(String::from(""))
+}
+
+pub fn as_integer(number: &i16) -> i16 {
+    return number.to_owned()
 }
 
 #[macro_export]

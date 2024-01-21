@@ -8,7 +8,7 @@ use crate::forms::chapter::{ChapterCreateAudiobookInfoForm, ChapterCreateForm};
 use crate::templates::chapter::{ChapterCreateFormTemplate, ChapterDetailTemplate};
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
-use actix_web::{post, web, HttpResponse};
+use actix_web::{post, get, web, HttpResponse};
 use askama::Template;
 
 #[post("/create/form")]
