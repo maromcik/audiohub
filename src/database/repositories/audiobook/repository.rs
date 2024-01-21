@@ -13,10 +13,7 @@ use crate::database::models::active_audiobook::{
 };
 use sqlx::{Postgres, Transaction};
 
-use crate::database::models::audiobook::{
-    Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookGetById,
-    AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookSearch, AudiobookUpdate,
-};
+use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookDisplay, AudiobookGetById, AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookSearch, AudiobookUpdate};
 use crate::database::models::Id;
 
 #[derive(Clone)]
@@ -244,6 +241,59 @@ impl AudiobookRepository {
         .await?;
         Ok(PlayedAudiobook::from(played_audiobook))
     }
+
+    pub async fn get_bookmarked(&self, user_id: &Id) -> DbResultMultiple<AudiobookDisplay> {
+        let bookmarked = sqlx::query_as!(
+            AudiobookDetail,
+            r#"
+            SELECT
+                a.id,
+                a.name,
+                a.description,
+                a.file_path,
+                a.length,
+                a.thumbnail,
+                a.overall_rating,
+                a.stream_count,
+                a.like_count,
+                a.created_at,
+                a.edited_at,
+
+                a.author_id,
+                u.name AS author_name,
+                u.surname,
+                u.username,
+                u.email,
+                u.profile_picture,
+                u.bio,
+
+                a.genre_id,
+                g.name AS genre_name,
+
+                ab.playback_position AS "playback_position?",
+                ab.edited_at AS "active_audiobook_edited_at?",
+                b.audiobook_id IS NOT NULL AS "is_liked!"
+            FROM
+                "Audiobook" AS a
+                    INNER JOIN
+                "User" AS u ON u.id = a.author_id
+                    INNER JOIN
+                "Genre" AS g ON a.genre_id = g.id
+                    INNER JOIN
+                "Bookmark" b ON b.audiobook_id = a.id
+                    LEFT JOIN
+                "Active_Audiobook" AS ab ON ab.audiobook_id = a.id AND ab.user_id = $1
+            WHERE
+                a.deleted_at IS NULL AND b.user_id = $1
+            ORDER BY b.edited_at DESC
+            "#,
+            user_id,
+        )
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
+
+        Ok(bookmarked.into_iter().map(AudiobookDisplay::from).collect())
+    }
 }
 
 #[async_trait]
@@ -337,47 +387,9 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
     }
 }
 
-// #[async_trait]
-// impl DbReadMany<AudiobookSearch, Audiobook> for AudiobookRepository {
-//     async fn read_many(&self, params: &AudiobookSearch) -> DbResultMultiple<Audiobook> {
-//         let audiobooks = sqlx::query_as!(
-//             Audiobook,
-//             r#"
-//             SELECT * FROM "Audiobook"
-//             WHERE
-//                 (name = $1 OR $1 IS NULL)
-//                 AND (author_id = $2 OR $2 IS NULL)
-//                 AND (genre_id = $3 OR $3 IS NULL)
-//                 AND (like_count >= $4 OR $4 IS NULL)
-//                 AND (like_count <= $5 OR $5 IS NULL)
-//                 AND (length >= $6 OR $6 IS NULL)
-//                 AND (length <= $7 OR $7 IS NULL)
-//                 AND (stream_count >= $8 OR $8 IS NULL)
-//                 AND (stream_count <= $9 OR $9 IS NULL)
-//                 AND (overall_rating >= $10 OR $10 IS NULL)
-//                 AND (overall_rating <= $11 OR $11 IS NULL)
-//             "#,
-//             params.name,
-//             params.author_id,
-//             params.genre_id,
-//             params.min_like_count,
-//             params.max_like_count,
-//             params.min_length,
-//             params.max_length,
-//             params.min_stream_count,
-//             params.max_stream_count,
-//             params.min_overall_rating,
-//             params.max_overall_rating,
-//         )
-//         .fetch_all(&self.pool_handler.pool)
-//         .await?;
-//         Ok(audiobooks)
-//     }
-// }
-
 #[async_trait]
-impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
-    async fn read_many(&self, params: &AudiobookSearch) -> DbResultMultiple<AudiobookDetail> {
+impl DbReadMany<AudiobookSearch, AudiobookDisplay> for AudiobookRepository {
+    async fn read_many(&self, params: &AudiobookSearch) -> DbResultMultiple<AudiobookDisplay> {
         let mut query = r#"
             SELECT
                 a.id,
@@ -452,9 +464,10 @@ impl DbReadMany<AudiobookSearch, AudiobookDetail> for AudiobookRepository {
             .bind(params.user_id)
             .fetch_all(&self.pool_handler.pool)
             .await?;
-        Ok(audiobooks)
+        Ok(audiobooks.into_iter().map(AudiobookDisplay::from).collect())
     }
 }
+
 
 #[async_trait]
 impl DbCreate<AudiobookCreate, Audiobook> for AudiobookRepository {

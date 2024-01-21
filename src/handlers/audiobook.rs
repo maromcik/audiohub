@@ -241,12 +241,7 @@ pub async fn get_audiobook(
     )
     .await?;
 
-    let body = AudiobookDetailPageTemplate {
-        is_liked: base.audiobook.is_liked,
-        audiobook: base.audiobook,
-        chapters: base.chapters,
-    }
-    .render()?;
+    let body = AudiobookDetailPageTemplate::from(base).render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
@@ -267,12 +262,7 @@ pub async fn get_audiobook_detail_content(
     )
     .await?;
 
-    let body = AudiobookDetailContentTemplate {
-        is_liked: base.audiobook.is_liked,
-        audiobook: base.audiobook,
-        chapters: base.chapters,
-    }
-    .render()?;
+    let body = AudiobookDetailContentTemplate::from(base).render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 

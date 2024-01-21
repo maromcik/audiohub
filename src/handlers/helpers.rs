@@ -10,7 +10,7 @@ use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
-use crate::handlers::utilities::{get_active_audiobooks, get_finished_audiobooks, parse_user_id};
+use crate::handlers::utilities::{parse_user_id};
 use crate::templates::audiobook::AudiobookDetailBase;
 use crate::templates::index::IndexBase;
 
@@ -24,10 +24,7 @@ pub async fn get_releases(
                                  0,
                                  Some(BookState::Fresh(true))),
             parse_user_id(u)?))
-        .await?
-        .into_iter()
-        .map(AudiobookDisplay::from)
-        .collect())
+        .await?)
 }
 
 pub async fn get_audiobook_detail_base(
@@ -55,6 +52,7 @@ pub async fn get_audiobook_detail_base(
         .collect();
 
     Ok(AudiobookDetailBase {
+        is_liked: audiobook.is_liked,
         audiobook: AudiobookDisplay::from(audiobook),
         chapters: displayed_chapters,
     })
@@ -69,29 +67,18 @@ pub async fn get_index_base(
         .read_one(&UserGetById::new(&parse_user_id(u)?))
         .await?;
 
-
-
     let audiobooks = book_repo
         .read_many(&AudiobookSearch::with_params(
             DbQueryParams::state(Some(BookState::Fresh(true))), user.id))
-        .await?
-        .into_iter()
-        .map(AudiobookDisplay::from)
-        .collect();
+        .await?;
     let active_audiobooks = book_repo
         .read_many(&AudiobookSearch::with_params(
             DbQueryParams::state(Some(BookState::Active(true))), user.id))
-        .await?
-        .into_iter()
-        .map(AudiobookDisplay::from)
-        .collect();
+        .await?;
     let finished_audiobooks = book_repo
         .read_many(&AudiobookSearch::with_params(
             DbQueryParams::state(Some(BookState::Finished(true))), user.id))
-        .await?
-        .into_iter()
-        .map(AudiobookDisplay::from)
-        .collect();
+        .await?;
     let template = IndexBase {
         username: user.name,
         logged_in: true,
@@ -104,14 +91,11 @@ pub async fn get_index_base(
 
 pub async fn get_library(
     u: Identity,
-    user_repo: web::Data<UserRepository>,
+    book_repo: web::Data<AudiobookRepository>,
 ) -> Result<Vec<AudiobookDisplay>, AppError> {
-    Ok(user_repo
+    Ok(book_repo
         .get_bookmarked(&parse_user_id(u)?)
-        .await?
-        .into_iter()
-        .map(AudiobookDisplay::from)
-        .collect())
+        .await?)
 }
 
 pub async fn get_studio(
@@ -121,8 +105,5 @@ pub async fn get_studio(
     let user_id = parse_user_id(u)?;
     Ok(book_repo
         .read_many(&AudiobookSearch::search_by_author_id(user_id, user_id))
-        .await?
-        .into_iter()
-        .map(AudiobookDisplay::from)
-        .collect())
+        .await?)
 }
