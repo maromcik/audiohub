@@ -54,7 +54,6 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(releases_content)
         .service(releases_page)
         .service(remove_audiobook)
-        .service(remove_audiobook_in_studio)
         .service(change_like)
         .service(search)
         .service(set_active_audiobook)
