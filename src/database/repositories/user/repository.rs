@@ -185,7 +185,7 @@ impl UserRepository {
                     LEFT JOIN
                 "Active_Audiobook" AS ab ON ab.audiobook_id = a.id AND ab.user_id = $1
             WHERE
-                b.user_id = $1
+                a.deleted_at IS NULL AND b.user_id = $1
             ORDER BY b.edited_at DESC
             "#,
             user_id,
