@@ -4,9 +4,10 @@ pub mod genre;
 pub mod homepage;
 pub mod library;
 pub mod rating;
+pub mod studio;
 pub mod user;
 pub mod utilities;
-pub mod studio;
+pub mod helpers;
 
 pub use crate::handlers::user::login as user_login_page;
 pub use crate::handlers::user::login_user as user_login;
@@ -26,6 +27,8 @@ pub use crate::handlers::homepage::index_content;
 pub use crate::handlers::audiobook::create_audiobook;
 pub use crate::handlers::audiobook::create_audiobook_page;
 pub use crate::handlers::audiobook::get_audiobook;
+pub use crate::handlers::audiobook::manage_audiobook_content;
+pub use crate::handlers::audiobook::manage_audiobook;
 pub use crate::handlers::audiobook::remove_audiobook;
 pub use crate::handlers::audiobook::search;
 pub use crate::handlers::audiobook::set_active_audiobook;
@@ -33,10 +36,6 @@ pub use crate::handlers::audiobook::upload_audiobook;
 pub use crate::handlers::audiobook::upload_audiobook_form;
 
 pub use crate::handlers::chapter::create_chapter;
-pub use crate::handlers::chapter::create_chapter_form;
 
 pub use crate::handlers::genre::get_audiobooks_by_genre;
 pub use crate::handlers::genre::get_genres_page;
-
-pub use crate::handlers::studio::studio_index;
-pub use crate::handlers::studio::studio_get_content;

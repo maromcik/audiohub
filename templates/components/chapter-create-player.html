@@ -1,0 +1,11 @@
+<audio id="chapter-creator-player" class="w-full" controls>
+    <source src="{{ source }}" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+
+<script>
+    document.getElementById('chapter-creator-player').addEventListener('timeupdate', () => {
+        console.log(document.getElementById('chapter-creator-player').currentTime);
+        document.getElementById('chapter-begin-selection').value = document.getElementById('chapter-creator-player').currentTime;
+    });
+</script>

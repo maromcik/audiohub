@@ -8,6 +8,7 @@ pub struct IndexTemplate {
     pub username: String,
     pub audiobooks: Vec<AudiobookDisplay>,
     pub active_audiobooks: Vec<AudiobookDisplay>,
+    pub finished_audiobooks: Vec<AudiobookDisplay>,
 }
 
 #[derive(Template)]
@@ -17,6 +18,7 @@ pub struct IndexContentTemplate {
     pub username: String,
     pub audiobooks: Vec<AudiobookDisplay>,
     pub active_audiobooks: Vec<AudiobookDisplay>,
+    pub finished_audiobooks: Vec<AudiobookDisplay>,
 }
 
 pub struct IndexBase {
@@ -24,6 +26,7 @@ pub struct IndexBase {
     pub username: String,
     pub audiobooks: Vec<AudiobookDisplay>,
     pub active_audiobooks: Vec<AudiobookDisplay>,
+    pub finished_audiobooks: Vec<AudiobookDisplay>,
 }
 
 impl From<IndexBase> for IndexContentTemplate {
@@ -32,7 +35,8 @@ impl From<IndexBase> for IndexContentTemplate {
             logged_in: value.logged_in,
             username: value.username,
             audiobooks: value.audiobooks,
-            active_audiobooks: value.active_audiobooks
+            active_audiobooks: value.active_audiobooks,
+            finished_audiobooks: value.finished_audiobooks
         }
     }
 }
@@ -43,7 +47,8 @@ impl From<IndexBase> for IndexTemplate {
             logged_in: value.logged_in,
             username: value.username,
             audiobooks: value.audiobooks,
-            active_audiobooks: value.active_audiobooks
+            active_audiobooks: value.active_audiobooks,
+            finished_audiobooks: value.finished_audiobooks
         }
     }
 }

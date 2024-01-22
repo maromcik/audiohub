@@ -1,10 +1,7 @@
-<div class="container mx-auto pt-6 bg-black">
-    <form hx-post="/chapter/create" hx-swap="beforeend" hx-target="#chapters-list" class="bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4">
+<div class="container pl-10 mx-auto pt-6 bg-black">
+    <form id="create-chapter-form" hx-post="/chapter/create" hx-target="#trash" class="bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4">
         <h2 class="block text-gray-300 text-xl font-bold mb-2">Add New Chapter</h2>
-
-        <input type="hidden" name="audiobook_id" value="{{ audiobook_id }}">
-        <input type="hidden" name="position" value="{{ position }}">
-
+        <input class="hidden" name="audiobook_id" value="{{audiobook.id}}">
         <div class="mb-4">
             <label class="block text-gray-300 text-sm font-bold mb-2" for="chapter-name">
                 Chapter Name
@@ -13,12 +10,42 @@
                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                    id="chapter-name" type="text" placeholder="Chapter Name">
         </div>
-        
+        <div class="mb-4">
+            <div class="text-gray-300 text-sm font-bold mb-2">Existing chapters</div>
+
+            <div id="chapters-timeline" class="w-full h-4 bg-neutral-500 relative mb-8"
+                 hx-get="/chapter/book/{{ audiobook.id }}/chapter-timeline"
+                 hx-trigger="load" hx-swap="outerHTML" hx-target="#chapters-timeline"
+            >
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <div class="text-gray-300 text-sm font-bold mb-2">New chapter beginning</div>
+            <div id="select-player-container" hx-target="#select-player-container" hx-get="/chapter/audiobook/{{ audiobook.id }}/creator-player" hx-trigger="load" hx-swap="beforeend">
+
+            </div>
+            <input name="position" id="chapter-begin-selection" class="hidden">
+        </div>
+
         <div class="flex items-center justify-between">
             <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                     type="submit">
                 Save
             </button>
         </div>
+
     </form>
 </div>
+<div class="hidden" id="trash"></div>
+
+<script>
+    document.addEventListener("htmx:afterRequest", (e) => {
+        if (e.detail.elt.id === 'create-chapter-form') {
+            document.getElementById('create-chapter-form').reset();
+            htmx.trigger("#chapters-list", "studio-form-submit")
+            htmx.trigger("#chapters-timeline", "studio-form-submit")
+        }
+    });
+
+</script>

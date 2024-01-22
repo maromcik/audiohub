@@ -6,13 +6,13 @@ use crate::database::models::Id;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::error::AppError;
+use crate::handlers::utilities::parse_user_id;
 use crate::templates::audiobook::AudiobooksByGenreTemplate;
 use crate::templates::genre::{GenresContentTemplate, GenresPageTemplate};
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, web, HttpResponse};
 use askama::Template;
-use crate::handlers::utilities::parse_user_id;
 
 #[get("/all")]
 async fn get_genres_page(
@@ -41,7 +41,6 @@ async fn get_genres_content(
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
-
 
 #[get("/{id}")]
 async fn get_audiobooks_by_genre(

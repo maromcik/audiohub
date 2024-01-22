@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>{% block title %} Index {% endblock %}</title>
+    <title>{% block title %} AudioHub {% endblock %}</title>
     <!--    <link rel="stylesheet" href="../static/css/main.css">-->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- HTMX -->
@@ -14,7 +14,7 @@
 </head>
 <body class="bg-black text-white">
 {% block navbar %}
-{% include "components/navbar.html" %}
+    {% include "components/navbar.html" %}
 {% endblock %}
 <div class="flex pt-16 flex-col h-screen">
     <!-- Sidebar -->
@@ -29,6 +29,7 @@
 </div>
 </body>
 
+{% let rating_count = crate::database::models::rating::DISPLAYED_RATINGS_COUNT %}
 <script>
     let playerIntervalId = 0;
     let currentBookId = -1;
@@ -41,20 +42,22 @@
         return document.getElementById('audiobook-player').getAttribute("begin-time");
 
     }
-
+    // player init
     document.addEventListener("htmx:load", (e) => {
         if (e.detail.elt.id === 'player-container') {
             clearInterval(playerIntervalId);
             let audio = document.getElementById('audiobook-player');
-            let book_id = audio.lastElementChild.id;
-            attachInterval(parseBookIdFromSource(book_id));
+            let bookId = audio.lastElementChild.id;
+            attachInterval(parseBookIdFromSource(bookId));
 
             audio.play();
 
+            let beginTime = getBeginningPlayerTime();
             // initially set active book to current selection
-            fetch(`/audiobook/${currentBookId}/active?position=${getBeginningPlayerTime()}`, {
+            fetch(`/audiobook/${currentBookId}/active?position=${beginTime}`, {
                 method: "PUT",
             });
+            audio.currentTime = beginTime;
 
             audio.onpause = () => {
                 clearInterval(playerIntervalId);
@@ -67,6 +70,7 @@
 
         }
     });
+
 
     const attachInterval = (bookId) => {
         currentBookId = bookId;
@@ -92,5 +96,42 @@
         });
     }
 
+    const attachHideQuickSearchListener = () => {
+        document.body.addEventListener('click', hideQuickSearchResults)
+    }
+    const hideQuickSearchResults = () => {
+        document.getElementById('quick-search-input').value = '';
+        document.getElementById('search-result').style.display = 'none';
+        document.body.removeEventListener('click', this);
+    }
+
+    // rating clear
+    document.addEventListener("htmx:afterRequest", (e) => {
+        if (e.detail.elt.id === 'rating-form') {
+            document.getElementById('rating-form').reset();
+        }
+    });
+
+
+    // rating button offset handling
+    document.addEventListener("htmx:afterRequest", (e) => {
+        if (e.detail.target.id === 'ratings-container' && e.detail.elt.id === 'load-more-ratings-btn') {
+            if (e.detail.failed) {
+                document.getElementById('load-more-ratings-btn').remove()
+            }
+            incrementRatingButtonOffset()
+        }
+    });
+    const incrementRatingButtonOffset = () => {
+        const button = document.getElementById('load-more-ratings-btn');
+        const hxUrl = button.getAttribute('hx-get');
+        const parts = hxUrl.split('=');
+        let offset = parseInt(parts[1]);
+        offset += {{ rating_count }}
+        const newUrl = `${parts[0]}=${offset}`;
+        console.log(newUrl);
+        button.setAttribute('hx-get', `${parts[0]}=${offset}`)
+        htmx.process(button)
+    }
 </script>
 </html>

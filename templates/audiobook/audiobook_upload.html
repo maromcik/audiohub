@@ -2,7 +2,7 @@
     <form hx-post="/audiobook/upload" hx-target="#content-area" enctype="multipart/form-data"
           class="bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4 h-full">
         <h2 class="block text-gray-300 text-xl font-bold mb-2 text-center">Upload Audiobook</h2>
-        <div id="error-area" class="text-red-500 mb-3">
+        <div id="error-area" class="text-red-500 mb-3 text-center">
             {{ message }}
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
@@ -15,7 +15,7 @@
                     Audiobook thumbnail (optional)
                 </label>
                 <input class="shadow appearance-none border rounded py-2 px-3 text-gray-300 leading-tight focus:outline-none focus:shadow-outline"
-                       id="thumbnail" type="file" multiple name="thumbnail">
+                       id="thumbnail" accept="image/*" type="file" multiple name="thumbnail">
             </div>
 
             <!-- Audio File Item -->
@@ -27,7 +27,7 @@
                     Audiobook file
                 </label>
                 <input class="shadow appearance-none border rounded py-2 px-3 text-gray-300 leading-tight focus:outline-none focus:shadow-outline"
-                       id="audio_file" type="file" multiple name="file">
+                       accept="audio/*" id="audio_file" type="file" multiple name="file">
             </div>
         </div>
 

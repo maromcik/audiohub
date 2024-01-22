@@ -17,6 +17,7 @@ use actix_files::Files as ActixFiles;
 use actix_web::web;
 use actix_web::web::ServiceConfig;
 use sqlx::PgPool;
+use crate::handlers::chapter::{audio_selection_for_chapter, get_chapter_list, get_chapter_timeline};
 
 pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let user_repository = UserRepository::new(PoolHandler::new(pool.clone()));
@@ -41,7 +42,6 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(user_manage_profile_form);
 
     let audiobook_scope = web::scope("audiobook")
-        .app_data(web::Data::new(audiobook_repository.clone()))
         .app_data(web::Data::new(genre_repository.clone()))
         .app_data(web::Data::new(chapter_repository.clone()))
         .service(create_audiobook)
@@ -50,6 +50,8 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(create_audiobook_content)
         .service(upload_audiobook_form)
         .service(get_audiobook)
+        .service(manage_audiobook)
+        .service(manage_audiobook_content)
         .service(releases_content)
         .service(releases_page)
         .service(remove_audiobook)
@@ -62,7 +64,9 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
 
     let chapter_scope = web::scope("chapter")
         .app_data(web::Data::new(chapter_repository.clone()))
-        .service(create_chapter_form)
+        .service(audio_selection_for_chapter)
+        .service(get_chapter_timeline)
+        .service(get_chapter_list)
         .service(create_chapter);
 
     let genre_scope = web::scope("genre")

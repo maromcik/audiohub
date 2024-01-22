@@ -1,5 +1,7 @@
 use crate::database::common::DbReadOne;
-use crate::database::models::audiobook::{AudiobookDetail, AudiobookDisplay, AudiobookMetadataForm};
+use crate::database::models::audiobook::{
+    AudiobookDetail, AudiobookDisplay, AudiobookMetadataForm,
+};
 use crate::database::models::user::{User, UserGetById};
 use crate::database::models::Id;
 use crate::database::repositories::user::repository::UserRepository;
@@ -8,14 +10,13 @@ use actix_identity::Identity;
 use actix_multipart::form::tempfile::TempFile;
 use actix_session::Session;
 use actix_web::web;
+use chrono::{DateTime, Utc};
 
-use uuid::Uuid;
-
+use uuid::{Timestamp, Uuid};
 
 pub fn parse_user_id(identity: Identity) -> Result<Id, AppError> {
     Ok(identity.id()?.parse::<i64>()?)
 }
-
 
 pub fn get_metadata_from_session(
     session: &Session,
@@ -79,7 +80,7 @@ pub fn validate_file(
     uuid: Uuid,
     mime: &str,
     handler: &str,
-    error_type: AppErrorKind
+    error_type: AppErrorKind,
 ) -> Result<String, AppError> {
     let extension = match file.file_name.clone() {
         None => "".to_owned(),
@@ -113,14 +114,11 @@ pub fn validate_file(
     Ok(file_path)
 }
 
-pub fn save_file(file: TempFile, path: String, error_type: AppErrorKind) -> Result<(), AppError> {
+pub fn save_file(file: TempFile, path: &str, error_type: AppErrorKind) -> Result<(), AppError> {
     log::info!("saving file to .{path}");
     let path = format!(".{path}");
     if let Err(e) = file.file.persist(path) {
-        return Err(AppError::new(
-            error_type,
-            e.to_string().as_str(),
-        ));
+        return Err(AppError::new(error_type, e.to_string().as_str()));
     };
     Ok(())
 }
@@ -132,7 +130,7 @@ pub fn remove_file(path: &str) -> Result<(), AppError> {
     Ok(())
 }
 
-pub fn get_active_audiobooks(audiobooks: &[AudiobookDetail]) ->Vec<AudiobookDisplay> {
+pub fn get_active_audiobooks(audiobooks: &[AudiobookDetail]) -> Vec<AudiobookDisplay> {
     audiobooks
         .iter()
         .filter(|a| a.is_active())
@@ -140,6 +138,30 @@ pub fn get_active_audiobooks(audiobooks: &[AudiobookDetail]) ->Vec<AudiobookDisp
         .collect()
 }
 
+pub fn get_finished_audiobooks(audiobooks: &[AudiobookDetail]) -> Vec<AudiobookDisplay> {
+    audiobooks
+        .iter()
+        .filter(|a| a.is_finished())
+        .map(AudiobookDisplay::from_reference)
+        .collect()
+}
+
+pub fn format_date(timestamp: &DateTime<Utc>) -> String {
+    timestamp.format("%d.%m.%Y").to_string()
+}
+
+pub fn display_optional(value : &Option<String>) -> String {
+    value.to_owned().unwrap_or(String::from(""))
+}
+
+pub fn as_integer(number: &i16) -> i16 {
+    return number.to_owned()
+}
+
+pub fn get_percentage(part: &f64, whole: &f64) -> i64 {
+    let fraction = part/whole;
+    (fraction * 100.0).floor() as i64
+}
 
 #[macro_export]
 macro_rules! authorized {

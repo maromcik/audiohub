@@ -1,8 +1,75 @@
-<div class="pl-10">
-    <h1 class="text-6xl font-bold">My Audiobooks</h1>
-    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {% for audiobook in audiobooks %}
-            {% include "audiobook/audiobook_detail.html" %}
-        {% endfor %}
+{% let rating_count = crate::database::models::rating::DISPLAYED_RATINGS_COUNT %}
+<div class="container pl-10 pt-10 pb-10">
+    <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div class="mb-4 sm:mb-0 xl:col-span-1">
+            <img class="bg-cyan-900 w-80 h-80 mr-10" src="{{ audiobook.thumbnail }}" alt="book-cover">
+            <div class="flex flex-col justify-between pt-4">
+                <h2 class="text-2xl font-bold mb-4">Description</h2>
+                <p class="mb-4"> {{audiobook.description}}</p>
+<!--                <h2 class="text-2xl font-bold mb-4">About {{audiobook.author_name}} {{audiobook.surname}}</h2>-->
+<!--                <p class="mb-4">-->
+<!--                    {{audiobook.bio}}-->
+<!--                </p>-->
+            </div>
+        </div>
+        <div class="mb-4 ml-4 sm:mb-0 xl:col-span-1">
+            <div class="pt-1">{{ audiobook.genre_name }}</div>
+            <div class="book-name  text-6xl font-bold">{{audiobook.name}}</div>
+            <div class="pt-5 flex flex-row items-center" >
+                {% if audiobook.profile_picture == "" %}
+                <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="./media/user_icon.png" />
+                {% else %}
+                <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="{{ audiobook.profile_picture }}" />
+                {% endif %}
+                <div class="text-3xl pl-5">{{ audiobook.author_name }}</div>
+            </div>
+            <div class="pt-5 like-count flex flex-row items-center justify-self-end">
+                <button hx-patch="/audiobook/{{audiobook.id}}/likes" hx-target="#like-count" hx-swap="outerHTML">
+                    <div id="like-count" class="flex items-center pl-5 text-3xl">
+                        {% if is_liked %}
+                        <i class="fa-solid fa-heart text-4xl"></i> <p class="pl-5 text-gray-300 text-2xl">{{ audiobook.like_count }}</p>
+                        {% else %}
+                        <i class="fa-regular fa-heart text-4xl"></i> <p class="pl-5 text-gray-300 text-2xl">{{ audiobook.like_count }}</p>
+                        {% endif %}
+                    </div>
+                </button>
+            </div>
+            <div class="flex flex-row justify-end">
+                <button id="play-from-detail-btn" hx-get="/audiobook/{{audiobook.id}}/player"
+                        hx-target="#player-container"
+                        hx-swap="outerHTML"
+                        class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300">
+                    <i class="fa-solid fa-play pr-2" style="color: #ffffff;"></i>
+                    Play
+                </button>
+            </div>
+        </div>
+        <div class="flex flex-row justify-end xl:col-span-2">
+            <div class="rounded overflow-hidden shadow-lg">
+                <div class="pr-4 pb-4 pl-4">
+                    <h2 class="font-bold text-xl text-white mb-2">Chapters</h2>
+                    <div class="h-96 overflow-auto">
+                        {% for chapter in chapters %}
+                        {% include "audiobook/chapter.html" %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+<div class="pl-10 pt-10 pb-3 mb-3 text-4xl font-bold">Ratings</div>
+{% include "rating/rating-form.html" %}
+<div id="ratings-container"
+     hx-get="/rating/audiobook/{{ audiobook.id }}?offset=0"
+     hx-trigger="load" hx-swap="innerHTML" class="flex flex-col pl-10">
+</div>
+
+<div class="pl-10 flex flex-col items-center">
+    <button id="load-more-ratings-btn" hx-target="#ratings-container" hx-swap="beforeend"
+            hx-get="/rating/audiobook/{{audiobook.id}}?offset={{ rating_count }}"
+            class="w-1/8 bg-blue-600 hover:bg-blue-300 py-3 px-6 text-white font-bold rounded focus:outline-none focus:shadow-outline-blue">
+        Load more
+    </button>
+</div>
 </div>

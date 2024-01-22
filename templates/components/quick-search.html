@@ -1,11 +1,14 @@
-<div>
-    <input hx-trigger="changed delay:500" hx-get="/audiobooks/suggestions"
-           hx-target="#search-result"
-           hx-swap="innerHTML"
-           hx-include="[name='query']"
-           name="query" type="text" placeholder="Type to search...">
+<div class="p-3 rounded-xl w-2/6 bg-gray-800 relative border border-slate-400">
+    <div class="flex flex-row items-center">
+        <input name="query" id="quick-search-input" class="w-full bg-gray-800 focus:outline-none " hx-trigger="keydown delay:300ms" hx-get="/audiobook/search"
+               hx-swap="outerHTML"
+               hx-target="#search-result"
+               hx-include="[name='query']"
+               type="text"
+               onfocusin="attachHideQuickSearchListener()"
+               placeholder="Type to search...">
+    </div>
+
 
     <div id="search-result"></div>
 </div>
-
-

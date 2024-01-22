@@ -4,11 +4,11 @@
     </div>
     <div class="w-40 h-40 md:w-72 md:h-72 lg:w-108 lg:h-108 bg-gray-800 rounded-full flex items-center justify-center mb-4">
         <label for="profile-picture-input" class="relative w-40 h-40 md:w-72 md:h-72 lg:w-108 lg:h-108 rounded-full flex items-center justify-center mb-4 cursor-pointer">
-            <input type="file" id="profile-picture-input" class="hidden"  multiple name="picture" onchange="handleProfilePictureUpload(this)">
+            <input type="file" id="profile-picture-input" class="hidden" accept="image/*" multiple name="picture" onchange="handleProfilePictureUpload(this)">
             <span id="profile-picture-label-for-file" class="text-white font-bold">Click to Upload</span>
         </label>
     </div>
-    <button type="submit" class="absolute bottom-[32px] right-[32px] md:bottom-[48px] md:right-[48px] lg:bottom-[72px] lg:right-[72px] hidden transform translate-x-1/2 translate-y-1/2 bg-green-500 text-white rounded-full p-2 hover:bg-green-600 focus:outline-none group-hover:block">
+    <button type="submit" class="absolute bottom-[32px] right-[32px] md:bottom-[48px] md:right-[48px] lg:bottom-[72px] lg:right-[72px] hidden transform translate-x-1/2 translate-y-1/2 bg-cyan-500 hover:bg-cyan-400 text-white rounded-full p-2 focus:outline-none group-hover:block">
         <svg class="w-12 h-12 md:w-18 md:h-18 lg:w-27 lg:h-27" fill="none" stroke="currentColor" viewBox="0 0 24 24"
              xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

@@ -9,9 +9,9 @@ use std::fmt::{Debug, Display, Formatter};
 use std::io::Error;
 use std::num::ParseIntError;
 
-use thiserror::Error;
 use crate::templates::audiobook::AudiobookUploadFormTemplate;
 use crate::templates::user::UserManageProfilePictureFormTemplate;
+use thiserror::Error;
 
 /// User facing error type
 #[derive(Error, Debug, Serialize, Clone)]
@@ -182,8 +182,9 @@ impl ResponseError for AppError {
             | AppErrorKind::IdentityError
             | AppErrorKind::SessionError
             | AppErrorKind::FileError => StatusCode::INTERNAL_SERVER_ERROR,
-            AppErrorKind::AudiobookUploadError
-            | AppErrorKind::ProfilePictureUploadError => StatusCode::OK
+            AppErrorKind::AudiobookUploadError | AppErrorKind::ProfilePictureUploadError => {
+                StatusCode::OK
+            }
         }
     }
 
@@ -195,7 +196,7 @@ impl ResponseError for AppError {
                 };
                 let body = template.render().unwrap_or_default();
                 render_custom(body)
-            },
+            }
             AppErrorKind::ProfilePictureUploadError => {
                 let template = UserManageProfilePictureFormTemplate {
                     message: self.message.to_string(),
@@ -203,7 +204,7 @@ impl ResponseError for AppError {
                 let body = template.render().unwrap_or_default();
                 render_custom(body)
             }
-            _ => render_generic(self)
+            _ => render_generic(self),
         }
     }
 }

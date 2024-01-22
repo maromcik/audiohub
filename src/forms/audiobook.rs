@@ -12,14 +12,14 @@ pub struct AudiobookCreateForm {
 #[derive(Debug, MultipartForm)]
 pub struct AudiobookUploadForm {
     #[multipart(rename = "thumbnail")]
-    pub thumbnail: TempFile,
+    pub thumbnail: Option<TempFile>,
     #[multipart(rename = "file")]
     pub audio_file: TempFile,
 }
 
-#[derive(Debug, Clone, Deserialize)]
-pub struct AudiobookSearchQuery {
-    pub name: String,
+#[derive(Deserialize)]
+pub struct AudiobookQuickSearchQuery {
+    pub query: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
