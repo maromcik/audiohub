@@ -40,6 +40,11 @@ pub struct ChaptersGetByBookId {
     pub audiobook_id: Id,
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct ChaptersGetByBookIdJoin {
+    pub audiobook_id: Id,
+}
+
 impl ChaptersGetByBookId {
     pub fn new(id: Id) -> Self {
         Self { audiobook_id: id }

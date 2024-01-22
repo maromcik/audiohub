@@ -51,7 +51,7 @@ pub async fn get_audiobook_detail_base(
 }
 
 
-pub fn transform_to_displayable_chapters(chapters: Vec<ChapterDetail>) -> Vec<ChapterDisplay> {
+pub fn transform_to_displayable_chapters(chapters: Vec<Chapter>) -> Vec<ChapterDisplay> {
    chapters
         .into_iter()
         .enumerate()

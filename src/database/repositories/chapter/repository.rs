@@ -6,7 +6,7 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::models::audiobook::AudiobookGetById;
-use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate, ChaptersGetByBookId, ChapterDisplay, ChapterDetail};
+use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate, ChaptersGetByBookId, ChapterDisplay, ChapterDetail, ChaptersGetByBookIdJoin};
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
@@ -187,8 +187,32 @@ impl DbReadMany<ChapterSearch, Chapter> for ChapterRepository {
 }
 
 #[async_trait]
-impl DbReadMany<ChaptersGetByBookId, ChapterDetail> for ChapterRepository {
-    async fn read_many(&self, params: &ChaptersGetByBookId) -> DbResultMultiple<ChapterDetail> {
+impl DbReadMany<ChaptersGetByBookId, Chapter> for ChapterRepository {
+    async fn read_many(&self, params: &ChaptersGetByBookId) -> DbResultMultiple<Chapter> {
+        let chapters = sqlx::query_as!(
+            Chapter,
+            r#"
+            SELECT
+                *
+            FROM
+                "Chapter"
+            WHERE
+                deleted_at IS NULL
+                AND audiobook_id = $1
+            ORDER BY
+                position
+            "#,
+            params.audiobook_id,
+        )
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
+        Ok(chapters)
+    }
+}
+
+#[async_trait]
+impl DbReadMany<ChaptersGetByBookIdJoin, ChapterDetail> for ChapterRepository {
+    async fn read_many(&self, params: &ChaptersGetByBookIdJoin) -> DbResultMultiple<ChapterDetail> {
         let chapters = sqlx::query_as!(
             ChapterDetail,
             r#"
@@ -207,15 +231,15 @@ impl DbReadMany<ChaptersGetByBookId, ChapterDetail> for ChapterRepository {
                     INNER JOIN
                 "Audiobook" AS a ON c.audiobook_id = a.id
             WHERE
-                a.deleted_at IS NULL
+                c.deleted_at IS NULL
                 AND c.audiobook_id = $1
             ORDER BY
                 c.position
             "#,
             params.audiobook_id,
         )
-        .fetch_all(&self.pool_handler.pool)
-        .await?;
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
         Ok(chapters)
     }
 }
