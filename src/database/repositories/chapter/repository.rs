@@ -56,25 +56,6 @@ impl ChapterRepository {
     /// # Returns
     /// - `Ok(chapters)`: on successful connection and retrieval
     /// - `Err(_)`: otherwise
-    pub async fn get_book_chapters(&self,
-        params: &AudiobookGetById,
-    ) -> DbResultMultiple<Chapter> {
-        let chapters = sqlx::query_as!(
-            Chapter,
-            r#"
-                SELECT * FROM "Chapter"
-                WHERE audiobook_id = $1
-                AND deleted_at IS NULL
-                ORDER BY position
-                "#,
-            params.id
-        )
-        .fetch_all(&self.pool_handler.pool)
-        .await?;
-
-        Ok(chapters)
-    }
-
     pub async fn delete_chapter<'a>(
         params: &ChapterGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
@@ -211,7 +192,7 @@ impl DbReadMany<ChaptersGetByBookId, Chapter> for ChapterRepository {
             Chapter,
             r#"
             SELECT * FROM "Chapter"
-            WHERE audiobook_id = $1
+            WHERE audiobook_id = $1 AND deleted_at IS NULL
             ORDER BY position
             "#,
             params.audiobook_id,
