@@ -54,14 +54,7 @@
 </div>
 
 
-<div class="pl-10 mb-3 flex flex-row justify-between">
-    <div class="text-4xl font-bold ">Ratings</div>
-    <button id="write-review-btn"
-            class="w-1/6 bg-cyan-500 hover:bg-cyan-400 text-white font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline-cyan">
-        <i class="fa-solid fa-pen pr-1" style="color: #ffffff;"></i> Write review
-    </button>
-</div>
-
+<div class="pl-10 pt-10 pb-3 mb-3 text-4xl font-bold">Ratings</div>
 {% include "rating/rating-form.html" %}
 <div id="ratings-container"
      hx-get="/rating/audiobook/{{ audiobook.id }}?offset=0"
@@ -71,7 +64,7 @@
 <div class="pl-10 flex flex-col items-center">
     <button id="load-more-ratings-btn" hx-target="#ratings-container" hx-swap="beforeend"
             hx-get="/rating/audiobook/{{audiobook.id}}?offset={{ rating_count }}"
-            class="w-1/6 bg-cyan-500 hover:bg-cyan-400 text-white font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline-cyan">
+            class="w-1/8 bg-blue-600 hover:bg-blue-300 py-3 px-6 text-white font-bold rounded focus:outline-none focus:shadow-outline-blue">
         Load more
     </button>
 </div>
