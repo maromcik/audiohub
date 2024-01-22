@@ -26,7 +26,7 @@ use actix_multipart::form::MultipartForm;
 
 use actix_session::Session;
 use actix_web::http::header::LOCATION;
-use actix_web::{get, patch, post, put, web, HttpResponse};
+use actix_web::{get, patch, post, put, web, HttpResponse, delete};
 
 use askama::Template;
 use lofty::AudioFile;
@@ -291,7 +291,7 @@ async fn releases_content(
 }
 
 
-#[get("/{id}/delete")]
+#[delete("/{id}/delete")]
 pub async fn remove_audiobook(
     identity: Option<Identity>,
     user_repo: web::Data<UserRepository>,
