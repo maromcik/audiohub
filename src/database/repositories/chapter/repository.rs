@@ -1,12 +1,12 @@
 use crate::database::common::error::BackendErrorKind::{
     ChapterDeleted, ChapterDoesNotExist, RatingUpdateParametersEmpty,
 };
-use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle};
+use crate::database::common::error::{BackendError, BackendErrorKind, DbError, DbResultMultiple, DbResultSingle};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::models::audiobook::AudiobookGetById;
-use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate, ChaptersGetByBookId, ChapterDisplay, ChapterDetail, ChaptersGetByBookIdJoin};
+use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate, ChaptersGetByBookId, ChapterDisplay, ChapterDetail, ChaptersGetByBookIdJoin, ChapterRemoveById};
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
@@ -245,15 +245,40 @@ impl DbReadMany<ChaptersGetByBookIdJoin, ChapterDetail> for ChapterRepository {
 }
 
 #[async_trait]
-impl DbDelete<ChapterGetById, Chapter> for ChapterRepository {
-    async fn delete(&self, params: &ChapterGetById) -> DbResultMultiple<Chapter> {
+impl DbDelete<ChapterRemoveById, Chapter> for ChapterRepository {
+    async fn delete(&self, params: &ChapterRemoveById) -> DbResultMultiple<Chapter> {
         let mut transaction = self.pool_handler.pool.begin().await?;
-        let chapter = ChapterRepository::get(params, &mut transaction).await?;
-        ChapterRepository::is_correct(chapter)?;
+        let chapter =  sqlx::query_as!(
+            ChapterDetail,
+            r#"
+            SELECT
+                c.id,
+                c.name,
+                c.audiobook_id,
+                c.position,
+                c.created_at,
+                c.edited_at,
+                c.deleted_at,
+                a.name AS audiobook_name,
+                a.author_id
+            FROM
+                "Chapter" AS c
+                    INNER JOIN
+                "Audiobook" AS a ON c.audiobook_id = a.id
+            WHERE
+                c.deleted_at IS NULL
+                AND c.id = $1
+            "#,
+            params.id,
+        )
+            .fetch_one(transaction.as_mut())
+            .await?;
 
-        let chapter = ChapterRepository::delete_chapter(params, &mut transaction).await?;
+        if params.user_id != chapter.author_id {
+            return Err(DbError::from(BackendError::new(BackendErrorKind::UnauthorizedOperation)));
+        }
+        let chapter = ChapterRepository::delete_chapter(&ChapterGetById::new(params.id), &mut transaction).await?;
         transaction.commit().await?;
-
         Ok(vec![chapter])
     }
 }
