@@ -6,7 +6,7 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::models::audiobook::AudiobookGetById;
-use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate, ChaptersGetByBookId, ChapterDisplay};
+use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate, ChaptersGetByBookId, ChapterDisplay, ChapterDetail, ChaptersGetByBookIdJoin};
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
@@ -56,25 +56,6 @@ impl ChapterRepository {
     /// # Returns
     /// - `Ok(chapters)`: on successful connection and retrieval
     /// - `Err(_)`: otherwise
-    pub async fn get_book_chapters(&self,
-        params: &AudiobookGetById,
-    ) -> DbResultMultiple<Chapter> {
-        let chapters = sqlx::query_as!(
-            Chapter,
-            r#"
-                SELECT * FROM "Chapter"
-                WHERE audiobook_id = $1
-                AND deleted_at IS NULL
-                ORDER BY position
-                "#,
-            params.id
-        )
-        .fetch_all(&self.pool_handler.pool)
-        .await?;
-
-        Ok(chapters)
-    }
-
     pub async fn delete_chapter<'a>(
         params: &ChapterGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
@@ -194,6 +175,7 @@ impl DbReadMany<ChapterSearch, Chapter> for ChapterRepository {
             WHERE
                 (name = $1 OR $1 IS NULL)
                 AND (audiobook_id = $2 OR $2 IS NULL)
+                AND deleted_at IS NULL
             "#,
             params.name,
             params.audiobook_id
@@ -210,14 +192,54 @@ impl DbReadMany<ChaptersGetByBookId, Chapter> for ChapterRepository {
         let chapters = sqlx::query_as!(
             Chapter,
             r#"
-            SELECT * FROM "Chapter"
-            WHERE audiobook_id = $1
-            ORDER BY position
+            SELECT
+                *
+            FROM
+                "Chapter"
+            WHERE
+                deleted_at IS NULL
+                AND audiobook_id = $1
+            ORDER BY
+                position
             "#,
             params.audiobook_id,
         )
         .fetch_all(&self.pool_handler.pool)
         .await?;
+        Ok(chapters)
+    }
+}
+
+#[async_trait]
+impl DbReadMany<ChaptersGetByBookIdJoin, ChapterDetail> for ChapterRepository {
+    async fn read_many(&self, params: &ChaptersGetByBookIdJoin) -> DbResultMultiple<ChapterDetail> {
+        let chapters = sqlx::query_as!(
+            ChapterDetail,
+            r#"
+            SELECT
+                c.id,
+                c.name,
+                c.audiobook_id,
+                c.position,
+                c.created_at,
+                c.edited_at,
+                c.deleted_at,
+                a.name AS audiobook_name,
+                a.author_id
+            FROM
+                "Chapter" AS c
+                    INNER JOIN
+                "Audiobook" AS a ON c.audiobook_id = a.id
+            WHERE
+                c.deleted_at IS NULL
+                AND c.audiobook_id = $1
+            ORDER BY
+                c.position
+            "#,
+            params.audiobook_id,
+        )
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
         Ok(chapters)
     }
 }

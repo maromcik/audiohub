@@ -1,6 +1,6 @@
 use crate::authorized;
-use crate::database::common::{DbCreate, DbReadOne};
-use crate::database::models::chapter::{ChapterCreate, ChapterGetById};
+use crate::database::common::{DbCreate, DbReadMany, DbReadOne};
+use crate::database::models::chapter::{ChapterCreate, ChapterGetById, ChaptersGetByBookId};
 
 use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::error::AppError;
@@ -60,8 +60,8 @@ pub async fn get_chapter_timeline(
     authorized!(identity);
 
     let book_id = path.into_inner();
-    let chapters = chapter_repo.get_book_chapters(&AudiobookGetById {id: book_id.clone()}).await?;
-    let book = audiobook_repo.read_one(&AudiobookGetById{id: book_id.clone()}).await?;
+    let chapters = chapter_repo.read_many(&ChaptersGetByBookId {audiobook_id: book_id}).await?;
+    let book = audiobook_repo.read_one(&AudiobookGetById{id: book_id}).await?;
     let displayable_chapters = transform_to_displayable_chapters(chapters);
     let template = ChapterTimelineTemplate {book_id, chapters: displayable_chapters, length: book.length};
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
@@ -76,7 +76,7 @@ pub async fn get_chapter_list(
     authorized!(identity);
 
     let book_id = path.into_inner();
-    let chapters = chapter_repo.get_book_chapters(&AudiobookGetById {id: book_id}).await?;
+    let chapters = chapter_repo.read_many(&ChaptersGetByBookId {audiobook_id: book_id}).await?;
     let displayable_chapters = transform_to_displayable_chapters(chapters);
 
     let template = ChapterListTemplate {book_id, chapters: displayable_chapters};
