@@ -13,12 +13,7 @@
         </div>
     </div>
 </div>
-<a href="/audiobook/{{ audiobook.id }}/delete">Delete Audiobook</a>
 
-
-<button type="submit" class="mb-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">Add new chapter</button>
-
-{% include "chapter/chapter_create.html" %}
 
 <div class="flex flex-row">
     <div id="chapters-list" class="flex-1 pt-5 pl-10"
@@ -33,3 +28,10 @@
         </p>
     </div>
 </div>
+
+<a href="/audiobook/{{ audiobook.id }}/delete">Delete Audiobook</a>
+
+
+<button type="submit" class="mb-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">Add new chapter</button>
+
+{% include "chapter/chapter_create.html" %}
