@@ -44,22 +44,23 @@
             <h2 class="text-2xl font-bold mb-4">Description</h2>
             <p class="mb-4"> {{audiobook.description}}</p>
         </div>
-        <div class="mr-4">
-            <button class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300"
-                    hx-delete="/audiobook/{{ audiobook.id }}/delete">
-                <i class="fa-solid fa-trash"></i>
-            </button>
-            <button class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300">
-                <i class="fa-solid fa-pencil"></i>
-            </button>
+        <div class="mr-4 mt-8">
             <button id="play-from-detail-btn" hx-get="/audiobook/{{audiobook.id}}/player"
                     hx-target="#player-container"
                     hx-swap="outerHTML"
-                    class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300">
+                    class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300 mr-2">
                 <i class="fa-solid fa-play"></i>
+            </button>
+            <button class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300 mr-2">
+                <i class="fa-solid fa-pencil"></i>
+            </button>
+            <button class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300 mr-2"
+                    hx-delete="/audiobook/{{ audiobook.id }}/delete">
+                <i class="fa-solid fa-trash"></i>
             </button>
         </div>
     </div>
 
 {% include "chapter/chapter_create.html" %}
+    {% include "audiobook/audiobook_edit.html" %}
 </div>
