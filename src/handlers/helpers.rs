@@ -3,7 +3,7 @@ use actix_web::web;
 use crate::database::common::{DbReadMany, DbReadOne};
 use crate::database::common::query_parameters::{BookState, DbOrder, DbOrderColumn, DbQueryParams};
 use crate::database::models::audiobook::{AudiobookDisplay, AudiobookGetByIdJoin, AudiobookSearch};
-use crate::database::models::chapter::{Chapter, ChapterDisplay, ChaptersGetByBookId};
+use crate::database::models::chapter::{Chapter, ChapterDetail, ChapterDisplay, ChaptersGetByBookId};
 use crate::database::models::Id;
 use crate::database::models::user::UserGetById;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
@@ -51,7 +51,7 @@ pub async fn get_audiobook_detail_base(
 }
 
 
-pub fn transform_to_displayable_chapters(chapters: Vec<Chapter>) -> Vec<ChapterDisplay> {
+pub fn transform_to_displayable_chapters(chapters: Vec<ChapterDetail>) -> Vec<ChapterDisplay> {
    chapters
         .into_iter()
         .enumerate()

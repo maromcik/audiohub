@@ -6,7 +6,7 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::models::audiobook::AudiobookGetById;
-use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate, ChaptersGetByBookId, ChapterDisplay};
+use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate, ChaptersGetByBookId, ChapterDisplay, ChapterDetail};
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
@@ -175,6 +175,7 @@ impl DbReadMany<ChapterSearch, Chapter> for ChapterRepository {
             WHERE
                 (name = $1 OR $1 IS NULL)
                 AND (audiobook_id = $2 OR $2 IS NULL)
+                AND deleted_at IS NULL
             "#,
             params.name,
             params.audiobook_id
@@ -186,14 +187,30 @@ impl DbReadMany<ChapterSearch, Chapter> for ChapterRepository {
 }
 
 #[async_trait]
-impl DbReadMany<ChaptersGetByBookId, Chapter> for ChapterRepository {
-    async fn read_many(&self, params: &ChaptersGetByBookId) -> DbResultMultiple<Chapter> {
+impl DbReadMany<ChaptersGetByBookId, ChapterDetail> for ChapterRepository {
+    async fn read_many(&self, params: &ChaptersGetByBookId) -> DbResultMultiple<ChapterDetail> {
         let chapters = sqlx::query_as!(
-            Chapter,
+            ChapterDetail,
             r#"
-            SELECT * FROM "Chapter"
-            WHERE audiobook_id = $1 AND deleted_at IS NULL
-            ORDER BY position
+            SELECT
+                c.id,
+                c.name,
+                c.audiobook_id,
+                c.position,
+                c.created_at,
+                c.edited_at,
+                c.deleted_at,
+                a.name AS audiobook_name,
+                a.author_id
+            FROM
+                "Chapter" AS c
+                    INNER JOIN
+                "Audiobook" AS a ON c.audiobook_id = a.id
+            WHERE
+                a.deleted_at IS NULL
+                AND c.audiobook_id = $1
+            ORDER BY
+                c.position
             "#,
             params.audiobook_id,
         )
