@@ -22,7 +22,9 @@ use actix_multipart::form::MultipartForm;
 
 use actix_session::Session;
 use actix_web::http::header::LOCATION;
-use actix_web::{get, patch, post, put, web, HttpResponse, delete};
+use actix_web::{get, patch, post, put, web, HttpResponse, delete, Responder};
+use actix_web::http::StatusCode;
+use actix_web::web::Redirect;
 
 use askama::Template;
 use lofty::AudioFile;
@@ -123,7 +125,7 @@ pub async fn edit_audiobook(
     user_repo: web::Data<UserRepository>,
     audiobook_repo: web::Data<AudiobookRepository>,
     form: web::Form<AudiobookEditForm>,
-) -> Result<HttpResponse, AppError> {
+) -> Result<impl Responder, AppError> {
     let identity = authorized!(identity);
     let user = get_user_from_identity(identity, &user_repo).await?;
     let book_id = form.audiobook_id;
@@ -146,12 +148,14 @@ pub async fn edit_audiobook(
 
     //let handler = format!("/audiobook/{}/manage-content", book_id);
     let handler = format!("/audiobook/{}/edit-thumbnail", book_id);
-    Ok(HttpResponse::SeeOther()
-        .insert_header((LOCATION, handler))
-        .finish())
+    // Ok(HttpResponse::SeeOther()
+    //     .insert_header((LOCATION, handler))
+    //     .finish())
+
+    Ok(HttpResponse::Found().header("Location", handler).finish())
 }
 
-#[get("{id}/edit-thumbnail")]
+#[get("/{id}/edit-thumbnail")]
 pub async fn edit_audiobook_thumbnail_form(
     identity: Option<Identity>,
     session: Session,
@@ -182,7 +186,7 @@ pub async fn edit_audiobook_thumbnail_form(
 }
 
 
-#[post("{id}/edit-thumbnail")]
+#[post("/{id}/edit-thumbnail")]
 pub async fn edit_audiobook_thumbnail(
     identity: Option<Identity>,
     user_repo: web::Data<UserRepository>,
@@ -191,6 +195,7 @@ pub async fn edit_audiobook_thumbnail(
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity);
+    let uuid = Uuid::new_v4();
     let user = get_user_from_identity(identity, &user_repo).await?;
     let book_id = path.into_inner().0;
     let audiobook = AudiobookDisplay::from(audiobook_repo
@@ -202,6 +207,17 @@ pub async fn edit_audiobook_thumbnail(
             BackendErrorKind::UnauthorizedOperation,
         )));
     }
+
+    let thumbnail_path = match &form.thumbnail {
+        None => None,
+        Some(thumb) => Some(validate_file(
+            thumb,
+            uuid,
+            "image",
+            "audiobook",
+            AppErrorKind::AudiobookUploadError,
+        )?),
+    };
 
     let handler = format!("/audiobook/{}/manage-content", book_id);
     Ok(HttpResponse::SeeOther()
@@ -591,7 +607,7 @@ pub async fn get_audiobook_player(
         .get_or_create_active_audiobook(&user_id, &path.into_inner().0)
         .await?;
 
-    if (position_query.position.is_some()) {
+    if position_query.position.is_some() {
         played.playback_position = position_query.position.unwrap();
     }
 
