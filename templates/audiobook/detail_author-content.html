@@ -2,7 +2,7 @@
 
 <div class="container pl-10 pt-10 pb-10">
     <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div class="mb-4 sm:mb-0 xl:col-span-1">
+        <div id="thumbnail-box" class="mb-4 sm:mb-0 xl:col-span-1">
             <img class="bg-cyan-900 w-80 h-80 mr-10" src="{{ audiobook.thumbnail }}" alt="book-cover">
         </div>
         <div class="mb-4 ml-4 sm:mb-0 xl:col-span-1">
@@ -56,7 +56,7 @@
                 <i class="fa-solid fa-pencil"></i>
             </button>
             <button class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300 mr-2"
-                    hx-delete="/audiobook/{{ audiobook.id }}/delete">
+                    hx-delete="/audiobook/{{ audiobook.id }}/delete" hx-target="#content-area">
                 <i class="fa-solid fa-trash"></i>
             </button>
         </div>

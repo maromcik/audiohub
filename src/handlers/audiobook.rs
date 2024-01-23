@@ -410,7 +410,7 @@ pub async fn remove_audiobook(
         .delete(&AudiobookDelete::new(&audiobook.id))
         .await?;
     Ok(HttpResponse::SeeOther()
-        .insert_header((LOCATION, "/studio"))
+        .insert_header((LOCATION, "/studio-content"))
         .finish())
 }
 
