@@ -1,10 +1,10 @@
 use crate::database::common::error::BackendErrorKind::{ChapterDeleted, ChapterDoesNotExist, ChapterUpdateParametersEmpty};
-use crate::database::common::error::{BackendError, BackendErrorKind, DbError, DbResultMultiple, DbResultSingle};
+use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 
-use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate, ChaptersGetByBookId, ChapterDetail, ChaptersGetByBookIdJoin, ChapterRemoveById};
+use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate, ChaptersGetByBookId, ChapterDetail, ChaptersGetByBookIdJoin};
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
