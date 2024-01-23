@@ -1,8 +1,24 @@
 {% let rating_count = crate::database::models::rating::DISPLAYED_RATINGS_COUNT %}
+<style>
+    .image-container {
+        width: 100%; /* Set the width of the container */
+        max-width: 320px;
+        margin-left: 0;
+    }
+
+    .responsive-image {
+        width: 100%; /* Make the image fill the container */
+        height: 100%; /* Make the image fill the container */
+        object-fit: cover; /* Maintain aspect ratio and cover the container */
+    }
+</style>
+
 <div class="container pl-10 pt-10 pb-10">
     <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <div class="mb-4 sm:mb-0 xl:col-span-1">
-            <img class="bg-cyan-900 w-80 h-80 mr-10" src="{{ audiobook.thumbnail }}" alt="book-cover">
+            <div class="image-container">
+                <img class="responsive-image bg-cyan-900 w-25 h- 25 md:w-40 md:h-40 lg:w-80 lg:h-80 sm:h-mr-10" src="{{ audiobook.thumbnail }}" alt="book-cover">
+            </div>
             <div class="flex flex-col justify-between pt-4">
                 <h2 class="text-2xl font-bold mb-4">Description</h2>
                 <p class="mb-4"> {{audiobook.description}}</p>
