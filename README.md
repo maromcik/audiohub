@@ -58,7 +58,7 @@ If you do not wish to use our database you can always restore the database from 
 ## Deployment
 We chose the CERIT-SC's Kubernetes cluster to deploy this application. YAML manifests used to do so are located in the `kubernetes` folder.
 
-The Kubernetes' NGINX ingress controller automatically creates a trusted certificate and setup NGINX reverse proxy.  
+The Kubernetes' NGINX ingress controller automatically creates a trusted certificate and sets up the NGINX reverse proxy.  
 
 There are other options too, but you should secure the website with a reverse proxy yourself:
 - for bare metal deployment you could run `cargo build` and then create a *systemd* unit to manage it.
