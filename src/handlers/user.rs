@@ -20,9 +20,8 @@ use uuid::Uuid;
 
 use crate::database::common::{DbCreate, DbReadOne, DbUpdate};
 
-use crate::database::models::user::{
-    UserCreate, UserDisplay, UserGetById, UserLogin, UserUpdate, UserUpdatePassword,
-};
+use crate::database::models::user::{User, UserCreate, UserDisplay, UserGetById, UserLogin, UserUpdate, UserUpdatePassword};
+use crate::error::AppErrorKind::InternalServerError;
 use crate::forms::user::{
     ProfilePictureUploadForm, UserCreateForm, UserUpdateForm, UserUpdatePasswordForm,
 };
@@ -136,6 +135,8 @@ pub async fn user_manage_form_page(
         .await?;
     let template = UserManageProfilePageTemplate {
         user: UserDisplay::from(user),
+        message: "".to_string(),
+        message_success: "".to_string(),
     };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -152,6 +153,8 @@ pub async fn user_manage_form_content(
         .await?;
     let template = UserManageProfileContentTemplate {
         user: UserDisplay::from(user),
+        message: "".to_string(),
+        message_success: "".to_string(),
     };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -193,6 +196,8 @@ pub async fn user_manage_profile_form(
         .await?;
     let template = UserManageProfileUserFormTemplate {
         user: UserDisplay::from(user),
+        message: "".to_string(),
+        message_success: "".to_string(),
     };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -215,10 +220,19 @@ pub async fn user_manage(
         None,
         None,
     );
-    user_repo.update(&user_update).await?;
-    let template = UserManageProfileSuccessfulUpdate {};
-    let body = template.render()?;
-    return Ok(HttpResponse::Ok().content_type("text/html").body(body));
+    let user = user_repo.update(&user_update).await?;
+
+    if let Some(user_valid) = user.get(0) {
+        let template = UserManageProfileUserFormTemplate {
+            user: UserDisplay::from(user_valid.clone()),
+            message: "".to_string(),
+            message_success: "Profile update successful".to_string(),
+        };
+        let body = template.render()?;
+        return Ok(HttpResponse::Ok().content_type("text/html").body(body));
+    }
+
+    Err(AppError::new(InternalServerError, "Update of user profile failed"))
 }
 
 #[post("/manage/password")]
