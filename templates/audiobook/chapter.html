@@ -9,7 +9,7 @@
                     <p>Chapter {{chapter.order}}: {{ chapter.name }}</p>
                 </div>
                 <div class="text-xl font-bold ml-1">
-                    <p>"format('{{ chapter.position }}')"</p>
+                    <p>{{ crate::handlers::utilities::format_position(chapter.position) }}</p>
                 </div>
             </div>
             {% if is_book_owned %}
@@ -28,12 +28,6 @@
 </div>
 
 <script>
-    function format(t) {
-        let minute = Math.floor(t / 60);
-        let second = t % 60;
-        return `${minute}:${second}`;
-    }
-
     function handleDelete(event) {
         // Stop the event from propagating to the parent div
         event.stopPropagation();
