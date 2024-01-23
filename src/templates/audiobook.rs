@@ -17,6 +17,19 @@ pub struct AudiobookCreateContentTemplate {
 }
 
 #[derive(Template)]
+#[template(path = "studio_edit_audiobook.html")]
+pub struct AudiobookEditPageTemplate {
+    pub genres: Vec<Genre>,
+    pub audiobook: AudiobookDisplay,
+}
+#[derive(Template)]
+#[template(path = "audiobook/audiobook_edit.html")]
+pub struct AudiobookEditContentTemplate {
+    pub genres: Vec<Genre>,
+    pub audiobook: AudiobookDisplay,
+}
+
+#[derive(Template)]
 #[template(path = "audiobook/audiobook_upload.html")]
 pub struct AudiobookUploadFormTemplate {
     pub message: String,

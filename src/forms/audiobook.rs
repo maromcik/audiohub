@@ -17,6 +17,14 @@ pub struct AudiobookUploadForm {
     pub audio_file: TempFile,
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct AudiobookEditForm {
+    pub audiobook_id: Id,
+    pub name: String,
+    pub genre_id: Id,
+    pub description: String,
+}
+
 #[derive(Deserialize)]
 pub struct AudiobookQuickSearchQuery {
     pub query: String,
