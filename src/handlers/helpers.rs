@@ -23,9 +23,7 @@ pub async fn get_releases(
 ) -> Result<Vec<AudiobookDisplay>, AppError> {
     Ok(book_repo
         .read_many(&AudiobookSearch::with_params(
-            DbQueryParams::limit(5,
-                                 0,
-                                 Some(BookState::Fresh(true))),
+            DbQueryParams::state(Some(BookState::Fresh(true))),
             parse_user_id(u)?))
         .await?)
 }
@@ -74,22 +72,19 @@ pub async fn get_index_base(
 
     let audiobooks = book_repo
         .read_many(&AudiobookSearch::with_params(
-            DbQueryParams::state(Some(BookState::Fresh(true))), user.id))
+            DbQueryParams::order(DbOrderColumn::new("like_count", DbOrder::Desc),
+                                 Some(BookState::Fresh(true))), user.id))
         .await?;
     let active_audiobooks = book_repo
         .read_many(&AudiobookSearch::with_params(
-            DbQueryParams::new(
-                Some(DbOrderColumn::new("ab.edited_at", DbOrder::Desc)),
-                None,
-                None,
+            DbQueryParams::order(
+                DbOrderColumn::new("ab.edited_at", DbOrder::Desc),
                 Some(BookState::Active(true))), user.id))
         .await?;
     let finished_audiobooks = book_repo
         .read_many(&AudiobookSearch::with_params(
-            DbQueryParams::new(
-                Some(DbOrderColumn::new("ab.edited_at", DbOrder::Desc)),
-                None,
-                None,
+            DbQueryParams::order(
+                DbOrderColumn::new("ab.edited_at", DbOrder::Desc),
                 Some(BookState::Finished(true))), user.id))
         .await?;
     let template = IndexBase {
