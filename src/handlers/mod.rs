@@ -20,26 +20,11 @@ pub use crate::handlers::user::user_manage_password;
 pub use crate::handlers::user::user_manage_password_form;
 pub use crate::handlers::user::user_manage_picture;
 pub use crate::handlers::user::user_manage_picture_form;
+pub use crate::handlers::user::user_manage_form_content;
+pub use crate::handlers::user::user_manage_profile_form;
 
-pub use crate::handlers::homepage::index;
-pub use crate::handlers::homepage::index_content;
-
-pub use crate::handlers::audiobook::create_audiobook;
-pub use crate::handlers::audiobook::create_audiobook_page;
-pub use crate::handlers::audiobook::get_audiobook;
-pub use crate::handlers::audiobook::manage_audiobook_content;
-pub use crate::handlers::audiobook::manage_audiobook;
-pub use crate::handlers::audiobook::remove_audiobook;
-pub use crate::handlers::audiobook::search;
-pub use crate::handlers::audiobook::set_active_audiobook;
-pub use crate::handlers::audiobook::upload_audiobook;
-pub use crate::handlers::audiobook::upload_audiobook_form;
-pub use crate::handlers::audiobook::edit_audiobook_page;
-pub use crate::handlers::audiobook::edit_audiobook_content;
-pub use crate::handlers::audiobook::edit_audiobook;
-
-pub use crate::handlers::chapter::create_chapter;
-pub use crate::handlers::chapter::remove_chapter;
-
-pub use crate::handlers::genre::get_audiobooks_by_genre;
-pub use crate::handlers::genre::get_genres_page;
+pub use crate::handlers::homepage::{*};
+pub use crate::handlers::audiobook::{*};
+pub use crate::handlers::chapter::{*};
+pub use crate::handlers::genre::{*};
+pub use crate::handlers::rating::{*};

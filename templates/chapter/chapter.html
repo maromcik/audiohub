@@ -12,7 +12,7 @@
                     <p>{{ crate::handlers::utilities::format_position(chapter.position) }}</p>
                 </div>
             </div>
-            {% if is_book_owned %}
+            {% if show_delete %}
             <form hx-delete="/chapter/delete" hx-target="#chapters-list">
                 <input class="hidden" name="audiobook_id" value="{{ book_id }}">
                 <input class="hidden" name="chapter_id" value="{{ chapter.id }}">

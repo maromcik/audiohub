@@ -57,10 +57,8 @@
             <div class="rounded w-full overflow-hidden shadow-lg">
                 <div class="pr-4 pb-4 pl-4 xl:ml-40 sm:ml-0">
                     <h2 class="font-bold text-xl text-white mb-2">Chapters</h2>
-                    <div id="chapters-list" class="h-96 overflow-auto"
-                         hx-get="/chapter/book/{{ audiobook.id }}" hx-swap="outerHTML"
-                         hx-target="#chapters-list" hx-trigger="load"
-                    >
+                    <div id="chapters-list" class="h-96 overflow-auto"  hx-get="/chapter/audiobook/{{ audiobook.id }}" hx-swap="outerHTML"  hx-target="#chapters-list" hx-trigger="load">
+
                     </div>
                 </div>
             </div>

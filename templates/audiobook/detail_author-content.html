@@ -38,7 +38,7 @@
                 <div class="pr-4 pb-4 pl-4 xl:ml-40 sm:ml-0">
                     <h2 class="font-bold text-xl text-white mb-2">Chapters</h2>
                     <div id="chapters-list" class="h-72 overflow-auto"
-                         hx-get="/chapter/book/{{ audiobook.id }}" hx-swap="outerHTML" hx-target="#chapters-list" hx-trigger="load">
+                         hx-get="/chapter/audiobook/{{ audiobook.id }}/manage" hx-swap="outerHTML" hx-target="#chapters-list" hx-trigger="load">
                     </div>
                 </div>
             </div>

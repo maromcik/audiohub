@@ -5,19 +5,11 @@ use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::rating::repository::RatingRepository;
 use crate::database::repositories::user::repository::UserRepository;
-use crate::handlers::audiobook::{
-    change_like, create_audiobook_content, get_audiobook_detail_content, get_audiobook_player,
-    get_last_active_audiobook, releases_content, releases_page,
-};
-use crate::handlers::genre::get_genres_content;
-use crate::handlers::rating::{create_rating, create_rating_form, get_ratings_by_audiobook};
-use crate::handlers::user::{user_manage_form_content, user_manage_profile_form};
 use crate::handlers::*;
 use actix_files::Files as ActixFiles;
 use actix_web::web;
 use actix_web::web::ServiceConfig;
 use sqlx::PgPool;
-use crate::handlers::chapter::{audio_selection_for_chapter, get_chapter_list, get_chapter_timeline};
 
 pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let user_repository = UserRepository::new(PoolHandler::new(pool.clone()));
@@ -25,7 +17,6 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let chapter_repository = ChapterRepository::new(PoolHandler::new(pool.clone()));
     let genre_repository = GenreRepository::new(PoolHandler::new(pool.clone()));
     let rating_repository = RatingRepository::new(PoolHandler::new(pool.clone()));
-
     let user_scope = web::scope("user")
         .service(user_login_page)
         .service(user_login)
@@ -71,7 +62,8 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(get_chapter_timeline)
         .service(get_chapter_list)
         .service(create_chapter)
-        .service(remove_chapter);
+        .service(remove_chapter)
+        .service(get_manage_chapter_list);
 
     let genre_scope = web::scope("genre")
         .app_data(web::Data::new(genre_repository.clone()))
