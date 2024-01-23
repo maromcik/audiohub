@@ -44,9 +44,9 @@
                 </button>
             </div>
         </div>
-        <div class="flex flex-row justify-end xl:col-span-2">
-            <div class="rounded overflow-hidden shadow-lg">
-                <div class="pr-4 pb-4 pl-4">
+        <div class="flex flex-row justify-end sm:col-span-3 xl:col-span-2">
+            <div class="rounded w-full overflow-hidden shadow-lg">
+                <div class="pr-4 pb-4 pl-4 xl:ml-40 sm:ml-0">
                     <h2 class="font-bold text-xl text-white mb-2">Chapters Library</h2>
                     <div id="chapters-list" class="h-96 overflow-auto"
                          hx-get="/chapter/book/{{ audiobook.id }}" hx-swap="outerHTML"
