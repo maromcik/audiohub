@@ -1,3 +1,4 @@
+use std::convert::identity;
 use crate::database::common::{DbCreate, DbDelete, DbReadMany, DbReadOne, DbUpdate};
 use crate::database::models::audiobook::{AudiobookCreate, AudiobookDelete, AudiobookDisplay, AudiobookGetByIdJoin, AudiobookUpdate};
 use crate::database::models::genre::{GenreGetById, GenreSearch};
@@ -9,12 +10,9 @@ use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::{AppError, AppErrorKind};
 use crate::forms::audiobook::{
-    AudiobookCreateForm, AudiobookQuickSearchQuery, AudiobookUploadForm, AudiobookEditForm, AudiobookThumbnailEditForm
+    AudiobookCreateForm, AudiobookQuickSearchQuery, AudiobookUploadForm, AudiobookEditForm
 };
-use crate::handlers::utilities::{
-    get_metadata_from_session, get_user_from_identity, parse_user_id, remove_file, save_file,
-    validate_file, AudiobookCreateSessionKeys,
-};
+use crate::handlers::utilities::{get_metadata_from_session, get_user_from_identity, parse_user_id, save_file, validate_file, AudiobookCreateSessionKeys, authorized_to_modify, authorized_to_modify_join};
 use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate, QuickSearchResults, AudiobookEditContentTemplate, AudiobookEditPageTemplate};
 use crate::templates::audiobook::{AudiobookDetailAuthorContentTemplate, AudiobookDetailAuthorPageTemplate, DetailLikesTemplate};
 use actix_identity::Identity;
@@ -22,16 +20,14 @@ use actix_multipart::form::MultipartForm;
 
 use actix_session::Session;
 use actix_web::http::header::LOCATION;
-use actix_web::{get, patch, post, put, web, HttpResponse, delete, Responder};
-use actix_web::http::StatusCode;
-use actix_web::web::Redirect;
+use actix_web::{get, patch, post, put, web, HttpResponse, delete};
+
 
 use askama::Template;
 use lofty::AudioFile;
 use serde::Deserialize;
 
 use crate::authorized;
-use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::models::active_audiobook::SetActiveAudiobook;
 use crate::database::models::bookmark::BookmarkOperation;
 
@@ -165,24 +161,13 @@ pub async fn upload_audiobook(
 pub async fn manage_audiobook(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
-    user_repo: web::Data<UserRepository>,
     chapter_repo: web::Data<ChapterRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
-    let identity = authorized!(identity);
-    let user = get_user_from_identity(identity, &user_repo).await?;
-    let book_id = path.into_inner().0;
-    let audiobook = audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(user.id, book_id))
-        .await?;
-
-    if user.id != audiobook.author_id {
-        return Err(AppError::from(BackendError::new(
-            BackendErrorKind::UnauthorizedOperation,
-        )));
-    }
-
-    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, user.id, book_id).await?;
+    let u = authorized!(identity);
+    let user_id = parse_user_id(u)?;
+    let audiobook = authorized_to_modify_join(&audiobook_repo, user_id, path.into_inner().0).await?;
+    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, user_id, audiobook.id).await?;
     let body = AudiobookDetailAuthorPageTemplate {
         audiobook: base.audiobook,
         chapters: base.chapters,
@@ -196,24 +181,13 @@ pub async fn manage_audiobook(
 pub async fn manage_audiobook_content(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
-    user_repo: web::Data<UserRepository>,
     chapter_repo: web::Data<ChapterRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
-    let identity = authorized!(identity);
-    let user = get_user_from_identity(identity, &user_repo).await?;
-    let book_id = path.into_inner().0;
-    let audiobook = audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(user.id, book_id))
-        .await?;
-
-    if user.id != audiobook.author_id {
-        return Err(AppError::from(BackendError::new(
-            BackendErrorKind::UnauthorizedOperation,
-        )));
-    }
-
-    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, user.id, book_id).await?;
+    let u = authorized!(identity);
+    let user_id = parse_user_id(u)?;
+    let audiobook = authorized_to_modify_join(&audiobook_repo, user_id, path.into_inner().0).await?;
+    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, user_id, audiobook.id).await?;
     let body = AudiobookDetailAuthorContentTemplate {
         audiobook: base.audiobook,
         chapters: base.chapters,
@@ -227,12 +201,11 @@ pub async fn manage_audiobook_content(
 pub async fn edit_audiobook_page(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
-    user_repo: web::Data<UserRepository>,
     genre_repo: web::Data<GenreRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
-    let base = get_audiobook_edit(u, user_repo, audiobook_repo, genre_repo, path.into_inner().0).await?;
+    let base = get_audiobook_edit(u, audiobook_repo, genre_repo, path.into_inner().0).await?;
     let template = AudiobookEditPageTemplate::from(base);
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -242,12 +215,11 @@ pub async fn edit_audiobook_page(
 pub async fn edit_audiobook_content(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
-    user_repo: web::Data<UserRepository>,
     genre_repo: web::Data<GenreRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
-    let base = get_audiobook_edit(u, user_repo, audiobook_repo, genre_repo, path.into_inner().0).await?;
+    let base = get_audiobook_edit(u, audiobook_repo, genre_repo, path.into_inner().0).await?;
     let template = AudiobookEditContentTemplate::from(base);
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -257,22 +229,11 @@ pub async fn edit_audiobook_content(
 #[post("/edit")]
 pub async fn edit_audiobook(
     identity: Option<Identity>,
-    user_repo: web::Data<UserRepository>,
     audiobook_repo: web::Data<AudiobookRepository>,
     form: web::Form<AudiobookEditForm>,
 ) -> Result<HttpResponse, AppError> {
-    let identity = authorized!(identity);
-    let user = get_user_from_identity(identity, &user_repo).await?;
-    let audiobook = AudiobookDisplay::from(audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(user.id, form.audiobook_id))
-        .await?);
-
-    if user.id != audiobook.author_id {
-        return Err(AppError::from(BackendError::new(
-            BackendErrorKind::UnauthorizedOperation,
-        )));
-    }
-
+    let u = authorized!(identity);
+    authorized_to_modify(&audiobook_repo, parse_user_id(u)?, form.audiobook_id).await?;
     let book_update = AudiobookUpdate::new(
         &form.audiobook_id, Some(&form.name), None,
         Some(&form.genre_id), None, None,
@@ -354,26 +315,15 @@ async fn releases_content(
 #[delete("/{id}/delete")]
 pub async fn remove_audiobook(
     identity: Option<Identity>,
-    user_repo: web::Data<UserRepository>,
     audiobook_repo: web::Data<AudiobookRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
-    let identity = authorized!(identity);
-    let user = get_user_from_identity(identity, &user_repo).await?;
-    let audiobook = audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(user.id, path.into_inner().0))
-        .await?;
-
-    if user.id != audiobook.author_id {
-        return Err(AppError::from(BackendError::new(
-            BackendErrorKind::UnauthorizedOperation,
-        )));
-    }
-    remove_file(&audiobook.file_path)?;
-
-    if let Some(thumbnail) = &audiobook.thumbnail {
-        remove_file(thumbnail)?;
-    }
+    let u = authorized!(identity);
+    let audiobook = authorized_to_modify(&audiobook_repo, parse_user_id(u)?, path.into_inner().0).await?;
+    // remove_file(&audiobook.file_path)?;
+    // if let Some(thumbnail) = &audiobook.thumbnail {
+    //     remove_file(thumbnail)?;
+    // }
     audiobook_repo
         .delete(&AudiobookDelete::new(&audiobook.id))
         .await?;

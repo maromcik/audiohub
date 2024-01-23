@@ -10,12 +10,11 @@ use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{post, get, web, HttpResponse, delete};
 use askama::Template;
-use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::models::audiobook::{AudiobookGetById};
 use crate::database::models::Id;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::handlers::helpers::{get_displayable_chapters};
-use crate::handlers::utilities::parse_user_id;
+use crate::handlers::utilities::{authorized_to_modify, parse_user_id};
 
 
 #[post("/create")]
@@ -26,10 +25,7 @@ pub async fn create_chapter(
     form: web::Form<ChapterCreateForm>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
-    let audiobook = audiobook_repo.read_one(&AudiobookGetById::new(&form.audiobook_id)).await?;
-    if parse_user_id(u)? != audiobook.author_id {
-        return Err(AppError::from(BackendError::new(BackendErrorKind::UnauthorizedOperation)));
-    }
+    authorized_to_modify(&audiobook_repo, parse_user_id(u)?, form.audiobook_id).await?;
     chapter_repo
         .create(&ChapterCreate::new(
             &form.name,
@@ -102,11 +98,7 @@ pub async fn remove_chapter(
     form: web::Form<ChapterDeleteForm>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
-    let user_id = parse_user_id(u)?;
-    let audiobook = audiobook_repo.read_one(&AudiobookGetById::new(&form.audiobook_id)).await?;
-    if user_id != audiobook.author_id {
-        return Err(AppError::from(BackendError::new(BackendErrorKind::UnauthorizedOperation)));
-    }
+    let audiobook = authorized_to_modify(&audiobook_repo, parse_user_id(u)?, form.audiobook_id).await?;
     chapter_repo.delete(&ChapterGetById::new(form.chapter_id)).await?;
     let displayable_chapters = get_displayable_chapters(chapter_repo, audiobook.id).await?;
     let template = ChapterListTemplate { audiobook_id: audiobook.id, chapters: displayable_chapters, show_delete: true };

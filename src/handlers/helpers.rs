@@ -13,7 +13,7 @@ use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
-use crate::handlers::utilities::{get_user_from_identity, parse_user_id};
+use crate::handlers::utilities::{authorized_to_modify, authorized_to_modify_join, get_user_from_identity, parse_user_id};
 use crate::templates::audiobook::{AudiobookDetailBase, AudiobookEditBase};
 use crate::templates::index::IndexBase;
 
@@ -123,24 +123,14 @@ pub async fn get_studio(
 
 pub async fn get_audiobook_edit(
     u: Identity,
-    user_repo: web::Data<UserRepository>,
     audiobook_repo: web::Data<AudiobookRepository>,
     genre_repo: web::Data<GenreRepository>,
     audiobook_id: Id,
 ) -> Result<AudiobookEditBase, AppError> {
-    let user = get_user_from_identity(u, &user_repo).await?;
-    let audiobook = AudiobookDisplay::from(audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(user.id, audiobook_id))
-        .await?);
-
-    if user.id != audiobook.author_id {
-        return Err(AppError::from(BackendError::new(
-            BackendErrorKind::UnauthorizedOperation,
-        )));
-    }
+    let audiobook = authorized_to_modify_join(&audiobook_repo, parse_user_id(u)?, audiobook_id).await?;
     let genres = genre_repo.read_many(&GenreSearch::new(None)).await?;
     Ok(AudiobookEditBase {
         genres,
-        audiobook,
+        audiobook: AudiobookDisplay::from(audiobook),
     })
 }

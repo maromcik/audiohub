@@ -1,7 +1,5 @@
 use crate::database::common::DbReadOne;
-use crate::database::models::audiobook::{
-    AudiobookDetail, AudiobookDisplay, AudiobookMetadataForm,
-};
+use crate::database::models::audiobook::{Audiobook, AudiobookDetail, AudiobookDisplay, AudiobookGetById, AudiobookGetByIdJoin, AudiobookMetadataForm};
 use crate::database::models::user::{User, UserGetById};
 use crate::database::models::Id;
 use crate::database::repositories::user::repository::UserRepository;
@@ -13,6 +11,8 @@ use actix_web::web;
 use chrono::{DateTime, Utc};
 
 use uuid::{Timestamp, Uuid};
+use crate::database::common::error::{BackendError, BackendErrorKind};
+use crate::database::repositories::audiobook::repository::AudiobookRepository;
 
 pub fn parse_user_id(identity: Identity) -> Result<Id, AppError> {
     Ok(identity.id()?.parse::<i64>()?)
@@ -181,4 +181,33 @@ macro_rules! authorized {
             Some(v) => v,
         }
     };
+}
+
+pub async fn authorized_to_modify(audiobook_repo: &web::Data<AudiobookRepository>,
+                                  user_id: Id,
+                                  audiobook_id: Id) -> Result<Audiobook, AppError> {
+    let audiobook = audiobook_repo
+        .read_one(&AudiobookGetById::new(&audiobook_id))
+        .await?;
+    is_authorized(user_id, audiobook.author_id)?;
+    Ok(audiobook)
+}
+
+pub async fn authorized_to_modify_join(audiobook_repo: &web::Data<AudiobookRepository>,
+                                  user_id: Id,
+                                  audiobook_id: Id) -> Result<AudiobookDetail, AppError> {
+    let audiobook = audiobook_repo
+        .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id))
+        .await?;
+    
+    Ok(audiobook)
+}
+
+pub fn is_authorized(user_id: Id, author_id: Id) -> Result<(), AppError> {
+    match user_id != author_id {
+        true =>  Ok(()),
+        false => Err(AppError::from(BackendError::new(
+                BackendErrorKind::UnauthorizedOperation,
+            )))
+    }
 }
