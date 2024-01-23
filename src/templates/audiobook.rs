@@ -31,13 +31,6 @@ pub struct AudiobookEditContentTemplate {
 }
 
 #[derive(Template)]
-#[template(path = "audiobook/audiobook_edit_thumbnail.html")]
-pub struct AudiobookEditThumbnailFormTemplate {
-    pub message: String,
-    pub audiobook_id: Id,
-}
-
-#[derive(Template)]
 #[template(path = "audiobook/audiobook_upload.html")]
 pub struct AudiobookUploadFormTemplate {
     pub message: String,

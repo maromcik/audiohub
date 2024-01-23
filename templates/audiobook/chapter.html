@@ -2,13 +2,21 @@
      hx-get="/audiobook/{{book_id}}/player?position={{chapter.position}}" hx-trigger="click" hx-target="#player-container" hx-swap="outerHTML"
 >
     <div class="shadow-md rounded px-8 pt-4 pb-4 mb-4">
-        <div class="w-full flex flex-row">
-            <div class="text-xl text-blue-300 ml-4 mr-2">
-                Chapter {{chapter.order}}:
+        <div class="w-full flex flex-row justify-between items-center">
+            <div>
+                <div class="text-xl text-blue-300 ml-4 mr-2">
+                    Chapter {{chapter.order}}:
+                </div>
+                <div class="text-xl font-bold ml-1">
+                    {{ chapter.name }}
+                </div>
             </div>
-            <div class="text-xl font-bold ml-1">
-                {{ chapter.name }}
-            </div>
+            <a href="#" hx-delete="/chapter/" hx-target="#chapters-list" class="hover:text-red-500" onclick="handleDelete(event)">
+                <svg class="w-6 h-6 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <input class="hidden" name="audiobook_id" value="{{book_id}}">
+            </a>
         </div>
     </div>
 </div>
@@ -20,4 +28,8 @@
         return `${minute}:${second}`;
     }
 
+    function handleDelete(event) {
+        // Stop the event from propagating to the parent div
+        event.stopPropagation();
+    }
 </script>

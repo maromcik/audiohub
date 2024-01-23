@@ -51,8 +51,6 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(edit_audiobook_page)
         .service(edit_audiobook_content)
         .service(edit_audiobook)
-        .service(edit_audiobook_thumbnail_form)
-        .service(edit_audiobook_thumbnail)
         .service(upload_audiobook_form)
         .service(get_audiobook)
         .service(manage_audiobook)
@@ -72,7 +70,8 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(audio_selection_for_chapter)
         .service(get_chapter_timeline)
         .service(get_chapter_list)
-        .service(create_chapter);
+        .service(create_chapter)
+        .service(remove_chapter);
 
     let genre_scope = web::scope("genre")
         .app_data(web::Data::new(genre_repository.clone()))
