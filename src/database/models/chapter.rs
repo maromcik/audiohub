@@ -53,6 +53,7 @@ impl ChaptersGetByBookId {
 
 #[derive(Debug, Clone)]
 pub struct ChapterDisplay {
+    pub id: Id,
     pub name: String,
     pub position: f64,
     pub order: usize,

@@ -8,9 +8,9 @@ use crate::forms::chapter::{ChapterCreateForm, ChapterDeleteForm};
 use crate::templates::chapter::{ChapterCreatorPlayerTemplate, ChapterDetailTemplate, ChapterListTemplate, ChapterTimelineTemplate};
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
-use actix_web::{post, get, web, HttpResponse, App, delete};
+use actix_web::{post, get, web, HttpResponse, delete};
 use askama::Template;
-use crate::database::models::audiobook::{Audiobook, AudiobookGetById};
+use crate::database::models::audiobook::{AudiobookGetById};
 use crate::database::models::Id;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::handlers::helpers::transform_to_displayable_chapters;
@@ -85,7 +85,7 @@ pub async fn get_chapter_list(
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
 }
 
-#[delete("/")]
+#[delete("/delete")]
 pub async fn remove_chapter(
     identity: Option<Identity>,
     chapter_repo: web::Data<ChapterRepository>,

@@ -56,6 +56,7 @@ pub fn transform_to_displayable_chapters(chapters: Vec<Chapter>) -> Vec<ChapterD
         .into_iter()
         .enumerate()
         .map(|(order, ch)| ChapterDisplay {
+            id: ch.id,
             name: ch.name,
             order: order + 1,
             position: ch.position,

@@ -1,12 +1,10 @@
-use crate::database::common::error::BackendErrorKind::{
-    ChapterDeleted, ChapterDoesNotExist, RatingUpdateParametersEmpty,
-};
+use crate::database::common::error::BackendErrorKind::{ChapterDeleted, ChapterDoesNotExist, ChapterUpdateParametersEmpty};
 use crate::database::common::error::{BackendError, BackendErrorKind, DbError, DbResultMultiple, DbResultSingle};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
-use crate::database::models::audiobook::AudiobookGetById;
-use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate, ChaptersGetByBookId, ChapterDisplay, ChapterDetail, ChaptersGetByBookIdJoin, ChapterRemoveById};
+
+use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate, ChaptersGetByBookId, ChapterDetail, ChaptersGetByBookIdJoin, ChapterRemoveById};
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
@@ -33,7 +31,7 @@ impl ChapterRepository {
             Chapter,
             r#"
             SELECT * FROM "Chapter"
-            WHERE id = $1
+            WHERE id = $1 AND deleted_at IS NULL
             "#,
             params.id
         )
@@ -288,7 +286,7 @@ impl DbUpdate<ChapterUpdate, Chapter> for ChapterRepository {
     async fn update(&self, params: &ChapterUpdate) -> DbResultMultiple<Chapter> {
         if params.name.is_none() {
             return Err(DbError::from(BackendError::new(
-                RatingUpdateParametersEmpty,
+                ChapterUpdateParametersEmpty,
             )));
         }
 
