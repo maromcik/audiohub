@@ -36,7 +36,7 @@ use crate::database::models::active_audiobook::SetActiveAudiobook;
 use crate::database::models::bookmark::BookmarkOperation;
 
 use uuid::Uuid;
-use crate::handlers::helpers::{get_audiobook_detail_base, get_releases};
+use crate::handlers::helpers::{get_audiobook_detail_base, get_audiobook_edit, get_releases};
 
 #[get("/create")]
 pub async fn create_audiobook_page(
@@ -70,21 +70,9 @@ pub async fn edit_audiobook_page(
     genre_repo: web::Data<GenreRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
-    let identity = authorized!(identity);
-    let user = get_user_from_identity(identity, &user_repo).await?;
-    let book_id = path.into_inner().0;
-    let audiobook = AudiobookDisplay::from(audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(user.id, book_id))
-        .await?);
-
-    if user.id != audiobook.author_id {
-        return Err(AppError::from(BackendError::new(
-            BackendErrorKind::UnauthorizedOperation,
-        )));
-    }
-
-    let genres = genre_repo.read_many(&GenreSearch::new(None)).await?;
-    let template = AudiobookEditPageTemplate { genres: genres, audiobook: audiobook };
+    let u = authorized!(identity);
+    let base = get_audiobook_edit(u, user_repo, audiobook_repo, genre_repo, path.into_inner().0).await?;
+    let template = AudiobookEditPageTemplate::from(base);
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -97,21 +85,9 @@ pub async fn edit_audiobook_content(
     genre_repo: web::Data<GenreRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
-    let identity = authorized!(identity);
-    let user = get_user_from_identity(identity, &user_repo).await?;
-    let book_id = path.into_inner().0;
-    let audiobook = AudiobookDisplay::from(audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(user.id, book_id))
-        .await?);
-
-    if user.id != audiobook.author_id {
-        return Err(AppError::from(BackendError::new(
-            BackendErrorKind::UnauthorizedOperation,
-        )));
-    }
-
-    let genres = genre_repo.read_many(&GenreSearch::new(None)).await?;
-    let template = AudiobookEditContentTemplate { genres: genres, audiobook: audiobook };
+    let u = authorized!(identity);
+    let base = get_audiobook_edit(u, user_repo, audiobook_repo, genre_repo, path.into_inner().0).await?;
+    let template = AudiobookEditContentTemplate::from(base);
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -120,8 +96,6 @@ pub async fn edit_audiobook_content(
 #[post("/edit")]
 pub async fn edit_audiobook(
     identity: Option<Identity>,
-    session: Session,
-    genre_repo: web::Data<GenreRepository>,
     user_repo: web::Data<UserRepository>,
     audiobook_repo: web::Data<AudiobookRepository>,
     form: web::Form<AudiobookEditForm>,

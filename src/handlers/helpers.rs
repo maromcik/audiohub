@@ -1,17 +1,20 @@
 use actix_identity::Identity;
 use actix_web::web;
 use crate::database::common::{DbReadMany, DbReadOne};
+use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::common::query_parameters::{BookState, DbOrder, DbOrderColumn, DbQueryParams};
 use crate::database::models::audiobook::{AudiobookDisplay, AudiobookGetByIdJoin, AudiobookSearch};
 use crate::database::models::chapter::{Chapter, ChapterDetail, ChapterDisplay, ChaptersGetByBookId};
+use crate::database::models::genre::GenreSearch;
 use crate::database::models::Id;
 use crate::database::models::user::UserGetById;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::chapter::repository::ChapterRepository;
+use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
-use crate::handlers::utilities::{parse_user_id};
-use crate::templates::audiobook::AudiobookDetailBase;
+use crate::handlers::utilities::{get_user_from_identity, parse_user_id};
+use crate::templates::audiobook::{AudiobookDetailBase, AudiobookEditBase};
 use crate::templates::index::IndexBase;
 
 pub async fn get_releases(
@@ -116,4 +119,28 @@ pub async fn get_studio(
     Ok(book_repo
         .read_many(&AudiobookSearch::search_by_author_id(user_id, user_id))
         .await?)
+}
+
+pub async fn get_audiobook_edit(
+    u: Identity,
+    user_repo: web::Data<UserRepository>,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    genre_repo: web::Data<GenreRepository>,
+    audiobook_id: Id,
+) -> Result<AudiobookEditBase, AppError> {
+    let user = get_user_from_identity(u, &user_repo).await?;
+    let audiobook = AudiobookDisplay::from(audiobook_repo
+        .read_one(&AudiobookGetByIdJoin::new(user.id, audiobook_id))
+        .await?);
+
+    if user.id != audiobook.author_id {
+        return Err(AppError::from(BackendError::new(
+            BackendErrorKind::UnauthorizedOperation,
+        )));
+    }
+    let genres = genre_repo.read_many(&GenreSearch::new(None)).await?;
+    Ok(AudiobookEditBase {
+        genres,
+        audiobook,
+    })
 }

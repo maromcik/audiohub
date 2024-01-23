@@ -18,19 +18,6 @@ pub struct AudiobookCreateContentTemplate {
 }
 
 #[derive(Template)]
-#[template(path = "studio_edit_audiobook.html")]
-pub struct AudiobookEditPageTemplate {
-    pub genres: Vec<Genre>,
-    pub audiobook: AudiobookDisplay,
-}
-#[derive(Template)]
-#[template(path = "audiobook/audiobook_edit.html")]
-pub struct AudiobookEditContentTemplate {
-    pub genres: Vec<Genre>,
-    pub audiobook: AudiobookDisplay,
-}
-
-#[derive(Template)]
 #[template(path = "audiobook/audiobook_upload.html")]
 pub struct AudiobookUploadFormTemplate {
     pub message: String,
@@ -135,6 +122,42 @@ impl From<AudiobookDetailBase> for AudiobookDetailContentTemplate {
             audiobook: value.audiobook,
             chapters: value.chapters,
             is_liked: value.is_liked,
+        }
+    }
+}
+
+#[derive(Template)]
+#[template(path = "studio_edit_audiobook.html")]
+pub struct AudiobookEditPageTemplate {
+    pub genres: Vec<Genre>,
+    pub audiobook: AudiobookDisplay,
+}
+#[derive(Template)]
+#[template(path = "audiobook/audiobook_edit.html")]
+pub struct AudiobookEditContentTemplate {
+    pub genres: Vec<Genre>,
+    pub audiobook: AudiobookDisplay,
+}
+
+pub struct AudiobookEditBase {
+    pub genres: Vec<Genre>,
+    pub audiobook: AudiobookDisplay,
+}
+
+impl From<AudiobookEditBase> for AudiobookEditContentTemplate {
+    fn from(value: AudiobookEditBase) -> Self {
+        Self {
+            genres: value.genres,
+            audiobook: value.audiobook,
+        }
+    }
+}
+
+impl From<AudiobookEditBase> for AudiobookEditPageTemplate {
+    fn from(value: AudiobookEditBase) -> Self {
+        Self {
+            genres: value.genres,
+            audiobook: value.audiobook,
         }
     }
 }
