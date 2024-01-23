@@ -1,5 +1,5 @@
-<div class="mx-auto text-center bg-gray-800 rounded-lg">
-    <form id="user-mgmt-profile-form" hx-post="/user/manage" hx-target="#box-profile-updated-msg" hx-swap="innerHTML"  class="bg-gray-800 mx-auto bg-black shadow-lg border border-gray-800 rounded-lg p-5 flex flex-col items-center max-w-full w-96 mx-4 md:w-96 sm:w-96 lg:w-96 min-w-lg">
+<div class="mx-auto text-center bg-gray-800 rounded-lg px-4">
+    <form id="user-mgmt-profile-form" hx-post="/user/manage" hx-target="#box-profile-updated-msg" hx-swap="innerHTML"  class="rounded-lg p-5 flex flex-col items-center max-w-full w-96 mx-4 md:w-96 sm:w-96 lg:w-96 min-w-lg">
         <div class="flex flex-wrap justify-between text-center">
             <div class="px-2">
                 <table class="w-full">
@@ -8,7 +8,7 @@
                         <td class="text-right pr-2">
                             <label for="profile-id-name" class="w-24 font-bold text-white">Name</label>
                         </td>
-                        <td>
+                        <td class="pb-2">
                             <input type="text" id="profile-id-name" name="name" value="{{ user.name }}" placeholder="{{ user.name }}" class="p-3 rounded border border-gray-400 bg-gray-900 text-white placeholder-gray-600 focus:outline-none focus:border-green-500">
                         </td>
                     </tr>
@@ -16,7 +16,7 @@
                         <td class="text-right pr-2">
                             <label for="profile-id-surname" class="font-bold text-white">Surname</label>
                         </td>
-                        <td>
+                        <td class="pb-2">
                             <input type="text" id="profile-id-surname" name="surname" value="{{ user.surname }}" placeholder="{{ user.surname }}" class="p-3 rounded border border-gray-400 bg-gray-900 text-white placeholder-gray-600 focus:outline-none focus:border-green-500">
                         </td>
                     </tr>
@@ -24,7 +24,7 @@
                         <td class="text-right pr-2">
                             <label for="profile-id-email" class="font-bold text-white">Email</label>
                         </td>
-                        <td>
+                        <td class="pb-2">
                             <input type="text" id="profile-id-email" name="email" value="{{ user.email }}" placeholder="{{ user.email }}" class="p-3 rounded border border-gray-400 bg-gray-900 text-white placeholder-gray-600 focus:outline-none focus:border-green-500">
                         </td>
                     </tr>
@@ -32,7 +32,7 @@
                         <td class="text-right pr-2">
                             <label for="profile-id-username" class="font-bold text-white">Username</label>
                         </td>
-                        <td>
+                        <td class="pb-2">
                             <input type="text" id="profile-id-username" name="username" value="{{ user.username }}" placeholder="{{ user.username }}" class="p-3 rounded border border-gray-400 bg-gray-900 text-white placeholder-gray-600 focus:outline-none focus:border-green-500">
                         </td>
                     </tr>
@@ -52,7 +52,7 @@
     </form>
 </div>
 <a hx-get="/user/manage/password" hx-replace-url="false" hx-target="#profile-update-fields" hx-swap="innerHTML" hx-boost="true">
-    <button type="submit" class="float-left bg-blue-600 hover:bg-blue-300 text-white font-bold py-3 px-6 rounded mt-4 focus:outline-none focus:shadow-outline-green">
+    <button type="submit" class="float-right bg-blue-600 hover:bg-blue-300 text-white font-bold py-3 px-6 rounded mt-4 focus:outline-none focus:shadow-outline-green">
         Change password
     </button>
 </a>
