@@ -16,7 +16,7 @@
                 {% endif %}
                 <div class="text-3xl pl-5">{{ audiobook.author_name }}</div>
             </div>
-            <div class="pt-5 like-count flex flex-row items-center justify-self-end">
+            <div class="pt-5 like-count flex flex-row justify-between">
                 <button hx-patch="/audiobook/{{audiobook.id}}/likes" hx-target="#like-count" hx-swap="outerHTML">
                     <div id="like-count" class="flex items-center pl-5 text-3xl">
                         {% if is_liked %}
@@ -24,6 +24,11 @@
                         {% else %}
                         <i class="fa-regular fa-heart text-4xl"></i> <p class="pl-5 text-gray-300 text-2xl">{{ audiobook.like_count }}</p>
                         {% endif %}
+                    </div>
+                </button>
+                <button hx-patch="/audiobook/{{audiobook.id}}/likes" hx-target="#like-count" hx-swap="outerHTML">
+                    <div id="stream-count" class="flex items-center pl-5 text-3xl">
+                        <i class="fa-solid fa-music text-3xl"></i> <p class="pl-5 text-gray-300 text-2xl">{{ audiobook.like_count }}</p>
                     </div>
                 </button>
             </div>
