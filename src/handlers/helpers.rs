@@ -1,10 +1,10 @@
 use actix_identity::Identity;
 use actix_web::web;
 use crate::database::common::{DbReadMany, DbReadOne};
-use crate::database::common::error::{BackendError, BackendErrorKind};
+
 use crate::database::common::query_parameters::{BookState, DbOrder, DbOrderColumn, DbQueryParams};
 use crate::database::models::audiobook::{AudiobookDisplay, AudiobookGetByIdJoin, AudiobookSearch};
-use crate::database::models::chapter::{Chapter, ChapterDetail, ChapterDisplay, ChaptersGetByBookId};
+use crate::database::models::chapter::{ChapterDisplay, ChaptersGetByBookId};
 use crate::database::models::genre::GenreSearch;
 use crate::database::models::Id;
 use crate::database::models::user::UserGetById;
@@ -13,7 +13,7 @@ use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
-use crate::handlers::utilities::{authorized_to_modify, authorized_to_modify_join, get_user_from_identity, parse_user_id};
+use crate::handlers::utilities::{authorized_to_modify_join, parse_user_id};
 use crate::templates::audiobook::{AudiobookDetailBase, AudiobookEditBase};
 use crate::templates::index::IndexBase;
 

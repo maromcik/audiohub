@@ -1,4 +1,4 @@
-use crate::database::models::chapter::{Chapter, ChapterDisplay};
+use crate::database::models::chapter::{ChapterDisplay};
 use askama::Template;
 use crate::database::models::Id;
 
