@@ -266,7 +266,6 @@ pub async fn get_audiobook(
     chapter_repo: web::Data<ChapterRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
-    println!("URRLLLRLRLRLR: {:?}", request.path());
     let identity = authorized!(identity, request.path());
     let base = get_audiobook_detail_base(
         audiobook_repo,
