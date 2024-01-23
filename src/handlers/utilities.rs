@@ -199,12 +199,12 @@ pub async fn authorized_to_modify_join(audiobook_repo: &web::Data<AudiobookRepos
     let audiobook = audiobook_repo
         .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id))
         .await?;
-    
+
     Ok(audiobook)
 }
 
 pub fn is_authorized(user_id: Id, author_id: Id) -> Result<(), AppError> {
-    match user_id != author_id {
+    match user_id == author_id {
         true =>  Ok(()),
         false => Err(AppError::from(BackendError::new(
                 BackendErrorKind::UnauthorizedOperation,
