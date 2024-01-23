@@ -519,18 +519,27 @@ pub async fn get_last_active_audiobook(
         .content_type("text/html")
         .body(template.render()?))
 }
+#[derive(Deserialize)]
+pub struct PositionQuery {
+    position: Option<f64>
+}
 
 #[get("/{id}/player")]
 pub async fn get_audiobook_player(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
+    position_query: web::Query<PositionQuery>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity);
     let user_id = parse_user_id(identity)?;
-    let played = audiobook_repo
+    let mut played = audiobook_repo
         .get_or_create_active_audiobook(&user_id, &path.into_inner().0)
         .await?;
+
+    if (position_query.position.is_some()) {
+        played.playback_position = position_query.position.unwrap();
+    }
 
     let template = PlayerTemplate {
         played_book: played,
