@@ -20,7 +20,7 @@
     <!-- Sidebar -->
     {% include "components/sidebar.html" %}
     <!-- Main Content -->
-    <main id="content-area" class="flex-1 pl-64 p-10">
+    <main id="content-area" class="flex-1 pl-64 p-10 mx-auto">
         {% block content %} {% include "index_content.html" %} {% endblock %}
     </main>
     <div id="player-container" class="pl-64 sticky bottom-0" hx-get="/audiobook/last-played" hx-trigger="load" hx-swap="outerHTML" >
