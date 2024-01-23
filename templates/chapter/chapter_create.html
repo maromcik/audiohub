@@ -14,7 +14,7 @@
             <div class="text-gray-300 text-sm font-bold mb-2">Existing chapters</div>
 
             <div id="chapters-timeline" class="w-full h-4 bg-neutral-500 relative mb-8"
-                 hx-get="/chapter/book/{{ audiobook.id }}/chapter-timeline"
+                 hx-get="/chapter/audiobook/{{ audiobook.id }}/chapter-timeline"
                  hx-trigger="load" hx-swap="outerHTML" hx-target="#chapters-timeline"
             >
             </div>

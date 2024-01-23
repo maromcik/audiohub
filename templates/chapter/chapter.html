@@ -1,6 +1,6 @@
 
 <div id="#chapter-{{chapter.order}}" class="container bg-gray-800 hover:bg-gray-700 hover:cursor-pointer"
-     hx-get="/audiobook/{{book_id}}/player?position={{chapter.position}}" hx-trigger="click"
+     hx-get="/audiobook/{{ audiobook_id }}/player?position={{chapter.position}}" hx-trigger="click"
      hx-target="#player-container" hx-swap="outerHTML">
     <div class="shadow-md rounded px-8 pt-4 pb-4 mb-4">
         <div class="w-full flex flex-row justify-between items-center">
@@ -14,7 +14,7 @@
             </div>
             {% if show_delete %}
             <form hx-delete="/chapter/delete" hx-target="#chapters-list">
-                <input class="hidden" name="audiobook_id" value="{{ book_id }}">
+                <input class="hidden" name="audiobook_id" value="{{ audiobook_id }}">
                 <input class="hidden" name="chapter_id" value="{{ chapter.id }}">
                 <button class="hover:text-red-500" onclick="handleDelete(event)" type="submit">
                     <svg class="w-6 h-6 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

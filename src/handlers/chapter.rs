@@ -1,11 +1,11 @@
 use crate::authorized;
-use crate::database::common::{DbCreate, DbDelete, DbReadMany, DbReadOne};
-use crate::database::models::chapter::{ChapterCreate, ChapterGetById, ChaptersGetByBookId};
+use crate::database::common::{DbCreate, DbDelete, DbReadOne};
+use crate::database::models::chapter::{ChapterCreate, ChapterGetById};
 
 use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::error::AppError;
 use crate::forms::chapter::{ChapterCreateForm, ChapterDeleteForm};
-use crate::templates::chapter::{ChapterCreatorPlayerTemplate, ChapterDetailTemplate, ChapterListTemplate, ChapterTimelineTemplate};
+use crate::templates::chapter::{ChapterCreatorPlayerTemplate, ChapterListTemplate, ChapterTimelineTemplate};
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{post, get, web, HttpResponse, delete};
@@ -14,7 +14,7 @@ use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::models::audiobook::{AudiobookGetById};
 use crate::database::models::Id;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
-use crate::handlers::helpers::transform_to_displayable_chapters;
+use crate::handlers::helpers::{get_displayable_chapters};
 use crate::handlers::utilities::parse_user_id;
 
 
@@ -30,20 +30,17 @@ pub async fn create_chapter(
     if parse_user_id(u)? != audiobook.author_id {
         return Err(AppError::from(BackendError::new(BackendErrorKind::UnauthorizedOperation)));
     }
-    let chapter = chapter_repo
+    chapter_repo
         .create(&ChapterCreate::new(
             &form.name,
             &form.audiobook_id,
             &form.position,
         ))
         .await?;
-
-    let template = ChapterDetailTemplate { chapter };
-    let body = template.render()?;
-    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+    Ok(HttpResponse::Ok().finish())
 }
 
-#[get("/audiobook/{book_id}/creator-player")]
+#[get("/audiobook/{id}/creator-player")]
 pub async fn audio_selection_for_chapter(
     identity: Option<Identity>,
     path: web::Path<Id>,
@@ -57,7 +54,7 @@ pub async fn audio_selection_for_chapter(
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
 }
 
-#[get("/book/{book_id}/chapter-timeline")]
+#[get("/audiobook/{id}/chapter-timeline")]
 pub async fn get_chapter_timeline(
     identity: Option<Identity>,
     chapter_repo: web::Data<ChapterRepository>,
@@ -65,11 +62,10 @@ pub async fn get_chapter_timeline(
     path: web::Path<Id>) -> Result<HttpResponse, AppError> {
     authorized!(identity);
 
-    let book_id = path.into_inner();
-    let chapters = chapter_repo.read_many(&ChaptersGetByBookId { audiobook_id: book_id }).await?;
-    let book = audiobook_repo.read_one(&AudiobookGetById { id: book_id }).await?;
-    let displayable_chapters = transform_to_displayable_chapters(chapters);
-    let template = ChapterTimelineTemplate { book_id, chapters: displayable_chapters, length: book.length };
+    let audiobook_id = path.into_inner();
+    let book = audiobook_repo.read_one(&AudiobookGetById { id: audiobook_id }).await?;
+    let displayable_chapters = get_displayable_chapters(chapter_repo, audiobook_id).await?;
+    let template = ChapterTimelineTemplate { audiobook_id, chapters: displayable_chapters, length: book.length };
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
 }
 
@@ -81,10 +77,8 @@ pub async fn get_chapter_list(
     path: web::Path<Id>)
     -> Result<HttpResponse, AppError> {
     authorized!(identity);
-    let book_id = path.into_inner();
-    let chapters = chapter_repo.read_many(&ChaptersGetByBookId { audiobook_id: book_id }).await?;
-    let displayable_chapters = transform_to_displayable_chapters(chapters);
-    let template = ChapterListTemplate { book_id, chapters: displayable_chapters, show_delete: false};
+    let audiobook_id = path.into_inner();
+    let template = ChapterListTemplate { audiobook_id, chapters: get_displayable_chapters(chapter_repo, audiobook_id).await?, show_delete: false };
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
 }
 
@@ -95,10 +89,8 @@ pub async fn get_manage_chapter_list(
     path: web::Path<Id>)
     -> Result<HttpResponse, AppError> {
     authorized!(identity);
-    let book_id = path.into_inner();
-    let chapters = chapter_repo.read_many(&ChaptersGetByBookId { audiobook_id: book_id }).await?;
-    let displayable_chapters = transform_to_displayable_chapters(chapters);
-    let template = ChapterListTemplate { book_id, chapters: displayable_chapters, show_delete: true };
+    let audiobook_id = path.into_inner();
+    let template = ChapterListTemplate { audiobook_id, chapters: get_displayable_chapters(chapter_repo, audiobook_id).await?, show_delete: true };
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
 }
 
@@ -116,8 +108,7 @@ pub async fn remove_chapter(
         return Err(AppError::from(BackendError::new(BackendErrorKind::UnauthorizedOperation)));
     }
     chapter_repo.delete(&ChapterGetById::new(form.chapter_id)).await?;
-    let chapters = chapter_repo.read_many(&ChaptersGetByBookId { audiobook_id: form.audiobook_id }).await?;
-    let displayable_chapters = transform_to_displayable_chapters(chapters);
-    let template = ChapterListTemplate { book_id: form.audiobook_id, chapters: displayable_chapters, show_delete: true };
+    let displayable_chapters = get_displayable_chapters(chapter_repo, audiobook.id).await?;
+    let template = ChapterListTemplate { audiobook_id: audiobook.id, chapters: displayable_chapters, show_delete: true };
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
 }

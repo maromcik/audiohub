@@ -37,11 +37,7 @@ pub async fn get_audiobook_detail_base(
         .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id))
         .await?;
 
-    let chapters = chapter_repo
-        .read_many(&ChaptersGetByBookId::new(audiobook_id))
-        .await?;
-
-    let displayed_chapters = transform_to_displayable_chapters(chapters);
+    let displayed_chapters = get_displayable_chapters(chapter_repo, audiobook_id).await?;
 
     Ok(AudiobookDetailBase {
         is_liked: audiobook.is_liked,
@@ -50,9 +46,9 @@ pub async fn get_audiobook_detail_base(
     })
 }
 
-
-pub fn transform_to_displayable_chapters(chapters: Vec<Chapter>) -> Vec<ChapterDisplay> {
-   chapters
+pub async fn get_displayable_chapters(chapter_repo: web::Data<ChapterRepository>, audiobook_id: Id) -> Result<Vec<ChapterDisplay>, AppError> {
+    let chapters = chapter_repo.read_many(&ChaptersGetByBookId { audiobook_id }).await?;
+    Ok(chapters
         .into_iter()
         .enumerate()
         .map(|(order, ch)| ChapterDisplay {
@@ -61,8 +57,9 @@ pub fn transform_to_displayable_chapters(chapters: Vec<Chapter>) -> Vec<ChapterD
             order: order + 1,
             position: ch.position,
         })
-        .collect()
+        .collect())
 }
+
 pub async fn get_index_base(
     u: Identity,
     user_repo: web::Data<UserRepository>,
