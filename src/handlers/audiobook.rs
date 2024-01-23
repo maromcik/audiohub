@@ -9,18 +9,13 @@ use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::{AppError, AppErrorKind};
 use crate::forms::audiobook::{
-    AudiobookCreateForm, AudiobookQuickSearchQuery, AudiobookUploadForm, AudiobookEditForm,
+    AudiobookCreateForm, AudiobookQuickSearchQuery, AudiobookUploadForm, AudiobookEditForm, AudiobookThumbnailEditForm
 };
 use crate::handlers::utilities::{
     get_metadata_from_session, get_user_from_identity, parse_user_id, remove_file, save_file,
     validate_file, AudiobookCreateSessionKeys,
 };
-use crate::templates::audiobook::{
-    AudiobookCreateContentTemplate, AudiobookCreatePageTemplate,
-    AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate,
-    NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate, QuickSearchResults,
-    AudiobookEditContentTemplate,AudiobookEditPageTemplate
-};
+use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate, QuickSearchResults, AudiobookEditContentTemplate, AudiobookEditPageTemplate, AudiobookEditThumbnailFormTemplate};
 use crate::templates::audiobook::{AudiobookDetailAuthorContentTemplate, AudiobookDetailAuthorPageTemplate, DetailLikesTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
@@ -148,6 +143,65 @@ pub async fn edit_audiobook(
         None, None, None, None,
         Some(&form.description));
     let book = audiobook_repo.update(&book_update).await?;
+
+    //let handler = format!("/audiobook/{}/manage-content", book_id);
+    let handler = format!("/audiobook/{}/edit-thumbnail", book_id);
+    Ok(HttpResponse::SeeOther()
+        .insert_header((LOCATION, handler))
+        .finish())
+}
+
+#[get("{id}/edit-thumbnail")]
+pub async fn edit_audiobook_thumbnail_form(
+    identity: Option<Identity>,
+    session: Session,
+    genre_repo: web::Data<GenreRepository>,
+    user_repo: web::Data<UserRepository>,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    path: web::Path<(Id,)>,
+) -> Result<HttpResponse, AppError> {
+    let identity = authorized!(identity);
+    let user = get_user_from_identity(identity, &user_repo).await?;
+    let book_id = path.into_inner().0;
+    let audiobook = AudiobookDisplay::from(audiobook_repo
+        .read_one(&AudiobookGetByIdJoin::new(user.id, book_id))
+        .await?);
+
+    if user.id != audiobook.author_id {
+        return Err(AppError::from(BackendError::new(
+            BackendErrorKind::UnauthorizedOperation,
+        )));
+    }
+
+    let template = AudiobookEditThumbnailFormTemplate {
+        message: "".to_string(),
+        audiobook_id: book_id,
+    };
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+
+#[post("{id}/edit-thumbnail")]
+pub async fn edit_audiobook_thumbnail(
+    identity: Option<Identity>,
+    user_repo: web::Data<UserRepository>,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    MultipartForm(mut form): MultipartForm<AudiobookThumbnailEditForm>,
+    path: web::Path<(Id,)>,
+) -> Result<HttpResponse, AppError> {
+    let identity = authorized!(identity);
+    let user = get_user_from_identity(identity, &user_repo).await?;
+    let book_id = path.into_inner().0;
+    let audiobook = AudiobookDisplay::from(audiobook_repo
+        .read_one(&AudiobookGetByIdJoin::new(user.id, book_id))
+        .await?);
+
+    if user.id != audiobook.author_id {
+        return Err(AppError::from(BackendError::new(
+            BackendErrorKind::UnauthorizedOperation,
+        )));
+    }
 
     let handler = format!("/audiobook/{}/manage-content", book_id);
     Ok(HttpResponse::SeeOther()

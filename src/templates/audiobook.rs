@@ -3,6 +3,7 @@ use crate::database::models::audiobook::{AudiobookDisplay, AudiobookQuickSearch}
 use crate::database::models::chapter::ChapterDisplay;
 use crate::database::models::genre::Genre;
 use askama::Template;
+use crate::database::models::Id;
 
 #[derive(Template)]
 #[template(path = "studio_create_audiobook.html")]
@@ -27,6 +28,13 @@ pub struct AudiobookEditPageTemplate {
 pub struct AudiobookEditContentTemplate {
     pub genres: Vec<Genre>,
     pub audiobook: AudiobookDisplay,
+}
+
+#[derive(Template)]
+#[template(path = "audiobook/audiobook_edit_thumbnail.html")]
+pub struct AudiobookEditThumbnailFormTemplate {
+    pub message: String,
+    pub audiobook_id: Id,
 }
 
 #[derive(Template)]

@@ -37,6 +37,8 @@ pub use crate::handlers::audiobook::upload_audiobook_form;
 pub use crate::handlers::audiobook::edit_audiobook_page;
 pub use crate::handlers::audiobook::edit_audiobook_content;
 pub use crate::handlers::audiobook::edit_audiobook;
+pub use crate::handlers::audiobook::edit_audiobook_thumbnail_form;
+pub use crate::handlers::audiobook::edit_audiobook_thumbnail;
 
 pub use crate::handlers::chapter::create_chapter;
 
