@@ -62,68 +62,6 @@ pub async fn create_audiobook_content(
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
-#[get("/{id}/edit")]
-pub async fn edit_audiobook_page(
-    identity: Option<Identity>,
-    audiobook_repo: web::Data<AudiobookRepository>,
-    user_repo: web::Data<UserRepository>,
-    genre_repo: web::Data<GenreRepository>,
-    path: web::Path<(Id,)>,
-) -> Result<HttpResponse, AppError> {
-    let u = authorized!(identity);
-    let base = get_audiobook_edit(u, user_repo, audiobook_repo, genre_repo, path.into_inner().0).await?;
-    let template = AudiobookEditPageTemplate::from(base);
-    let body = template.render()?;
-    Ok(HttpResponse::Ok().content_type("text/html").body(body))
-}
-
-#[get("/{id}/edit-content")]
-pub async fn edit_audiobook_content(
-    identity: Option<Identity>,
-    audiobook_repo: web::Data<AudiobookRepository>,
-    user_repo: web::Data<UserRepository>,
-    genre_repo: web::Data<GenreRepository>,
-    path: web::Path<(Id,)>,
-) -> Result<HttpResponse, AppError> {
-    let u = authorized!(identity);
-    let base = get_audiobook_edit(u, user_repo, audiobook_repo, genre_repo, path.into_inner().0).await?;
-    let template = AudiobookEditContentTemplate::from(base);
-    let body = template.render()?;
-    Ok(HttpResponse::Ok().content_type("text/html").body(body))
-}
-
-
-#[post("/edit")]
-pub async fn edit_audiobook(
-    identity: Option<Identity>,
-    user_repo: web::Data<UserRepository>,
-    audiobook_repo: web::Data<AudiobookRepository>,
-    form: web::Form<AudiobookEditForm>,
-) -> Result<impl Responder, AppError> {
-    let identity = authorized!(identity);
-    let user = get_user_from_identity(identity, &user_repo).await?;
-    let book_id = form.audiobook_id;
-    let audiobook = AudiobookDisplay::from(audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(user.id, book_id))
-        .await?);
-
-    if user.id != audiobook.author_id {
-        return Err(AppError::from(BackendError::new(
-            BackendErrorKind::UnauthorizedOperation,
-        )));
-    }
-
-    let book_update = AudiobookUpdate::new(
-        &book_id, Some(&form.name), None,
-        Some(&form.genre_id), None, None,
-        None, None, None, None,
-        Some(&form.description));
-    let book = audiobook_repo.update(&book_update).await?;
-
-    let handler = format!("/audiobook/{}/manage-content", book_id);
-    Ok(HttpResponse::Found().header("Location", handler).finish())
-}
-
 #[get("/upload")]
 pub async fn upload_audiobook_form(identity: Option<Identity>) -> Result<HttpResponse, AppError> {
     authorized!(identity);
@@ -285,6 +223,69 @@ pub async fn manage_audiobook_content(
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
+#[get("/{id}/edit")]
+pub async fn edit_audiobook_page(
+    identity: Option<Identity>,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    user_repo: web::Data<UserRepository>,
+    genre_repo: web::Data<GenreRepository>,
+    path: web::Path<(Id,)>,
+) -> Result<HttpResponse, AppError> {
+    let u = authorized!(identity);
+    let base = get_audiobook_edit(u, user_repo, audiobook_repo, genre_repo, path.into_inner().0).await?;
+    let template = AudiobookEditPageTemplate::from(base);
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+#[get("/{id}/edit-content")]
+pub async fn edit_audiobook_content(
+    identity: Option<Identity>,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    user_repo: web::Data<UserRepository>,
+    genre_repo: web::Data<GenreRepository>,
+    path: web::Path<(Id,)>,
+) -> Result<HttpResponse, AppError> {
+    let u = authorized!(identity);
+    let base = get_audiobook_edit(u, user_repo, audiobook_repo, genre_repo, path.into_inner().0).await?;
+    let template = AudiobookEditContentTemplate::from(base);
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+
+#[post("/edit")]
+pub async fn edit_audiobook(
+    identity: Option<Identity>,
+    user_repo: web::Data<UserRepository>,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    form: web::Form<AudiobookEditForm>,
+) -> Result<HttpResponse, AppError> {
+    let identity = authorized!(identity);
+    let user = get_user_from_identity(identity, &user_repo).await?;
+    let audiobook = AudiobookDisplay::from(audiobook_repo
+        .read_one(&AudiobookGetByIdJoin::new(user.id, form.audiobook_id))
+        .await?);
+
+    if user.id != audiobook.author_id {
+        return Err(AppError::from(BackendError::new(
+            BackendErrorKind::UnauthorizedOperation,
+        )));
+    }
+
+    let book_update = AudiobookUpdate::new(
+        &form.audiobook_id, Some(&form.name), None,
+        Some(&form.genre_id), None, None,
+        None, None, None, None,
+        Some(&form.description));
+    audiobook_repo.update(&book_update).await?;
+
+    let path = format!("/audiobook/{}/manage-content", form.audiobook_id);
+    Ok(HttpResponse::SeeOther()
+        .insert_header((LOCATION, path))
+        .finish())
+}
+
 #[get("/{id}/detail")]
 pub async fn get_audiobook(
     identity: Option<Identity>,
@@ -305,7 +306,6 @@ pub async fn get_audiobook(
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
-/// TODO: refactor content methods, so it does not duplicate code
 #[get("/{id}/detail-content")]
 pub async fn get_audiobook_detail_content(
     identity: Option<Identity>,
