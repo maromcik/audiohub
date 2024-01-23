@@ -304,7 +304,6 @@ async fn releases_content(
     identity: Option<Identity>,
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
-    //add functionality for ordering audiobooks
     let u = authorized!(identity);
     let template = NewReleasesContentTemplate { audiobooks: get_releases(u, book_repo).await? };
     let body = template.render()?;
