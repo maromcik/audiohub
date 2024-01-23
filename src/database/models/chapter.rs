@@ -104,19 +104,6 @@ impl ChapterGetById {
 }
 
 #[derive(Debug, Clone)]
-pub struct ChapterRemoveById {
-    pub id: Id,
-}
-
-impl ChapterRemoveById {
-    pub fn new(id: Id) -> Self {
-        Self {
-            id,
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
 pub struct CreateChapterForm {
     pub book_id: Id,
     pub current_chapters: Vec<ChapterDisplay>,

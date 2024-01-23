@@ -9,7 +9,7 @@
                     <p>Chapter {{chapter.order}}: {{ chapter.name }}</p>
                 </div>
                 <div class="text-xl font-bold ml-1">
-                    <p>{{ crate::handlers::utilities::format_position(chapter.position) }}</p>
+                    <p>{{ crate::templates::utilities::format_position(chapter.position) }}</p>
                 </div>
             </div>
             {% if show_delete %}
