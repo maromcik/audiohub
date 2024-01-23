@@ -6,13 +6,13 @@
         <div class="w-full flex flex-row justify-between items-center">
             <div>
                 <div class="text-xl text-blue-300 ml-4 mr-2">
-                    Chapter {{chapter.order}}: {{ chapter.name }}
+                    <p>Chapter {{chapter.order}}: {{ chapter.name }}</p>
                 </div>
                 <div class="text-xl font-bold ml-1">
-            <!--call format(t) here-->
-                    Start time: {{ chapter.position }}
+                    <p>"format('{{ chapter.position }}')"</p>
                 </div>
             </div>
+            {% if is_book_owned %}
             <form hx-delete="/chapter/delete" hx-target="#chapters-list">
                 <input class="hidden" name="audiobook_id" value="{{ book_id }}">
                 <input class="hidden" name="chapter_id" value="{{ chapter.id }}">
@@ -22,6 +22,7 @@
                     </svg>
                 </button>
             </form>
+            {% endif %}
         </div>
     </div>
 </div>

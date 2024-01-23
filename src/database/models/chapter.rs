@@ -106,14 +106,12 @@ impl ChapterGetById {
 #[derive(Debug, Clone)]
 pub struct ChapterRemoveById {
     pub id: Id,
-    pub user_id: Id
 }
 
 impl ChapterRemoveById {
-    pub fn new(id: Id, user_id: Id) -> Self {
+    pub fn new(id: Id) -> Self {
         Self {
             id,
-            user_id
         }
     }
 }

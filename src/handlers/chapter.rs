@@ -10,6 +10,7 @@ use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{post, get, web, HttpResponse, delete};
 use askama::Template;
+use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::models::audiobook::{AudiobookGetById};
 use crate::database::models::Id;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
@@ -73,15 +74,16 @@ pub async fn get_chapter_timeline(
 pub async fn get_chapter_list(
     identity: Option<Identity>,
     chapter_repo: web::Data<ChapterRepository>,
+    audiobook_repo: web::Data<AudiobookRepository>,
     path: web::Path<Id>)
     -> Result<HttpResponse, AppError> {
-    authorized!(identity);
-
+    let u = authorized!(identity);
+    let user_id = parse_user_id(u)?;
     let book_id = path.into_inner();
     let chapters = chapter_repo.read_many(&ChaptersGetByBookId { audiobook_id: book_id }).await?;
     let displayable_chapters = transform_to_displayable_chapters(chapters);
-
-    let template = ChapterListTemplate { book_id, chapters: displayable_chapters };
+    let audiobook = audiobook_repo.read_one(&AudiobookGetById::new(&book_id)).await?;
+    let template = ChapterListTemplate { book_id, chapters: displayable_chapters, is_book_owned: audiobook.author_id == user_id };
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
 }
 
@@ -89,12 +91,18 @@ pub async fn get_chapter_list(
 pub async fn remove_chapter(
     identity: Option<Identity>,
     chapter_repo: web::Data<ChapterRepository>,
+    audiobook_repo: web::Data<AudiobookRepository>,
     form: web::Form<ChapterDeleteForm>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity);
-    chapter_repo.delete(&ChapterRemoveById::new(form.chapter_id, parse_user_id(u)?)).await?;
+    let user_id = parse_user_id(u)?;
+    let audiobook = audiobook_repo.read_one(&AudiobookGetById::new(&form.audiobook_id)).await?;
+    if user_id != audiobook.author_id {
+        return Err(AppError::from(BackendError::new(BackendErrorKind::UnauthorizedOperation)));
+    }
+    chapter_repo.delete(&ChapterGetById::new(form.chapter_id)).await?;
     let chapters = chapter_repo.read_many(&ChaptersGetByBookId { audiobook_id: form.audiobook_id }).await?;
     let displayable_chapters = transform_to_displayable_chapters(chapters);
-    let template = ChapterListTemplate { book_id: form.audiobook_id, chapters: displayable_chapters };
+    let template = ChapterListTemplate { book_id: form.audiobook_id, chapters: displayable_chapters, is_book_owned: audiobook.author_id == user_id };
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
 }

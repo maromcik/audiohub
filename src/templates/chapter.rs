@@ -28,4 +28,5 @@ pub struct ChapterTimelineTemplate {
 pub struct ChapterListTemplate {
     pub book_id: Id,
     pub chapters: Vec<ChapterDisplay>,
+    pub is_book_owned: bool
 }
