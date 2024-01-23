@@ -1,92 +1,84 @@
-# PV281-Project
+# AudioHub
 
 
 
-## Getting started
+## Overview
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+AudioHub is a comprehensive digital platform designed for content creators to share their audiobooks.  
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+The website is deployed and published in a Kubernetes cluster. 
 
-## Add your files
+Use this link https://audiohub.dyn.cloud.e-infra.cz/ to evaluate the app without having to set up your own Postgres instance and clone this repo
+## Features
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+- Book Management: Enables users to browse, purchase, and view books. Each book has properties like name, price, stock in storage, overall rating, genres, publisher, and authors.
+- Author and Publisher Management: Provides administrative privileges to view, add, update, and delete authors and publishers.
+- User Account Management: Allows customers to create accounts, review their purchase history, rate books, and create wishlists.
+- Rating Management: Facilitates users to rate books and leave comments. The rating value and comments can be updated.
 
+## Architecture
+The application is built using Actix, Askama and HTMX. 
+
+## Components
+The application has several components each handling a specific functionality:
+
+- Book Management: This component is responsible for all operations related to books. It allows users to view, add, update, and delete books. Each book has properties like name, price, stock in storage, overall rating, genres, publisher, and authors.
+- Author and Publisher Management: This component handles all operations related to authors and publishers. It allows users to view, add, update, and delete authors and publishers.
+- Rating Management: This is where users can rate books and leave comments. The rating value and comments can be updated.
+- Request Logging: All requests to the application are logged with details like the request method and path. The logs are stored in a text file.
+
+
+## Database Schema
+![ERD Diagram](db.png)
+
+## Setup
+We have provided multiple options to test and deploy this web application for you. 
+
+If you choose a local deployment, please bear in mind that media files are stored locally for obvious reasons (DB size, RAM). 
+But we will include a couple of short songs and thumbnails in this repository (by subtracting them from .gitignore with `!`) to showcase the functionality out of the box, you should add your owns books though.  
+
+### Kubernetes
+The application is deployed using CERIT-SC's Kubernetes cluster: https://audiohub.dyn.cloud.e-infra.cz/ for your convenience.
+
+While we do not intend to modify our project after submission, we understand your need to check the project at the time of submission. Therefore, we provided other options to test the app locally.
+
+### Local app - Postgres in Kubernetes
+This project uses the Postgres database deployed in Kubernetes with the Cloudnative-PG operator. 
+
+Our `.env` file is obviously included in `.gitignore`, but since we will have given you the maintainer role in our Gitlab repository, you should be able to get all the data from the environment variables there https://gitlab.fi.muni.cz/xmarianc/pv281-project/-/settings/ci_cd
+
+Please use these secrets modify the `example.env` file. 
+
+### Local app - Local Postgres with our DB contents
+If you do not wish to use our database you can always restore the database from the database dump file `db_dump.sql` and then reload it with this command `psql -d audiobooks -f db_dump.sql`.
+
+
+## Deployment
+We chose the CERIT-SC's Kubernetes cluster to deploy this application. YAML manifests used to do so are located in the `kubernetes` folder.
+
+There are other options too,
+- for bare metal deployment you could run `cargo build` and then create a *systemd* unit to manage it.
+- for Docker deployment you should firstly run `docker build -t audiohub-image .` to build the image and then `docker run -p 80:8000 --name audiohub audiohub-image --restart=always`.
+- for Podman deployment the steps would be similar `podman build -t audiohub-image .` to build the image. But Podman containers are daemon-less, therefore it is recommended to use so called *Quadlets* to manage Podman containers with *systemd*.
+
+Something like this should work. Note that I did not test it, paths may be incorrect. I provide this example just as a curiosity.
+```shell
+[Unit]
+Description=AudioHub
+After=network-online.target
+
+[Container]
+Image=audiohub-image
+ContainerName=audiohub
+PublishPort=8334:8334
+Volume=/root/audiohub/media:/media:z
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=multi-user.target default.target
 ```
-cd existing_repo
-git remote add origin https://gitlab.fi.muni.cz/xmarianc/pv281-project.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.fi.muni.cz/xmarianc/pv281-project/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
 
 ***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
