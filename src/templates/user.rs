@@ -15,7 +15,10 @@ pub struct LoginTemplate {
 
 #[derive(Template)]
 #[template(path = "user/password.html")]
-pub struct UserManagePasswordTemplate {}
+pub struct UserManagePasswordTemplate {
+    pub message: String,
+    pub message_success: String,
+}
 
 #[derive(Template)]
 #[template(path = "user-manage.html")]

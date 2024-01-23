@@ -5,7 +5,7 @@ use crate::templates::user::{
     LoginTemplate, RegistrationTemplate, UserManagePasswordTemplate,
     UserManageProfileContentTemplate, UserManageProfilePageTemplate,
     UserManageProfilePictureFormTemplate, UserManageProfilePictureTemplate,
-    UserManageProfileSuccessfulUpdate, UserManageProfileSuccessfulUpdatePassword,
+    UserManageProfileSuccessfulUpdate,
     UserManageProfileUserFormTemplate,
 };
 use actix_identity::Identity;
@@ -162,7 +162,10 @@ pub async fn user_manage_password_form(
     identity: Option<Identity>,
 ) -> Result<impl Responder, AppError> {
     authorized!(identity);
-    let template = UserManagePasswordTemplate {};
+    let template = UserManagePasswordTemplate {
+        message: "".to_string(),
+        message_success: "".to_string(),
+    };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -225,15 +228,37 @@ pub async fn user_manage_password(
     form: web::Form<UserUpdatePasswordForm>,
 ) -> Result<impl Responder, AppError> {
     let u = authorized!(identity);
-    user_repo
+
+    if form.new_password != form.confirm_password {
+        let template = UserManagePasswordTemplate {
+            message: "Passwords do not match".to_string(),
+            message_success: "".to_string(),
+        };
+        let body = template.render()?;
+        return Ok(HttpResponse::Ok().content_type("text/html").body(body));
+    }
+
+    let update_status = user_repo
         .update_password(&UserUpdatePassword::new(
             &parse_user_id(u)?,
             &form.old_password,
             &form.new_password,
         ))
-        .await?;
+        .await;
 
-    let template = UserManageProfileSuccessfulUpdatePassword {};
+    if update_status.is_err() {
+        let template = UserManagePasswordTemplate {
+            message: "Old password incorrect".to_string(),
+            message_success: "".to_string(),
+        };
+        let body = template.render()?;
+        return Ok(HttpResponse::Ok().content_type("text/html").body(body));
+    }
+
+    let template = UserManagePasswordTemplate {
+        message: "".to_string(),
+        message_success: "Password update successful".to_string(),
+    };
     let body = template.render()?;
     return Ok(HttpResponse::Ok().content_type("text/html").body(body));
 }

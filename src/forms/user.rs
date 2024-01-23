@@ -30,4 +30,5 @@ pub struct UserUpdateForm {
 pub struct UserUpdatePasswordForm {
     pub old_password: String,
     pub new_password: String,
+    pub confirm_password: String,
 }
