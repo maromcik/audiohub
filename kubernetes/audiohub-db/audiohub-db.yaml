@@ -1,0 +1,36 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: audiohub-db
+spec:
+  instances: 2         # single instance
+  imageName: 'cerit.io/cloudnative-pg/postgresql:15.0' #image to use
+  primaryUpdateStrategy: unsupervised
+  enableSuperuserAccess: true
+
+  bootstrap:
+   initdb:
+     database: audiohub        # db to create
+     owner: audiohub        # user to create
+
+  postgresql:
+    parameters:
+      wal_keep_size: 8GB
+      ssl_min_protocol_version: TLSv1.2
+      ssl_max_protocol_version: TLSv1.3
+
+  replicationSlots:
+    highAvailability:
+      enabled: true
+
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: 1
+    limits:
+      memory: "2Gi"
+      cpu: 1
+
+  storage:
+    size: 10Gi
+    storageClass: nfs-csi
