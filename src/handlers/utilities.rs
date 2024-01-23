@@ -199,7 +199,7 @@ pub async fn authorized_to_modify_join(audiobook_repo: &web::Data<AudiobookRepos
     let audiobook = audiobook_repo
         .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id))
         .await?;
-
+    is_authorized(user_id, audiobook.author_id)?;
     Ok(audiobook)
 }
 
