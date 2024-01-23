@@ -4,7 +4,7 @@ use crate::database::models::Id;
 use crate::error::AppError;
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
-use actix_web::{get, post, web, HttpResponse};
+use actix_web::{get, post, web, HttpResponse, HttpRequest};
 use askama::Template;
 use serde::Deserialize;
 
@@ -16,8 +16,10 @@ use crate::handlers::utilities::parse_user_id;
 use crate::templates::rating::{AudiobookRatingsTemplate, UserRatingTemplate};
 
 #[get("/create/form")]
-pub async fn create_rating_form(identity: Option<Identity>) -> Result<HttpResponse, AppError> {
-    authorized!(identity);
+pub async fn create_rating_form(
+    request: HttpRequest,
+    identity: Option<Identity>) -> Result<HttpResponse, AppError> {
+    authorized!(identity, request.path());
     todo!()
     // let template = ...
     // Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
@@ -25,12 +27,13 @@ pub async fn create_rating_form(identity: Option<Identity>) -> Result<HttpRespon
 
 #[post("/audiobook/{book_id}")]
 pub async fn create_rating(
+    request: HttpRequest,
     identity: Option<Identity>,
     rating_repo: web::Data<RatingRepository>,
     path: web::Path<Id>,
     form: web::Form<RatingCreateForm>,
 ) -> Result<HttpResponse, AppError> {
-    let identity = authorized!(identity);
+    let identity = authorized!(identity, request.path());
     let user_id = parse_user_id(identity)?;
     let audiobook_id = path.into_inner();
     let rating = rating_repo.create_displayed_rating(&RatingCreate {
@@ -52,12 +55,13 @@ struct OffsetQuery {
 /// returns DISPLAYED_RATINGS_COUNT ratings transformed to html from query param offset
 #[get("/audiobook/{id}")]
 pub async fn get_ratings_by_audiobook(
+    request: HttpRequest,
     identity: Option<Identity>,
     rating_repo: web::Data<RatingRepository>,
     path: web::Path<(Id,)>,
     query: web::Query<OffsetQuery>
 ) -> Result<HttpResponse, AppError> {
-    authorized!(identity);
+    authorized!(identity, request.path());
 
     let search_params = RatingSearch::new(Some(path.into_inner().0),None,None,None,None,Some(query.offset));
     let ratings : Vec<UserRatingDisplay> = rating_repo

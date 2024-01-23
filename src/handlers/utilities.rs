@@ -146,16 +146,17 @@ pub fn get_finished_audiobooks(audiobooks: &[AudiobookDetail]) -> Vec<AudiobookD
 
 #[macro_export]
 macro_rules! authorized {
-    ($e:expr) => {
+    ($e:expr, $p:expr) => {{
         match $e {
             None => {
+                let path = format!("/user/login?ret={}", $p);
                 return Ok(HttpResponse::SeeOther()
-                    .insert_header((LOCATION, "/user/login"))
+                    .insert_header((LOCATION, path))
                     .finish());
             }
             Some(v) => v,
         }
-    };
+    }};
 }
 
 pub async fn authorized_to_modify(audiobook_repo: &web::Data<AudiobookRepository>,

@@ -32,3 +32,15 @@ pub struct UserUpdatePasswordForm {
     pub new_password: String,
     pub confirm_password: String,
 }
+
+#[derive(Deserialize)]
+pub struct UserLoginReturnURL {
+    pub ret: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct UserLoginForm {
+    pub email_or_username: String,
+    pub password: String,
+    pub return_url: String
+}
