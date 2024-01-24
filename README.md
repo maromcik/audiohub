@@ -17,16 +17,7 @@ Use this link https://audiohub.dyn.cloud.e-infra.cz/ to evaluate the app without
 - Rating Management: Facilitates users to rate books and leave comments. The rating value and comments can be updated.
 
 ## Architecture
-The application is built using Actix, Askama and HTMX. 
-
-## Components
-The application has several components each handling a specific functionality:
-
-- Book Management: This component is responsible for all operations related to books. It allows users to view, add, update, and delete books. Each book has properties like name, price, stock in storage, overall rating, genres, publisher, and authors.
-- Author and Publisher Management: This component handles all operations related to authors and publishers. It allows users to view, add, update, and delete authors and publishers.
-- Rating Management: This is where users can rate books and leave comments. The rating value and comments can be updated.
-- Request Logging: All requests to the application are logged with details like the request method and path. The logs are stored in a text file.
-
+The application is built using Actix, Askama and HTMX.
 
 ## Database Schema
 ![ERD Diagram](db.png)
@@ -43,6 +34,19 @@ You should add your owns books though.
 The application is deployed using CERIT-SC's Kubernetes cluster: https://audiohub.dyn.cloud.e-infra.cz/ for your convenience.
 
 While we do not intend to modify our project after submission, we understand your need to check the project at the time of submission. Therefore, we provided other options to test the app locally.
+
+Note that the app may not work correctly in all browsers if deployed locally. 
+For example Firefox does buffering differently to Chrome, which results in chapter jumps and general seeking 
+working poorly and requiring a lot off buffering on Firefox
+
+Another thing we noticed is that Chrome based browsers do not accept secure cookie from insecure connections, 
+which results in Identity sessions not working on Chrome without HTTPS. We decided to use the NGINX reverse proxy 
+as a scalable solution in Kubernetes, so your mileage may vary if you're evaluating locally. 
+
+TL:DR for local evaluation;
+- For testing the Identity sessions we recommend using Firefox.
+- For playback testing we recommend using Chrome-based browsers.
+
 
 ### Local app - Postgres in Kubernetes
 This project uses the Postgres database deployed in Kubernetes with the Cloudnative-PG operator. 
