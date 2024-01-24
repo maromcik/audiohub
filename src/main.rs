@@ -64,8 +64,6 @@ async fn main() -> anyhow::Result<()> {
             .wrap(IdentityMiddleware::default())
             .wrap(
                 SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
-                    .cookie_same_site(SameSite::None)
-                    .cookie_http_only(false)
                     .cookie_secure(use_secure_cookie)
                     .session_lifecycle(
                         PersistentSession::default().session_ttl(actix_web::cookie::time::Duration::seconds(SECS_IN_WEEK)))
