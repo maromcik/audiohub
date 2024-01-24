@@ -65,7 +65,6 @@ async fn main() -> anyhow::Result<()> {
                     .cookie_same_site(SameSite::None)
                     .cookie_http_only(false)
                     .cookie_secure(use_secure_cookie)
-                    .cookie_content_security(CookieContentSecurity::Private)
                     .build(),
             )
             .wrap(
