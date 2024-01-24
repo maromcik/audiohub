@@ -35,17 +35,9 @@ The application is deployed using CERIT-SC's Kubernetes cluster: https://audiohu
 
 While we do not intend to modify our project after submission, we understand your need to check the project at the time of submission. Therefore, we provided other options to test the app locally.
 
-Note that the app may not work correctly in all browsers if deployed locally. 
+Note that the app may not work correctly in certain browsers. 
 For example Firefox does buffering differently to Chrome, which results in chapter jumps and general seeking 
 working poorly and requiring a lot off buffering on Firefox
-
-Another thing we noticed is that Chrome based browsers do not accept secure cookie from insecure connections, 
-which results in Identity sessions not working on Chrome without HTTPS. We decided to use the NGINX reverse proxy 
-as a scalable solution in Kubernetes, so your mileage may vary if you're evaluating locally. 
-
-TL:DR for local evaluation;
-- For testing the Identity sessions we recommend using Firefox.
-- For playback testing we recommend using Chrome-based browsers.
 
 
 ### Local app - Postgres in Kubernetes
@@ -62,7 +54,7 @@ If you do not wish to use our database you can always restore the database from 
 ## Deployment
 We chose the CERIT-SC's Kubernetes cluster to deploy this application. YAML manifests used to do so are located in the `kubernetes` folder.
 
-The Kubernetes' NGINX ingress controller automatically creates a trusted certificate and sets up the NGINX reverse proxy.  
+The Kubernetes' NGINX ingress controller automatically creates a trusted certificate and sets up the NGINX reverse proxy. For this reason we have not set up HTTPS in the app. 
 
 There are other options too, but you should secure the website with a reverse proxy yourself:
 - for bare metal deployment you could run `cargo build` and then create a *systemd* unit to manage it.
