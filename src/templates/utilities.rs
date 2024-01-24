@@ -5,9 +5,9 @@ pub fn format_date(timestamp: &DateTime<Utc>) -> String {
 }
 
 pub fn format_position(position: &f64) -> String {
-    let seconds = position % 60f64;
-    let minutes = (position / 60f64) % 60f64;
-    let hours = (position / 60f64) / 60f64;
+    let seconds = (position % 60f64).round();
+    let minutes = ((position / 60f64) % 60f64).floor();
+    let hours = ((position / 60f64) / 60f64).floor();
     format!("{:0>2}:{:0>2}:{:0>2}", hours, minutes, seconds)
 }
 
