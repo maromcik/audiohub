@@ -1,5 +1,5 @@
 <div class="container mx-auto p-6 bg-black max-w-4xl min-h-96">
-    <form hx-post="/audiobook/upload" hx-target="#content-area" enctype="multipart/form-data"
+    <form  id="audio_book_upload_form" hx-post="/audiobook/upload" hx-target="#content-area" enctype="multipart/form-data"
           class="bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4 h-full">
         <h2 class="block text-gray-300 text-xl font-bold mb-2 text-center">Upload Audiobook</h2>
         <div id="error-area" class="text-red-500 mb-3 text-center">
@@ -37,5 +37,21 @@
                 Create Audiobook
             </button>
         </div>
+        <progress id='progress' value='0' max='100' class="hide-if-empty"></progress>
     </form>
 </div>
+
+<style>
+    .hide-if-empty[value="0"]:empty {
+        display: none;
+    }
+</style>
+
+<script>
+    htmx.on('#audio_book_upload_form', 'htmx:xhr:progress', function(evt) {
+        htmx.find('#progress').setAttribute('value', evt.detail.loaded/evt.detail.total * 100)
+        if (htmx.find('#progress').getAttribute('value') === '0'){
+            htmx.find('#progress').style("display: none")
+        }
+    });
+</script>
