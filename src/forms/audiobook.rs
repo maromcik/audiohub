@@ -1,6 +1,7 @@
 use crate::database::models::Id;
 use actix_multipart::form::tempfile::TempFile;
 use actix_multipart::form::MultipartForm;
+use actix_multipart::form::text::Text;
 use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]
@@ -20,7 +21,8 @@ pub struct AudiobookUploadForm {
 #[derive(Debug, MultipartForm)]
 pub struct AudiobookThumbnailEditForm {
     #[multipart(rename = "thumbnail")]
-    pub thumbnail: Option<TempFile>
+    pub thumbnail: Option<TempFile>,
+    pub audiobook_id: Text<Id>,
 }
 
 #[derive(Debug, Clone, Deserialize)]

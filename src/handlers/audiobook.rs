@@ -1,6 +1,6 @@
 
 use crate::database::common::{DbCreate, DbDelete, DbReadMany, DbReadOne, DbUpdate};
-use crate::database::models::audiobook::{AudiobookCreate, AudiobookDelete, AudiobookGetByIdJoin, AudiobookUpdate};
+use crate::database::models::audiobook::{AudiobookCreate, AudiobookDelete, AudiobookDisplay, AudiobookGetByIdJoin, AudiobookUpdate};
 use crate::database::models::genre::{GenreGetById, GenreSearch};
 
 use crate::database::models::Id;
@@ -9,18 +9,16 @@ use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::{AppError, AppErrorKind};
-use crate::forms::audiobook::{
-    AudiobookCreateForm, AudiobookQuickSearchQuery, AudiobookUploadForm, AudiobookEditForm
-};
+use crate::forms::audiobook::{AudiobookCreateForm, AudiobookQuickSearchQuery, AudiobookUploadForm, AudiobookEditForm, AudiobookThumbnailEditForm};
 use crate::handlers::utilities::{get_metadata_from_session, get_user_from_identity, parse_user_id, save_file, validate_file, AudiobookCreateSessionKeys, authorized_to_modify, authorized_to_modify_join};
-use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate, QuickSearchResults, AudiobookEditContentTemplate, AudiobookEditPageTemplate};
+use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate, QuickSearchResults, AudiobookEditContentTemplate, AudiobookEditPageTemplate, AudiobookCoverUpload};
 use crate::templates::audiobook::{AudiobookDetailAuthorContentTemplate, AudiobookDetailAuthorPageTemplate, DetailLikesTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
 
 use actix_session::Session;
 use actix_web::http::header::LOCATION;
-use actix_web::{get, patch, post, put, web, HttpResponse, delete, HttpRequest};
+use actix_web::{get, patch, post, put, web, HttpResponse, delete, HttpRequest, Responder};
 
 
 use askama::Template;
@@ -70,6 +68,72 @@ pub async fn upload_audiobook_form(
     };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+#[get("/book_cover/{id}/upload")]
+pub async fn upload_book_cover(
+    request: HttpRequest,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    identity: Option<Identity>,
+    path: web::Path<(Id,)>,
+) -> Result<impl Responder, AppError> {
+    let u = authorized!(identity, request.path());
+    let user_id = parse_user_id(u)?;
+    let audiobook = authorized_to_modify_join(&audiobook_repo, user_id, path.into_inner().0).await?;
+
+    let template = AudiobookCoverUpload {
+        message: "".to_string(),
+        audiobook: AudiobookDisplay::from(audiobook),
+    };
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+#[post("/book_cover/upload")]
+pub async fn upload_book_cover_post(
+    request: HttpRequest,
+    identity: Option<Identity>,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    MultipartForm(form): MultipartForm<AudiobookThumbnailEditForm>,
+    // path: web::Path<(Id,)>,
+) -> Result<HttpResponse, AppError> {
+    let uuid = Uuid::new_v4();
+    let u = authorized!(identity, request.path());
+    let book_path_id = form.audiobook_id.into_inner();
+    authorized_to_modify(&audiobook_repo, parse_user_id(u)?, book_path_id).await?;
+
+    let thumbnail_path = match &form.thumbnail {
+        None => None,
+        Some(thumb) => Some(validate_file(
+            thumb,
+            uuid,
+            "image",
+            "audiobook",
+            AppErrorKind::AudiobookUploadError,
+        )?),
+    };
+
+    let book_id = book_path_id;
+    let book_update = AudiobookUpdate::new(
+        &book_id, None, None,
+        None, None, None,
+        None, None, None, thumbnail_path.clone(),
+        None);
+    let book_update = audiobook_repo.update(&book_update).await?;
+    if let (Some(thumb_path), Some(thumbnail)) = (&thumbnail_path, form.thumbnail) {
+        save_file(thumbnail, thumb_path, AppErrorKind::AudiobookUploadError)?;
+    }
+
+    if let Some(audiobook) = book_update.into_iter().next() {
+        let handler = format!("/audiobook/{}/manage-content", audiobook.id);
+        return Ok(HttpResponse::SeeOther()
+            .insert_header((LOCATION, handler))
+            .finish());
+    }
+    // TEMPORARY SOLUTION
+    Ok(HttpResponse::SeeOther()
+        .insert_header((LOCATION, "/"))
+        .finish())
 }
 
 #[post("/create")]
