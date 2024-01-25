@@ -7,6 +7,7 @@ use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, web, HttpResponse, HttpRequest};
 use askama::Template;
+use crate::database::common::DbReadMany;
 use crate::handlers::helpers::get_index_base;
 
 #[get("/")]

@@ -1,10 +1,9 @@
-use crate::database::common::setup_pool;
+use crate::database::common::{DbPoolHandler, DbRepository, PoolHandler, setup_pool};
 use crate::init::configure_webapp;
 use actix_cors::Cors;
 use actix_identity::IdentityMiddleware;
 use actix_multipart::form::MultipartFormConfig;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
-use actix_web::cookie::SameSite;
 use actix_web::http::header;
 use actix_web::middleware::Logger;
 use actix_web::web::PayloadConfig;
@@ -13,6 +12,7 @@ use env_logger::Env;
 use log::{info, warn};
 use std::env;
 use actix_session::config::PersistentSession;
+use crate::recommender::recommender::init_recommender;
 
 const SECS_IN_WEEK: i64 = 60 * 60 * 24 * 7;
 
@@ -22,9 +22,14 @@ mod forms;
 mod handlers;
 mod init;
 mod templates;
+mod recommender;
 const DEFAULT_HOSTNAME: &str = "localhost";
 const DEFAULT_PORT: &str = "8000";
 const CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE: f64 = 98.0;
+
+pub mod recommender_grpc_api {
+    tonic::include_proto!("recommender");
+}
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
@@ -52,6 +57,12 @@ async fn main() -> anyhow::Result<()> {
         warn!("failed loading .env file: {e}");
     };
     info!("starting server on {host}");
+
+    if let Err(err) = init_recommender(&pool).await {
+        warn!("failed init grpc recommender system, check if server is running: {err}");
+    } else {
+        info!("initialization of grpc server was successful")
+    };
 
     HttpServer::new(move || {
         App::new()
