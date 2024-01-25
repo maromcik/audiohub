@@ -2,8 +2,9 @@ use crate::database::common::{DbPoolHandler, DbReadMany, DbRepository, PoolHandl
 use crate::database::models::genre::GenreSearch;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
-use crate::recommender::recommandation_system::init_recommandation_system;
+use crate::recommender::recommandation_system::{add_book_to_recommandation_system, init_recommandation_system};
 use sqlx::PgPool;
+use crate::database::models::audiobook::Audiobook;
 
 pub async fn init_recommender(pool: &PgPool) -> Result<(), Box<dyn std::error::Error>> {
     let audiobook_repository = AudiobookRepository::new(PoolHandler::new(pool.clone()));
@@ -29,5 +30,13 @@ pub async fn init_recommender(pool: &PgPool) -> Result<(), Box<dyn std::error::E
         .collect();
 
     init_recommandation_system(descriptions, ids, genre_names).await?;
+    Ok(())
+}
+
+pub async fn add_book_recommender(audiobook: &Audiobook, genre_name: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let bio = audiobook.description.as_str();
+    let id = audiobook.id;
+
+    add_book_to_recommandation_system(bio, id, genre_name).await?;
     Ok(())
 }

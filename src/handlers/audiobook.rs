@@ -23,6 +23,7 @@ use actix_web::{get, patch, post, put, web, HttpResponse, delete, HttpRequest, R
 
 use askama::Template;
 use lofty::AudioFile;
+use log::{info, warn};
 use serde::Deserialize;
 
 use crate::authorized;
@@ -31,6 +32,8 @@ use crate::database::models::bookmark::BookmarkOperation;
 
 use uuid::Uuid;
 use crate::handlers::helpers::{get_audiobook_detail_base, get_audiobook_edit, get_releases};
+use crate::recommender::recommandation_system::delete_book_from_recommandation;
+use crate::recommender::recommender::{add_book_recommender, init_recommender};
 
 #[get("/create")]
 pub async fn create_audiobook_page(
@@ -166,6 +169,7 @@ pub async fn upload_audiobook(
     identity: Option<Identity>,
     session: Session,
     user_repo: web::Data<UserRepository>,
+    genre_repo: web::Data<GenreRepository>,
     audiobook_repo: web::Data<AudiobookRepository>,
     MultipartForm(mut form): MultipartForm<AudiobookUploadForm>,
 ) -> Result<HttpResponse, AppError> {
@@ -210,6 +214,16 @@ pub async fn upload_audiobook(
         &metadata.description,
     );
     let book = audiobook_repo.create(&book_crate).await?;
+
+    let genre = genre_repo
+        .read_one(&GenreGetById::new(&book.genre_id))
+        .await?;
+
+    if let Err(err) = add_book_recommender(&book, &*genre.name).await {
+        warn!("failed add book too grpc recommender system, check if server is running: {err}");
+    } else {
+        info!("book added to the grpc repository!");
+    };
 
     save_file(
         form.audio_file,
