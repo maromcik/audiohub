@@ -13,3 +13,15 @@ pub struct UserRatingTemplate {
 pub struct AudiobookRatingsTemplate {
     pub ratings: Vec<UserRatingDisplay>,
 }
+
+
+#[derive(Template)]
+#[template(path = "rating/deleted-rating.html")]
+pub struct DeletedRatingTemplate {
+}
+
+#[derive(Template)]
+#[template(path = "rating/my-rating.html")]
+pub struct MyRatingTemplate {
+    pub rating: UserRatingDisplay,
+}

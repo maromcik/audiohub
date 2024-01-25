@@ -82,6 +82,7 @@ pub struct RatingGetById {
 
 #[derive(Debug, Clone)]
 pub struct UserRatingDisplay {
+        pub user_id: Id,
         pub book_id: Id,
         pub user_name: String,
         pub user_surname: String,

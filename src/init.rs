@@ -5,6 +5,13 @@ use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::rating::repository::RatingRepository;
 use crate::database::repositories::user::repository::UserRepository;
+use crate::handlers::audiobook::{
+    change_like, create_audiobook_content, get_audiobook_detail_content, get_audiobook_player,
+    get_last_active_audiobook, releases_content, releases_page,
+};
+use crate::handlers::genre::get_genres_content;
+use crate::handlers::rating::{create_rating, create_rating_form, get_ratings_by_audiobook, remove_rating_for_audiobook};
+use crate::handlers::user::{user_manage_form_content, user_manage_profile_form};
 use crate::handlers::*;
 use actix_files::Files as ActixFiles;
 use actix_web::web;
@@ -78,7 +85,9 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .app_data(web::Data::new(rating_repository.clone()))
         .service(create_rating)
         .service(create_rating_form)
-        .service(get_ratings_by_audiobook);
+        .service(get_ratings_by_audiobook)
+        .service(get_my_rating)
+        .service(remove_rating_for_audiobook);
 
     Box::new(move |cfg: &mut ServiceConfig| {
         cfg.app_data(web::Data::new(user_repository.clone()))
