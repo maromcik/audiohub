@@ -87,6 +87,7 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(create_rating_form)
         .service(get_ratings_by_audiobook)
         .service(get_my_rating)
+        .service(get_rating_summary)
         .service(remove_rating_for_audiobook);
 
     Box::new(move |cfg: &mut ServiceConfig| {

@@ -8,12 +8,12 @@ use actix_web::{get, post, web, HttpResponse, HttpRequest, delete};
 use askama::Template;
 use serde::Deserialize;
 
-use crate::database::models::rating::{ RatingCreate, RatingSearch, UserRatingDisplay};
+use crate::database::models::rating::{RatingCreate, RatingSearch, UserRatingDisplay};
 use crate::database::repositories::rating::repository::RatingRepository;
 use crate::forms::rating::RatingCreateForm;
 
 use crate::handlers::utilities::parse_user_id;
-use crate::templates::rating::{AudiobookRatingsTemplate, DeletedRatingTemplate, MyRatingTemplate, UserRatingTemplate};
+use crate::templates::rating::{AudiobookRatingsTemplate, DeletedRatingTemplate, MyRatingTemplate, RatingSummaryTemplate, UserRatingTemplate};
 
 #[get("/create/form")]
 pub async fn create_rating_form(request: HttpRequest, identity: Option<Identity>) -> Result<HttpResponse, AppError> {
@@ -110,5 +110,20 @@ pub async fn get_my_rating(
         return Ok(HttpResponse::PreconditionFailed().finish());
     }
     let template = MyRatingTemplate {rating: ratings[0].to_owned()};
+    Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
+}
+
+#[get("/audiobook/{id}/rating-summary")]
+pub async fn get_rating_summary(
+    identity: Option<Identity>,
+    rating_repo: web::Data<RatingRepository>,
+    path: web::Path<(Id,)>,
+    request: HttpRequest,
+) -> Result<HttpResponse, AppError> {
+    authorized!(identity, request.path());
+    let audiobook_id = path.into_inner().0;
+    let summary = rating_repo.get_rating_summary(&audiobook_id).await?;
+
+    let template = RatingSummaryTemplate {summary, audiobook_id};
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
 }

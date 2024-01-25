@@ -23,3 +23,11 @@ pub fn get_percentage(part: &f64, whole: &f64) -> i64 {
     let fraction = part / whole;
     (fraction * 100.0).floor() as i64
 }
+
+pub fn get_percentage_from_int(part: &i64, whole: &i64) -> i64{
+    get_percentage(&(*part as f64), &(*whole as f64))
+}
+
+pub fn get_star_filled_percentage(star_index: &i64, overall_rating: &f64) {
+
+}

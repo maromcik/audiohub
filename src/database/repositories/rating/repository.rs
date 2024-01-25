@@ -6,7 +6,7 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::models::audiobook::AudiobookGetById;
-use crate::database::models::rating::{Rating, RatingCreate, RatingGetById, RatingSearch, RatingUpdate, RatingsGetByBookId, UserRatingDisplay, DISPLAYED_RATINGS_COUNT};
+use crate::database::models::rating::{Rating, RatingCreate, RatingGetById, RatingSearch, RatingUpdate, RatingsGetByBookId, UserRatingDisplay, DISPLAYED_RATINGS_COUNT, RatingSummaryDisplay};
 use crate::database::models::user::UserGetById;
 
 use async_trait::async_trait;
@@ -302,6 +302,53 @@ impl RatingRepository {
         ).fetch_all(&self.pool_handler.pool).await?;
 
         Ok(ratings)
+    }
+
+    /// Returns data for displaying overall ratings of given book. Star count vector contains number of
+    /// ratings with that many stars for given index -> star_count[0] = number of ratings with 0 stars ...
+    pub async fn get_rating_summary(&self, book_id: &Id) -> DbResultSingle<RatingSummaryDisplay>{
+        let summary = sqlx::query!(
+            r#"
+            SELECT rating AS stars, COUNT(*) AS star_count
+            FROM "Rating"
+            WHERE audiobook_id = $1 AND deleted_at IS NULL
+            GROUP BY rating
+            ORDER BY rating
+            "#,
+            book_id
+        ).fetch_all(&self.pool_handler.pool).await?;
+
+        let count_row = sqlx::query!(
+            r#"
+            SELECT overall_rating
+            FROM "Audiobook"
+            WHERE id=$1 AND deleted_at IS NULL
+            "#,
+            book_id
+        ).fetch_one(&self.pool_handler.pool).await?;
+
+
+        let mut star_count : Vec<i64> = vec![];
+        let mut all_ratings_count = 0;
+        for i in 0..6 {
+            let count = summary.iter().find(|rec| rec.stars == i);
+            match count {
+                Some(count) => {
+                    let count = count.star_count.unwrap_or(0);
+                    all_ratings_count += count;
+                    star_count.push(count);
+                },
+                None => star_count.push(0)
+            }
+        }
+
+        let rating_summary_display = RatingSummaryDisplay{
+            all_ratings_count,
+            star_count,
+            overall_rating: count_row.overall_rating,
+        };
+
+        Ok(rating_summary_display)
     }
 
     pub async fn delete_rating_for_book(&self,

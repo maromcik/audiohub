@@ -93,7 +93,8 @@ pub struct UserRatingDisplay {
 }
 
 #[derive(Debug, Clone)]
-pub struct RatingSummary {
-    pub star_count: i16,
+pub struct RatingSummaryDisplay {
+    pub all_ratings_count: i64,
+    pub star_count: Vec<i64>,
     pub overall_rating: f64
 }

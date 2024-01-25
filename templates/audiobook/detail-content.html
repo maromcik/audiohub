@@ -1,32 +1,18 @@
 {% let rating_count = crate::database::models::rating::DISPLAYED_RATINGS_COUNT %}
-<style>
-    .image-container {
-        width: 100%; /* Set the width of the container */
-        max-width: 320px;
-        margin-left: 0;
-    }
-
-    .responsive-image {
-        width: 100%; /* Make the image fill the container */
-        height: 100%; /* Make the image fill the container */
-        object-fit: cover; /* Maintain aspect ratio and cover the container */
-    }
-</style>
-
 <div class="container pl-10 pt-10 pb-10">
     <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <div class="mb-4 sm:mb-0 xl:col-span-1">
             <div class="w-25 h-25 md:w-40 md:h-40 lg:w-80 lg:h-80 overflow-hidden">
-<!--            <div class="">-->
+                <!--            <div class="">-->
                 <img class="responsive-image object-cover bg-blue-600 w-full h-full sm:h-mr-10" src="{{ audiobook.thumbnail }}" alt="book-cover">
             </div>
             <div class="flex flex-col justify-between pt-4 overflow-hidden">
                 <h2 class="text-2xl font-bold mb-4">Description</h2>
                 <p class="mb-4"> {{audiobook.description}}</p>
-<!--                <h2 class="text-2xl font-bold mb-4">About {{audiobook.author_name}} {{audiobook.surname}}</h2>-->
-<!--                <p class="mb-4">-->
-<!--                    {{audiobook.bio}}-->
-<!--                </p>-->
+                <!--                <h2 class="text-2xl font-bold mb-4">About {{audiobook.author_name}} {{audiobook.surname}}</h2>-->
+                <!--                <p class="mb-4">-->
+                <!--                    {{audiobook.bio}}-->
+                <!--                </p>-->
             </div>
         </div>
         <div class="mb-4 sm:ml-0 xl:ml-10 sm:mb-0 xl:col-span-1">
@@ -86,8 +72,14 @@
     {% include "rating/rating-form.html" %}
     <div class="pl-10 pt-10 pb-3 mb-3 text-2xl font-bold">My Rating</div>
     <div id="my-rating-container" class="pl-10"
-         hx-get="/rating/audiobook/{{audiobook.id}}/my-rating" hx-trigger="load from:#" hx-target="#my-rating-container" hx-swap="beforeend"></div>
+         hx-get="/rating/audiobook/{{audiobook.id}}/my-rating" hx-trigger="load" hx-target="#my-rating-container" hx-swap="beforeend"></div>
     <div class="pl-10 pt-10 pb-3 mb-3 text-2xl font-bold">All ratings</div>
+    <div id="ratings-summary-container" class="flex flex-row justify-center"
+         hx-get="/rating/audiobook/{{audiobook.id}}/rating-summary" hx-trigger="load" hx-target="#ratings-summary-container"
+         hx-swap="outerHTML"
+    >
+
+    </div>
     <div id="ratings-container"
          hx-get="/rating/audiobook/{{ audiobook.id }}?offset=0"
          hx-trigger="load" hx-swap="innerHTML" class="flex flex-col pl-10">
@@ -96,9 +88,23 @@
 
     <div class="pl-10 flex flex-col items-center">
         <button id="load-more-ratings-btn" hx-target="#ratings-container" hx-swap="beforeend"
-            hx-get="/rating/audiobook/{{audiobook.id}}?offset={{ rating_count }}"
-            class="w-1/8 bg-blue-600 hover:bg-blue-300 py-3 px-6 text-white font-bold rounded focus:outline-none focus:shadow-outline-blue">
-        Load more
+                hx-get="/rating/audiobook/{{audiobook.id}}?offset={{ rating_count }}"
+                class="w-1/8 bg-blue-600 hover:bg-blue-300 py-3 px-6 text-white font-bold rounded focus:outline-none focus:shadow-outline-blue">
+            Load more
         </button>
     </div>
 </div>
+
+<style>
+    .image-container {
+        width: 100%; /* Set the width of the container */
+        max-width: 320px;
+        margin-left: 0;
+    }
+
+    .responsive-image {
+        width: 100%; /* Make the image fill the container */
+        height: 100%; /* Make the image fill the container */
+        object-fit: cover; /* Maintain aspect ratio and cover the container */
+    }
+</style>
