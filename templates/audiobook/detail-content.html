@@ -18,9 +18,9 @@
         <div class="mb-4 sm:mb-0 xl:col-span-1">
             <div class="w-25 h-25 md:w-40 md:h-40 lg:w-80 lg:h-80 overflow-hidden">
 <!--            <div class="">-->
-                <img class="responsive-image object-cover bg-cyan-900 w-full h-full sm:h-mr-10" src="{{ audiobook.thumbnail }}" alt="book-cover">
+                <img class="responsive-image object-cover bg-blue-600 w-full h-full sm:h-mr-10" src="{{ audiobook.thumbnail }}" alt="book-cover">
             </div>
-            <div class="flex flex-col justify-between pt-4">
+            <div class="flex flex-col justify-between pt-4 overflow-hidden">
                 <h2 class="text-2xl font-bold mb-4">Description</h2>
                 <p class="mb-4"> {{audiobook.description}}</p>
 <!--                <h2 class="text-2xl font-bold mb-4">About {{audiobook.author_name}} {{audiobook.surname}}</h2>-->
@@ -29,7 +29,7 @@
 <!--                </p>-->
             </div>
         </div>
-        <div class="mb-4 ml-4 sm:mb-0 xl:col-span-1">
+        <div class="mb-4 sm:ml-0 xl:ml-10 sm:mb-0 xl:col-span-1">
             <div class="flex flex-row justify-between">
                 <div class="flex flex-col">
                     <div class="pt-1">{{ audiobook.genre_name }}</div>

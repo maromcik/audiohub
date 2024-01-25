@@ -1,6 +1,6 @@
 <img class="w-25 h-25 md:w-45 md:h-45 lg:w-80 lg:h-80 mb-4" src="{{ audiobook.thumbnail }}" alt="book-cover">
 <button hx-get="/audiobook/book_cover/{{ audiobook.id }}/upload" hx-replace-url="/audiobook/{{audiobook.id}}/manage" hx-target="#book-cover-box" hx-swap="innerHTML"
-        class="absolute bottom-[32px] right-[32px] md:bottom-[48px] md:right-[48px] lg:bottom-[72px] lg:right-[72px]
+        class="absolute bottom-[32px] right-[32px] md:bottom-[48px] md:right-[10px] lg:bottom-[40px] lg:right-[20px]
                         hidden transform translate-x-1/2 translate-y-1/2 text-white rounded-full p-2 bg-blue-600 hover:bg-blue-300
                         focus:outline-none group-hover:block">
     <svg class="w-12 h-12 md:w-18 md:h-18 lg:w-27 lg:h-27" fill="none" stroke="currentColor" viewBox="0 0 24 24"

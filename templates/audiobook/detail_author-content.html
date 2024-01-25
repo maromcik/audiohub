@@ -1,14 +1,26 @@
+<style>
+    .image-container {
+        width: 100%; /* Set the width of the container */
+        max-width: 320px;
+        margin-left: 0;
+    }
 
+    .responsive-image {
+        width: 100%; /* Make the image fill the container */
+        height: 100%; /* Make the image fill the container */
+        object-fit: cover; /* Maintain aspect ratio and cover the container */
+    }
+</style>
 
 <div class="container pl-10 pt-10 pb-10">
     <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <div id="thumbnail-box" class="mb-4 sm:mb-0 xl:col-span-1">
 <!--            <img class="bg-cyan-900 w-80 h-80 mr-10" src="{{ audiobook.thumbnail }}" alt="book-cover">-->
-            <div id="book-cover-box" class="relative inline-block group mx-auto p-5">
+            <div id="book-cover-box" class="relative inline-block group w-25 h-25 md:w-45 md:h-45 lg:w-80 lg:h-80 mb-4">
                 {% include "audiobook/book_cover_thumbnail.html" %}
             </div>
         </div>
-        <div class="mb-4 ml-4 sm:mb-0 xl:col-span-1">
+        <div class="mb-4 sm:ml-0 xl:ml-10 sm:mb-0 xl:col-span-1">
             <div class="pt-1">{{ audiobook.genre_name }}</div>
             <div class="book-name  text-6xl font-bold">{{audiobook.name}}</div>
             <div class="pt-5 flex flex-row items-center" >
