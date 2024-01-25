@@ -31,11 +31,9 @@
                             {% endif %}
                         </div>
                     </button>
-                    <button hx-patch="/audiobook/{{audiobook.id}}/likes" hx-target="#like-count" hx-swap="outerHTML">
-                        <div id="stream-count" class="flex items-center pl-5 text-3xl">
-                            <i class="fa-solid fa-music text-3xl"></i> <p class="pl-5 text-gray-300 text-2xl">{{ audiobook.like_count }}</p>
-                        </div>
-                    </button>
+                    <div id="stream-count" class="flex items-center pl-5 text-3xl">
+                        <i class="fa-solid fa-music text-3xl"></i> <p class="pl-5 text-gray-300 text-2xl">{{ audiobook.stream_count }}</p>
+                    </div>
                     <div id="rating-average" class="flex items-center pl-5 text-3xl">
                         <i class="fa-solid fa-star text-3xl"></i> <p class="pl-5 text-gray-300 text-2xl">{{  crate::templates::utilities::format_overall_rating(audiobook.overall_rating) }}</p>
                     </div>

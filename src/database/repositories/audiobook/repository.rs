@@ -55,6 +55,19 @@ impl AudiobookRepository {
         Err(DbError::from(BackendError::new(AudiobookDoesNotExist)))
     }
 
+    pub async fn increment_stream_count<'a>(book_id: &Id, transaction_handle: &mut Transaction<'a, Postgres>) -> DbResultSingle<()> {
+        sqlx::query!(
+            r#"
+            UPDATE "Audiobook"
+            SET stream_count = stream_count + 1
+            WHERE id = $1
+            "#,
+            book_id,
+        ).execute(transaction_handle.as_mut()).await?;
+        Ok(())
+
+    }
+
     pub async fn quick_search(&self, query: &str) -> DbResultMultiple<AudiobookQuickSearch> {
         let mut comparison_string: String = "%".to_owned();
         comparison_string.push_str(query);
@@ -99,6 +112,8 @@ impl AudiobookRepository {
         &self,
         params: &SetActiveAudiobook,
     ) -> DbResultSingle<ActiveAudiobook> {
+        let mut transaction = self.pool_handler.pool.begin().await?;
+
         let updated_active_audiobook = sqlx::query_as!(
             ActiveAudiobook,
             r#"
@@ -113,10 +128,11 @@ impl AudiobookRepository {
             params.user_id,
             params.audiobook_id,
         )
-        .fetch_all(&self.pool_handler.pool)
+        .fetch_all(transaction.as_mut())
         .await?;
 
         if let Some(updated) = updated_active_audiobook.into_iter().nth(0) {
+            transaction.commit().await?;
             return Ok(updated);
         }
 
@@ -131,8 +147,10 @@ impl AudiobookRepository {
             params.audiobook_id,
             params.playback_position
         )
-        .fetch_one(&self.pool_handler.pool)
+        .fetch_one(transaction.as_mut())
         .await?;
+
+        transaction.commit().await?;
 
         Ok(new_active_audiobook)
     }
@@ -174,6 +192,8 @@ impl AudiobookRepository {
         user_id: &Id,
         book_id: &Id,
     ) -> DbResultSingle<PlayedAudiobook> {
+
+        let mut transaction = self.pool_handler.pool.begin().await?;
         let exists = sqlx::query_as!(
             ActiveAudiobook,
             r#"
@@ -184,8 +204,10 @@ impl AudiobookRepository {
             user_id,
             book_id,
         )
-        .fetch_optional(&self.pool_handler.pool)
+        .fetch_optional(transaction.as_mut())
         .await?;
+
+        AudiobookRepository::increment_stream_count(book_id, &mut transaction).await?;
 
         if let Some(_book) = exists {
             let played_audiobook = sqlx::query_as!(
@@ -204,8 +226,10 @@ impl AudiobookRepository {
                 user_id,
                 book_id
             )
-            .fetch_one(&self.pool_handler.pool)
+            .fetch_one(transaction.as_mut())
             .await?;
+
+            transaction.commit().await?;
             return Ok(PlayedAudiobook::from(played_audiobook));
         }
 
@@ -213,13 +237,11 @@ impl AudiobookRepository {
             ActiveAudiobook,
             r#"
             INSERT INTO "Active_Audiobook" (user_id, audiobook_id, playback_position)
-            VALUES ($1, $2, 0) ON CONFLICT DO NOTHING
+            VALUES ($1, $2, 0)
             "#,
             user_id,
             book_id,
-        )
-        .execute(&self.pool_handler.pool)
-        .await?;
+        ).execute(transaction.as_mut()).await?;
 
         let played_audiobook = sqlx::query_as!(
             PlayedAudiobookDb,
@@ -237,8 +259,10 @@ impl AudiobookRepository {
             user_id,
             book_id
         )
-        .fetch_one(&self.pool_handler.pool)
+        .fetch_one(transaction.as_mut())
         .await?;
+
+        transaction.commit().await?;
         Ok(PlayedAudiobook::from(played_audiobook))
     }
 
