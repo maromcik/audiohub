@@ -197,8 +197,8 @@ pub struct AudiobookSearch {
     pub max_stream_count: Option<i64>,
     pub min_like_count: Option<i64>,
     pub max_like_count: Option<i64>,
-    pub min_overall_rating: Option<i16>,
-    pub max_overall_rating: Option<i16>,
+    pub min_overall_rating: Option<f64>,
+    pub max_overall_rating: Option<f64>,
     pub query_params: DbQueryParams,
 }
 
@@ -216,8 +216,8 @@ impl AudiobookSearch {
         max_stream_count: Option<i64>,
         min_like_count: Option<i64>,
         max_like_count: Option<i64>,
-        min_overall_rating: Option<i16>,
-        max_overall_rating: Option<i16>,
+        min_overall_rating: Option<f64>,
+        max_overall_rating: Option<f64>,
         query_params: DbQueryParams,
     ) -> Self {
         Self {
