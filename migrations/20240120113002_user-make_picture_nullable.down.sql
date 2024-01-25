@@ -1,1 +1,0 @@
-ALTER TABLE "User" ALTER COLUMN profile_picture SET NOT NULL;

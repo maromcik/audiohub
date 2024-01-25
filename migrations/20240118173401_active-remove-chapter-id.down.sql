@@ -1,1 +1,0 @@
-ALTER TABLE "Active_Audiobook" ADD COLUMN IF NOT EXISTS playback_chapter_id bigserial REFERENCES "Chapter" (id) ON DELETE CASCADE;
