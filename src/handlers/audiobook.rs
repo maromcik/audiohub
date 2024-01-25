@@ -420,6 +420,13 @@ pub async fn remove_audiobook(
     audiobook_repo
         .delete(&AudiobookDelete::new(&audiobook.id))
         .await?;
+
+    if let Err(e) = delete_book_from_recommandation(audiobook.id).await {
+        warn!("Recommender was not able to delete book: {e}")
+    } else {
+        info!("Book was deleted from recommender system")
+    }
+
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/studio-content"))
         .finish())
