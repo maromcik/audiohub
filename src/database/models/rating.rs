@@ -91,3 +91,9 @@ pub struct UserRatingDisplay {
         pub review: Option<String>,
         pub created_at: DateTime<Utc>,
 }
+
+#[derive(Debug, Clone)]
+pub struct RatingSummary {
+    pub star_count: i16,
+    pub overall_rating: f64
+}

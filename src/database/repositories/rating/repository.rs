@@ -105,6 +105,24 @@ impl RatingRepository {
         Ok(ratings)
     }
 
+    /// recalculate books overall rating, usable in transaction
+    pub async fn update_overall_book_rating<'a>(book_id: &Id, transaction_handle : &mut Transaction<'a, Postgres>) -> DbResultSingle<()>{
+        let _ = sqlx::query!(
+            r#"
+            UPDATE "Audiobook"
+            SET overall_rating = (
+                SELECT SUM(R.rating) / COUNT(R.Rating)
+                FROM "Rating" R
+                WHERE R.audiobook_id = $1 AND R.deleted_at IS NULL
+            )
+            WHERE id = $1
+
+            "#,
+            book_id
+        ).execute(transaction_handle.as_mut()).await?;
+        Ok(())
+    }
+
     /// Function which retrieves rating for book with given id for given user, usable within a transaction
     ///
     /// # Params
@@ -235,6 +253,8 @@ impl RatingRepository {
             rating_id = RatingRepository::create_transactional(params, &mut transaction).await?.id;
         }
 
+        RatingRepository::update_overall_book_rating(&params.audiobook_id, &mut transaction).await?;
+
         let displayed_rating = sqlx::query_as!(
             UserRatingDisplay,
             r#"
@@ -247,6 +267,7 @@ impl RatingRepository {
             rating_id
         ).fetch_one(transaction.as_mut())
             .await?;
+
 
         transaction.commit().await?;
 
@@ -286,6 +307,7 @@ impl RatingRepository {
     pub async fn delete_rating_for_book(&self,
         book_id: &Id,
     ) -> DbResultSingle<Rating> {
+        let mut transaction = self.pool_handler.pool.begin().await?;
         let rating = sqlx::query_as!(
             Rating,
             r#"
@@ -298,9 +320,11 @@ impl RatingRepository {
             "#,
             book_id
         )
-            .fetch_one(&self.pool_handler.pool)
+            .fetch_one(transaction.as_mut())
             .await?;
 
+        RatingRepository::update_overall_book_rating(book_id, &mut transaction).await?;
+        transaction.commit().await?;
         Ok(rating)
     }
 }
