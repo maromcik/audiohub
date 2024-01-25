@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS "Audiobook"
     description         text            NOT NULL,
     stream_count        bigint          NOT NULL DEFAULT 0,
     like_count          bigint          NOT NULL DEFAULT 0,
-    overall_rating      float           NOT NULL DEFAULT 0,
+    overall_rating      float8          NOT NULL DEFAULT 0,
     created_at   timestamptz NOT NULL DEFAULT now(),
     edited_at    timestamptz NOT NULL DEFAULT now(),
     deleted_at   timestamptz,
