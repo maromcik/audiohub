@@ -111,7 +111,7 @@ impl RatingRepository {
             r#"
             UPDATE "Audiobook"
             SET overall_rating = (
-                SELECT SUM(R.rating) / COUNT(R.Rating)
+                SELECT AVG(R.Rating)
                 FROM "Rating" R
                 WHERE R.audiobook_id = $1 AND R.deleted_at IS NULL
             )
