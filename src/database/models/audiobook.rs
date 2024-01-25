@@ -529,3 +529,10 @@ pub struct AudiobookQuickSearch {
     pub id: Id,
     pub name: String,
 }
+
+#[derive(Debug, Clone)]
+pub struct AudiobookRecommenderForm {
+    pub id: Id,
+    pub description: String,
+    pub genre_id: Id,
+}

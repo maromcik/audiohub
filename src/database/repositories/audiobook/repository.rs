@@ -13,7 +13,7 @@ use crate::database::models::active_audiobook::{
 };
 use sqlx::{Postgres, Transaction};
 
-use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookDisplay, AudiobookGetById, AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookSearch, AudiobookUpdate};
+use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookDisplay, AudiobookGetById, AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookRecommenderForm, AudiobookSearch, AudiobookUpdate};
 use crate::database::models::Id;
 
 #[derive(Clone)]
@@ -293,6 +293,19 @@ impl AudiobookRepository {
             .await?;
 
         Ok(bookmarked.into_iter().map(AudiobookDisplay::from).collect())
+    }
+
+    pub async fn get_all_books(&self) -> DbResultMultiple<AudiobookRecommenderForm> {
+        let results = sqlx::query_as!(
+            AudiobookRecommenderForm,
+            r#"
+            SELECT  id, description, genre_id FROM "Audiobook"
+            WHERE deleted_at IS NULL
+            "#
+        )
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
+        Ok(results)
     }
 }
 
