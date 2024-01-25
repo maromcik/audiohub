@@ -1,1 +1,2 @@
-ALTER TABLE "Audiobook" ALTER COLUMN overall_rating type smallint;
+
+ALTER TABLE "Audiobook" ALTER COLUMN overall_rating type float8;

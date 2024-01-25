@@ -1,1 +1,1 @@
-ALTER TABLE "Audiobook" ALTER COLUMN overall_rating type decimal(2,2);
+ALTER TABLE "Audiobook" ALTER COLUMN overall_rating type smallint;
