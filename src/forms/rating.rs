@@ -1,4 +1,4 @@
-use crate::database::models::Id;
+
 use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]

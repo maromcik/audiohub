@@ -6,11 +6,13 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::models::audiobook::AudiobookGetById;
-use crate::database::models::rating::{Rating, RatingCreate, RatingGetById, RatingSearch, RatingUpdate, RatingsGetByBookId, UserRatingDisplay, DISPLAYED_RATINGS_COUNT};
+use crate::database::models::rating::{Rating, RatingCreate, RatingGetById, RatingSearch, RatingUpdate, RatingsGetByBookId, UserRatingDisplay, DISPLAYED_RATINGS_COUNT, RatingSummaryDisplay};
 use crate::database::models::user::UserGetById;
 
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
+use crate::database::models::Id;
+
 
 #[derive(Clone)]
 pub struct RatingRepository {
@@ -35,7 +37,7 @@ impl RatingRepository {
             Rating,
             r#"
             SELECT * FROM "Rating"
-            WHERE id = $1
+            WHERE id = $1 AND deleted_at IS NULL
             "#,
             params.id
         )
@@ -66,7 +68,7 @@ impl RatingRepository {
             Rating,
             r#"
             SELECT * FROM "Rating"
-            WHERE user_id = $1
+            WHERE user_id = $1 AND deleted_at IS NULL
             "#,
             params.id
         )
@@ -93,7 +95,7 @@ impl RatingRepository {
             Rating,
             r#"
                 SELECT * FROM "Rating"
-                WHERE audiobook_id = $1
+                WHERE audiobook_id = $1 AND deleted_at IS NULL
                 "#,
             params.id
         )
@@ -101,6 +103,53 @@ impl RatingRepository {
         .await?;
 
         Ok(ratings)
+    }
+
+    /// recalculate books overall rating, usable in transaction
+    pub async fn update_overall_book_rating<'a>(book_id: &Id, transaction_handle : &mut Transaction<'a, Postgres>) -> DbResultSingle<()>{
+        let _ = sqlx::query!(
+            r#"
+            UPDATE "Audiobook"
+            SET overall_rating = COALESCE((
+                SELECT AVG(R.Rating)
+                FROM "Rating" R
+                WHERE R.audiobook_id = $1 AND R.deleted_at IS NULL
+            ), 0)
+            WHERE id = $1
+
+            "#,
+            book_id
+        ).execute(transaction_handle.as_mut()).await?;
+        Ok(())
+    }
+
+    /// Function which retrieves rating for book with given id for given user, usable within a transaction
+    ///
+    /// # Params
+    /// - `params`: structure containing the id of the book
+    /// - `transaction_handle` mutable reference to an ongoing transaction
+    ///
+    /// # Returns
+    /// - `Ok(ratings)`: on successful connection and retrieval
+    /// - `Err(_)`: otherwise
+    pub async fn get_user_book_rating<'a>(&self,
+        audiobook_id: &Id,
+        user_id: &Id,
+        transaction_handle: &mut Transaction<'a, Postgres>,
+    ) -> DbResultSingle<Option<Rating>> {
+        let rating = sqlx::query_as!(
+            Rating,
+            r#"
+                SELECT * FROM "Rating"
+                WHERE audiobook_id = $1 AND user_id = $2 AND deleted_at IS NULL
+                "#,
+            audiobook_id,
+            user_id,
+        )
+            .fetch_optional(transaction_handle.as_mut())
+            .await?;
+
+        Ok(rating)
     }
 
     pub async fn delete_rating<'a>(
@@ -150,6 +199,25 @@ impl RatingRepository {
         Ok(ratings)
     }
 
+    async fn create_transactional<'a>(params: &RatingCreate, transaction_handle: &mut Transaction<'a, Postgres>,) -> DbResultSingle<Rating> {
+        let rating = sqlx::query_as!(
+            Rating,
+            r#"
+            INSERT INTO "Rating" (user_id, audiobook_id, rating, review)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+            "#,
+            params.user_id,
+            params.audiobook_id,
+            params.rating,
+            params.review
+        )
+            .fetch_one(transaction_handle.as_mut())
+            .await?;
+
+        Ok(rating)
+    }
+
     /// Function which checks if the rating is correct (existing and not deleted)
     ///
     /// # Params
@@ -169,19 +237,39 @@ impl RatingRepository {
         Err(DbError::from(BackendError::new(RatingDoesNotExist)))
     }
 
-    pub async fn create_displayed_rating(&self, params: &RatingCreate) -> DbResultSingle<UserRatingDisplay> {
-        let rating = self.create(params).await?;
+    pub async fn create_or_update_displayed_rating(&self, params: &RatingCreate) -> DbResultSingle<UserRatingDisplay> {
+        let mut transaction = self.pool_handler.pool.begin().await?;
+        let existing_rating = self.get_user_book_rating(&params.audiobook_id, &params.user_id, &mut transaction).await?;
+        let mut rating_id : Id;
+        if let Some(review) = existing_rating {
+            let rating_params = RatingUpdate {
+                id: review.id,
+                rating: params.rating,
+                review: params.review.to_owned(),
+            };
+            rating_id = RatingRepository::update(&rating_params, &mut transaction).await?[0].id;
+
+        } else {
+            rating_id = RatingRepository::create_transactional(params, &mut transaction).await?.id;
+        }
+
+        RatingRepository::update_overall_book_rating(&params.audiobook_id, &mut transaction).await?;
+
         let displayed_rating = sqlx::query_as!(
             UserRatingDisplay,
             r#"
             SELECT R.audiobook_id AS book_id, U.name AS user_name, U.surname AS user_surname, R.rating AS rating,
-                COALESCE(R.review, '') AS review, R.created_at AS created_at, U.profile_picture AS user_thumbnail
+                COALESCE(R.review, '') AS review, R.created_at AS created_at, U.profile_picture AS user_thumbnail,
+                U.id AS user_id
             FROM "Rating" R LEFT JOIN "User" U ON R.user_id = U.id
-            WHERE R.id = $1
+            WHERE R.id = $1 AND R.deleted_at IS NULL
             "#,
-            rating.id
-        ).fetch_one(&self.pool_handler.pool)
+            rating_id
+        ).fetch_one(transaction.as_mut())
             .await?;
+
+
+        transaction.commit().await?;
 
         Ok(displayed_rating)
     }
@@ -191,7 +279,7 @@ impl RatingRepository {
             UserRatingDisplay,
             r#"
             SELECT R.audiobook_id AS book_id, U.name AS user_name, U.surname AS user_surname, R.rating AS rating,
-                R.review AS review, R.created_at AS created_at, U.profile_picture AS user_thumbnail
+                R.review AS review, R.created_at AS created_at, U.profile_picture AS user_thumbnail, U.id AS user_id
             FROM "User" U JOIN "Rating" R ON R.user_id = U.id
             WHERE
                 (R.audiobook_id = $1 OR $1 IS NULL)
@@ -199,6 +287,7 @@ impl RatingRepository {
                 AND (R.rating >= $3 OR $3 IS NULL)
                 AND (R.rating <= $4 OR $4 IS NULL)
                 AND (R.review = $5 OR $5 IS NULL)
+                AND R.deleted_at IS NULL
             ORDER BY R.created_at DESC
             LIMIT $6
             OFFSET COALESCE($7, 0)
@@ -213,6 +302,79 @@ impl RatingRepository {
         ).fetch_all(&self.pool_handler.pool).await?;
 
         Ok(ratings)
+    }
+
+    /// Returns data for displaying overall ratings of given book. Star count vector contains number of
+    /// ratings with that many stars for given index -> star_count[0] = number of ratings with 0 stars ...
+    pub async fn get_rating_summary(&self, book_id: &Id) -> DbResultSingle<RatingSummaryDisplay>{
+        let summary = sqlx::query!(
+            r#"
+            SELECT rating AS stars, COUNT(*) AS star_count
+            FROM "Rating"
+            WHERE audiobook_id = $1 AND deleted_at IS NULL
+            GROUP BY rating
+            ORDER BY rating
+            "#,
+            book_id
+        ).fetch_all(&self.pool_handler.pool).await?;
+
+        let count_row = sqlx::query!(
+            r#"
+            SELECT overall_rating
+            FROM "Audiobook"
+            WHERE id=$1 AND deleted_at IS NULL
+            "#,
+            book_id
+        ).fetch_one(&self.pool_handler.pool).await?;
+
+
+        let mut star_count : Vec<i64> = vec![];
+        let mut all_ratings_count = 0;
+        for i in 0..6 {
+            let count = summary.iter().find(|rec| rec.stars == i);
+            match count {
+                Some(count) => {
+                    let count = count.star_count.unwrap_or(0);
+                    all_ratings_count += count;
+                    star_count.push(count);
+                },
+                None => star_count.push(0)
+            }
+        }
+
+        let rating_summary_display = RatingSummaryDisplay{
+            all_ratings_count,
+            star_count,
+            overall_rating: count_row.overall_rating,
+        };
+
+        Ok(rating_summary_display)
+    }
+
+    pub async fn delete_rating_for_book(&self,
+        book_id: &Id,
+        user_id: &Id,
+    ) -> DbResultSingle<Rating> {
+        let mut transaction = self.pool_handler.pool.begin().await?;
+        let rating = sqlx::query_as!(
+            Rating,
+            r#"
+            UPDATE "Rating"
+            SET
+                deleted_at = current_timestamp,
+                edited_at = current_timestamp
+            WHERE audiobook_id = $1 AND user_id = $2
+            RETURNING *
+            "#,
+            book_id,
+            user_id
+        )
+            .fetch_one(transaction.as_mut())
+            .await?;
+
+        RatingRepository::update_overall_book_rating(book_id, &mut transaction).await?;
+        transaction.commit().await?;
+        Ok(rating)
     }
 }
 

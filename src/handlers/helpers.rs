@@ -1,17 +1,20 @@
 use actix_identity::Identity;
 use actix_web::web;
 use crate::database::common::{DbReadMany, DbReadOne};
+
 use crate::database::common::query_parameters::{BookState, DbOrder, DbOrderColumn, DbQueryParams};
 use crate::database::models::audiobook::{AudiobookDisplay, AudiobookGetByIdJoin, AudiobookSearch};
-use crate::database::models::chapter::{Chapter, ChapterDetail, ChapterDisplay, ChaptersGetByBookId};
+use crate::database::models::chapter::{ChapterDisplay, ChaptersGetByBookId};
+use crate::database::models::genre::GenreSearch;
 use crate::database::models::Id;
 use crate::database::models::user::UserGetById;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::chapter::repository::ChapterRepository;
+use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
-use crate::handlers::utilities::{parse_user_id};
-use crate::templates::audiobook::AudiobookDetailBase;
+use crate::handlers::utilities::{authorized_to_modify_join, parse_user_id};
+use crate::templates::audiobook::{AudiobookDetailBase, AudiobookEditBase};
 use crate::templates::index::IndexBase;
 
 pub async fn get_releases(
@@ -20,9 +23,7 @@ pub async fn get_releases(
 ) -> Result<Vec<AudiobookDisplay>, AppError> {
     Ok(book_repo
         .read_many(&AudiobookSearch::with_params(
-            DbQueryParams::limit(5,
-                                 0,
-                                 Some(BookState::Fresh(true))),
+            DbQueryParams::state(Some(BookState::Fresh(true))),
             parse_user_id(u)?))
         .await?)
 }
@@ -37,11 +38,7 @@ pub async fn get_audiobook_detail_base(
         .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id))
         .await?;
 
-    let chapters = chapter_repo
-        .read_many(&ChaptersGetByBookId::new(audiobook_id))
-        .await?;
-
-    let displayed_chapters = transform_to_displayable_chapters(chapters);
+    let displayed_chapters = get_displayable_chapters(chapter_repo, audiobook_id).await?;
 
     Ok(AudiobookDetailBase {
         is_liked: audiobook.is_liked,
@@ -50,18 +47,20 @@ pub async fn get_audiobook_detail_base(
     })
 }
 
-
-pub fn transform_to_displayable_chapters(chapters: Vec<Chapter>) -> Vec<ChapterDisplay> {
-   chapters
+pub async fn get_displayable_chapters(chapter_repo: web::Data<ChapterRepository>, audiobook_id: Id) -> Result<Vec<ChapterDisplay>, AppError> {
+    let chapters = chapter_repo.read_many(&ChaptersGetByBookId { audiobook_id }).await?;
+    Ok(chapters
         .into_iter()
         .enumerate()
         .map(|(order, ch)| ChapterDisplay {
+            id: ch.id,
             name: ch.name,
             order: order + 1,
             position: ch.position,
         })
-        .collect()
+        .collect())
 }
+
 pub async fn get_index_base(
     u: Identity,
     user_repo: web::Data<UserRepository>,
@@ -73,22 +72,19 @@ pub async fn get_index_base(
 
     let audiobooks = book_repo
         .read_many(&AudiobookSearch::with_params(
-            DbQueryParams::state(Some(BookState::Fresh(true))), user.id))
+            DbQueryParams::order(DbOrderColumn::new("like_count", DbOrder::Desc),
+                                 Some(BookState::Fresh(true))), user.id))
         .await?;
     let active_audiobooks = book_repo
         .read_many(&AudiobookSearch::with_params(
-            DbQueryParams::new(
-                Some(DbOrderColumn::new("ab.edited_at", DbOrder::Desc)),
-                None,
-                None,
+            DbQueryParams::order(
+                DbOrderColumn::new("ab.edited_at", DbOrder::Desc),
                 Some(BookState::Active(true))), user.id))
         .await?;
     let finished_audiobooks = book_repo
         .read_many(&AudiobookSearch::with_params(
-            DbQueryParams::new(
-                Some(DbOrderColumn::new("ab.edited_at", DbOrder::Desc)),
-                None,
-                None,
+            DbQueryParams::order(
+                DbOrderColumn::new("ab.edited_at", DbOrder::Desc),
                 Some(BookState::Finished(true))), user.id))
         .await?;
     let template = IndexBase {
@@ -118,4 +114,18 @@ pub async fn get_studio(
     Ok(book_repo
         .read_many(&AudiobookSearch::search_by_author_id(user_id, user_id))
         .await?)
+}
+
+pub async fn get_audiobook_edit(
+    u: Identity,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    genre_repo: web::Data<GenreRepository>,
+    audiobook_id: Id,
+) -> Result<AudiobookEditBase, AppError> {
+    let audiobook = authorized_to_modify_join(&audiobook_repo, parse_user_id(u)?, audiobook_id).await?;
+    let genres = genre_repo.read_many(&GenreSearch::new(None)).await?;
+    Ok(AudiobookEditBase {
+        genres,
+        audiobook: AudiobookDisplay::from(audiobook),
+    })
 }

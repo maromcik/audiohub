@@ -4,6 +4,7 @@ use crate::database::models::chapter::ChapterDisplay;
 use crate::database::models::genre::Genre;
 use askama::Template;
 
+
 #[derive(Template)]
 #[template(path = "studio_create_audiobook.html")]
 pub struct AudiobookCreatePageTemplate {
@@ -20,6 +21,20 @@ pub struct AudiobookCreateContentTemplate {
 #[template(path = "audiobook/audiobook_upload.html")]
 pub struct AudiobookUploadFormTemplate {
     pub message: String,
+}
+
+#[derive(Template)]
+#[template(path = "audiobook/book_cover_thumbnail.html")]
+pub struct AudiobookThumbnail {
+    pub message: String,
+    pub audiobook: AudiobookDisplay,
+}
+
+#[derive(Template)]
+#[template(path = "audiobook/book_cover_update.html")]
+pub struct AudiobookCoverUpload {
+    pub message: String,
+    pub audiobook: AudiobookDisplay,
 }
 
 #[derive(Template)]
@@ -121,6 +136,42 @@ impl From<AudiobookDetailBase> for AudiobookDetailContentTemplate {
             audiobook: value.audiobook,
             chapters: value.chapters,
             is_liked: value.is_liked,
+        }
+    }
+}
+
+#[derive(Template)]
+#[template(path = "studio_edit_audiobook.html")]
+pub struct AudiobookEditPageTemplate {
+    pub genres: Vec<Genre>,
+    pub audiobook: AudiobookDisplay,
+}
+#[derive(Template)]
+#[template(path = "audiobook/audiobook_edit.html")]
+pub struct AudiobookEditContentTemplate {
+    pub genres: Vec<Genre>,
+    pub audiobook: AudiobookDisplay,
+}
+
+pub struct AudiobookEditBase {
+    pub genres: Vec<Genre>,
+    pub audiobook: AudiobookDisplay,
+}
+
+impl From<AudiobookEditBase> for AudiobookEditContentTemplate {
+    fn from(value: AudiobookEditBase) -> Self {
+        Self {
+            genres: value.genres,
+            audiobook: value.audiobook,
+        }
+    }
+}
+
+impl From<AudiobookEditBase> for AudiobookEditPageTemplate {
+    fn from(value: AudiobookEditBase) -> Self {
+        Self {
+            genres: value.genres,
+            audiobook: value.audiobook,
         }
     }
 }

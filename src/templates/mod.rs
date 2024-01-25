@@ -7,3 +7,4 @@ pub mod library;
 pub mod studio;
 pub mod user;
 pub mod rating;
+pub mod utilities;

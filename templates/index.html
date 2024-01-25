@@ -67,7 +67,6 @@
                 clearInterval(playerIntervalId);
                 updateActiveBook()
             }
-
         }
     });
 
@@ -105,23 +104,27 @@
         document.body.removeEventListener('click', this);
     }
 
-    // rating clear
+
     document.addEventListener("htmx:afterRequest", (e) => {
+        // rating clear
         if (e.detail.elt.id === 'rating-form') {
             document.getElementById('rating-form').reset();
         }
-    });
 
-
-    // rating button offset handling
-    document.addEventListener("htmx:afterRequest", (e) => {
+        // rating button offset handling
         if (e.detail.target.id === 'ratings-container' && e.detail.elt.id === 'load-more-ratings-btn') {
             if (e.detail.failed) {
                 document.getElementById('load-more-ratings-btn').remove()
             }
             incrementRatingButtonOffset()
         }
+
+        // update rating summary
+        if (e.detail.target.id === 'my-rating-container' && e.detail.elt.id === 'rating-form') {
+           htmx.trigger('#ratings-summary-container', 'change')
+        }
     });
+
     const incrementRatingButtonOffset = () => {
         const button = document.getElementById('load-more-ratings-btn');
         const hxUrl = button.getAttribute('hx-get');

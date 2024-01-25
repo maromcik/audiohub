@@ -1,6 +1,6 @@
-<form hx-get="/genre/{{ genre.id }}" hx-target="#content-area">
+<a class="cursor-pointer" hx-get="/genre/{{ genre.id }}" hx-target="#content-area">
     <div class="container mx-auto bg-black p-4">
-        <div class="flex max-w-xs flex-col items-center overflow-hidden rounded bg-gray-800 shadow-lg">
+        <div class="flex max-w-xs flex-col items-center overflow-hidden rounded hover:bg-blue-300 bg-gray-800 shadow-lg">
             <div class="px-4 py-2">
                 <div class="text-center">
                     <button class="mb-2 text-lg font-bold text-white">{{ genre.name }}</button>
@@ -8,4 +8,4 @@
             </div>
         </div>
     </div>
-</form>
+</a>

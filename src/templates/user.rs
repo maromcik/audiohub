@@ -11,22 +11,30 @@ pub struct RegistrationTemplate {
 #[template(path = "user/login.html")]
 pub struct LoginTemplate {
     pub message: String,
+    pub return_url: String
 }
 
 #[derive(Template)]
 #[template(path = "user/password.html")]
-pub struct UserManagePasswordTemplate {}
+pub struct UserManagePasswordTemplate {
+    pub message: String,
+    pub message_success: String,
+}
 
 #[derive(Template)]
 #[template(path = "user-manage.html")]
 pub struct UserManageProfilePageTemplate {
     pub user: UserDisplay,
+    pub message: String,
+    pub message_success: String,
 }
 
 #[derive(Template)]
 #[template(path = "user/profile.html")]
 pub struct UserManageProfileContentTemplate {
     pub user: UserDisplay,
+    pub message: String,
+    pub message_success: String,
 }
 
 #[derive(Template)]
@@ -53,4 +61,6 @@ pub struct UserManageProfileSuccessfulUpdatePassword {}
 #[template(path = "user/profile_user_form.html")]
 pub struct UserManageProfileUserFormTemplate {
     pub user: UserDisplay,
+    pub message: String,
+    pub message_success: String,
 }

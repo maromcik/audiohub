@@ -53,6 +53,7 @@ impl ChaptersGetByBookId {
 
 #[derive(Debug, Clone)]
 pub struct ChapterDisplay {
+    pub id: Id,
     pub name: String,
     pub position: f64,
     pub order: usize,
@@ -98,21 +99,6 @@ impl ChapterGetById {
     pub fn new(id: Id) -> Self {
         Self {
             id,
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct ChapterRemoveById {
-    pub id: Id,
-    pub user_id: Id
-}
-
-impl ChapterRemoveById {
-    pub fn new(id: Id, user_id: Id) -> Self {
-        Self {
-            id,
-            user_id
         }
     }
 }
