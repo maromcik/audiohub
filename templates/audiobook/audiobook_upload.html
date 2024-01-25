@@ -31,13 +31,18 @@
             </div>
         </div>
 
-        <div class="flex justify-end mt-10">
+        <div class="flex justify-end mt-10 mb-5">
             <button hx-target="#content-area" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                     type="submit">
                 Create Audiobook
             </button>
         </div>
-        <progress id='progress' value='0' max='100' class="hide-if-empty"></progress>
+
+
+        <div class="w-full bg-gray-200 rounded-full dark:bg-gray-700">
+            <div id="progress" class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" style="width: 0%; display: none;">0%</div>
+        </div>
+
     </form>
 </div>
 
@@ -49,9 +54,16 @@
 
 <script>
     htmx.on('#audio_book_upload_form', 'htmx:xhr:progress', function(evt) {
-        htmx.find('#progress').setAttribute('value', evt.detail.loaded/evt.detail.total * 100)
-        if (htmx.find('#progress').getAttribute('value') === '0'){
-            htmx.find('#progress').style("display: none")
+        var progressElement = htmx.find('#progress');
+        var progress = (evt.detail.loaded / evt.detail.total * 100).toFixed(2);
+
+        progressElement.style.width = progress + '%';
+        progressElement.textContent = progress + '%';
+
+        if (progress > 0) {
+            progressElement.style.display = 'block';
+        } else {
+            progressElement.style.display = 'none';
         }
     });
 </script>
