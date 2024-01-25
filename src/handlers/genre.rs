@@ -66,7 +66,7 @@ async fn get_audiobooks_by_genre(
 
     let template = AudiobooksByGenreTemplate {
         audiobooks: books,
-        genre_name: genre.name,
+        genre,
     };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))

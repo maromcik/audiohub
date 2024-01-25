@@ -67,7 +67,7 @@ pub struct CardLikesTemplate {
 #[template(path = "audiobook/audiobooks_by_genre.html")]
 pub struct AudiobooksByGenreTemplate {
     pub audiobooks: Vec<AudiobookDisplay>,
-    pub genre_name: String,
+    pub genre: Genre,
 }
 
 #[derive(Template)]

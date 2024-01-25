@@ -1,11 +1,9 @@
-<a class="cursor-pointer" hx-get="/genre/{{ genre.id }}" hx-target="#content-area">
-    <div class="container mx-auto bg-black p-4">
-        <div class="flex max-w-xs flex-col items-center overflow-hidden rounded hover:bg-blue-300 bg-gray-800 shadow-lg">
-            <div class="px-4 py-2">
-                <div class="text-center">
-                    <button class="mb-2 text-lg font-bold text-white">{{ genre.name }}</button>
-                </div>
-            </div>
+<div class="container h-40 w-full mx-auto bg-black p-4">
+    <a class="cursor-pointer" hx-get="/genre/{{ genre.id }}" hx-target="#content-area">
+        <div class="flex w-full h-full flex-row items-center justify-center overflow-hidden rounded shadow-lg shadow-inner px-4 py-2"
+            style="background: linear-gradient(180deg, {{genre.color}} 0%, rgb(63 63 70) 100%);">
+            <div class="text-center text-lg font-bold text-white">{{ genre.name }}</div>
         </div>
-    </div>
-</a>
+    </a>
+</div>
+
