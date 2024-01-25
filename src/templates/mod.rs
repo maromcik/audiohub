@@ -4,7 +4,7 @@ pub mod error;
 pub mod genre;
 pub mod index;
 pub mod library;
+pub mod rating;
 pub mod studio;
 pub mod user;
-pub mod rating;
 pub mod utilities;

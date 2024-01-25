@@ -1,8 +1,10 @@
-use crate::database::common::{DbPoolHandler, DbRepository, PoolHandler, setup_pool};
+use crate::database::common::{setup_pool, DbPoolHandler, DbRepository};
 use crate::init::configure_webapp;
+use crate::recommender::recommender::init_recommender;
 use actix_cors::Cors;
 use actix_identity::IdentityMiddleware;
 use actix_multipart::form::MultipartFormConfig;
+use actix_session::config::PersistentSession;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::http::header;
 use actix_web::middleware::Logger;
@@ -11,8 +13,6 @@ use actix_web::{cookie::Key, App, HttpServer};
 use env_logger::Env;
 use log::{info, warn};
 use std::env;
-use actix_session::config::PersistentSession;
-use crate::recommender::recommender::init_recommender;
 
 const SECS_IN_WEEK: i64 = 60 * 60 * 24 * 7;
 
@@ -21,8 +21,8 @@ mod error;
 mod forms;
 mod handlers;
 mod init;
-mod templates;
 mod recommender;
+mod templates;
 const DEFAULT_HOSTNAME: &str = "localhost";
 const DEFAULT_PORT: &str = "8000";
 const CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE: f64 = 98.0;
@@ -77,7 +77,9 @@ async fn main() -> anyhow::Result<()> {
                 SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
                     .cookie_secure(use_secure_cookie)
                     .session_lifecycle(
-                        PersistentSession::default().session_ttl(actix_web::cookie::time::Duration::seconds(SECS_IN_WEEK)))
+                        PersistentSession::default()
+                            .session_ttl(actix_web::cookie::time::Duration::seconds(SECS_IN_WEEK)),
+                    )
                     .build(),
             )
             .wrap(

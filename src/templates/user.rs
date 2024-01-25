@@ -11,7 +11,7 @@ pub struct RegistrationTemplate {
 #[template(path = "user/login.html")]
 pub struct LoginTemplate {
     pub message: String,
-    pub return_url: String
+    pub return_url: String,
 }
 
 #[derive(Template)]

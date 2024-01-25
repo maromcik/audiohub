@@ -15,7 +15,6 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 
-
 use crate::database::models::bookmark::{Bookmark, BookmarkOperation};
 use crate::database::models::user::{
     User, UserCreate, UserDelete, UserGetById, UserGetByUsername, UserLogin, UserSearch,

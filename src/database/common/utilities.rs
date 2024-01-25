@@ -1,7 +1,7 @@
 use crate::database::common::query_parameters::{BookState, DbOrder, DbQueryParams};
+use crate::CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE;
 use sqlx::{Postgres, QueryBuilder};
 use std::fmt::Display;
-use crate::CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE;
 
 pub fn add_sql_to_query(
     query_builder: &mut QueryBuilder<Postgres>,
@@ -34,13 +34,18 @@ pub fn generate_query_param_string(params: &DbQueryParams) -> String {
     if let Some(state) = &params.book_state {
         match state {
             BookState::Finished(val) => {
-                qp_string.push_str(format!("AND ((ab.playback_position / a.length > {ratio}) = {val})\n").as_str());
+                qp_string.push_str(
+                    format!("AND ((ab.playback_position / a.length > {ratio}) = {val})\n").as_str(),
+                );
             }
             BookState::Fresh(val) => {
                 qp_string.push_str(format!("AND (ab.audiobook_id IS NULL = {val})\n").as_str());
             }
             BookState::Active(val) => {
-                qp_string.push_str(format!("AND ((ab.playback_position / a.length <= {ratio}) = {val})\n").as_str());
+                qp_string.push_str(
+                    format!("AND ((ab.playback_position / a.length <= {ratio}) = {val})\n")
+                        .as_str(),
+                );
             }
         }
     }

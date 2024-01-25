@@ -19,9 +19,14 @@ use uuid::Uuid;
 
 use crate::database::common::{DbCreate, DbReadOne, DbUpdate};
 
-use crate::database::models::user::{User, UserCreate, UserDisplay, UserGetById, UserLogin, UserUpdate, UserUpdatePassword};
+use crate::database::models::user::{
+    User, UserCreate, UserDisplay, UserGetById, UserLogin, UserUpdate, UserUpdatePassword,
+};
 use crate::error::AppErrorKind::InternalServerError;
-use crate::forms::user::{UserLoginReturnURL, ProfilePictureUploadForm, UserCreateForm, UserUpdateForm, UserUpdatePasswordForm, UserLoginForm};
+use crate::forms::user::{
+    ProfilePictureUploadForm, UserCreateForm, UserLoginForm, UserLoginReturnURL, UserUpdateForm,
+    UserUpdatePasswordForm,
+};
 
 use crate::handlers::utilities::{
     get_user_from_identity, parse_user_id, remove_file, save_file, validate_file,
@@ -37,8 +42,10 @@ pub async fn register() -> Result<HttpResponse, AppError> {
 }
 
 #[get("/login")]
-pub async fn login(identity: Option<Identity>,
-                   query: web::Query<UserLoginReturnURL>) -> Result<HttpResponse, AppError> {
+pub async fn login(
+    identity: Option<Identity>,
+    query: web::Query<UserLoginReturnURL>,
+) -> Result<HttpResponse, AppError> {
     let return_url = query.ret.clone().unwrap_or("/".to_string());
     if identity.is_some() {
         return Ok(HttpResponse::SeeOther()
@@ -47,7 +54,7 @@ pub async fn login(identity: Option<Identity>,
     }
     let template = LoginTemplate {
         message: "".to_string(),
-        return_url
+        return_url,
     };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -58,7 +65,6 @@ pub async fn register_user(
     form: web::Form<UserCreateForm>,
     user_repo: web::Data<UserRepository>,
 ) -> Result<impl Responder, AppError> {
-
     if form.password != form.confirm_password {
         let template = RegistrationTemplate {
             message: "Passwords do not match".to_string(),
@@ -81,7 +87,6 @@ pub async fn register_user(
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/user/login"))
         .finish())
-
 }
 
 #[post("/login")]
@@ -108,7 +113,7 @@ pub async fn login_user(
             if backend_error.is_login_error() {
                 let template = LoginTemplate {
                     message: backend_error.to_string(),
-                    return_url: form.return_url.clone()
+                    return_url: form.return_url.clone(),
                 };
                 let body = template.render()?;
                 return Ok(HttpResponse::Ok().content_type("text/html").body(body));
@@ -241,7 +246,10 @@ pub async fn user_manage(
         return Ok(HttpResponse::Ok().content_type("text/html").body(body));
     }
 
-    Err(AppError::new(InternalServerError, "Update of user profile failed"))
+    Err(AppError::new(
+        InternalServerError,
+        "Update of user profile failed",
+    ))
 }
 
 #[post("/manage/password")]

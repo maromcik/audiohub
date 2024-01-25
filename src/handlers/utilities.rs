@@ -1,16 +1,19 @@
+use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::common::DbReadOne;
-use crate::database::models::audiobook::{Audiobook, AudiobookDetail, AudiobookDisplay, AudiobookGetById, AudiobookGetByIdJoin, AudiobookMetadataForm};
+use crate::database::models::audiobook::{
+    Audiobook, AudiobookDetail, AudiobookDisplay, AudiobookGetById, AudiobookGetByIdJoin,
+    AudiobookMetadataForm,
+};
 use crate::database::models::user::{User, UserGetById};
 use crate::database::models::Id;
+use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::{AppError, AppErrorKind};
 use actix_identity::Identity;
 use actix_multipart::form::tempfile::TempFile;
 use actix_session::Session;
 use actix_web::web;
-use uuid::{Uuid};
-use crate::database::common::error::{BackendError, BackendErrorKind};
-use crate::database::repositories::audiobook::repository::AudiobookRepository;
+use uuid::Uuid;
 
 pub struct AudiobookCreateSessionKeys {
     pub name: String,
@@ -143,7 +146,6 @@ pub fn get_finished_audiobooks(audiobooks: &[AudiobookDetail]) -> Vec<AudiobookD
         .collect()
 }
 
-
 #[macro_export]
 macro_rules! authorized {
     ($e:expr, $p:expr) => {{
@@ -159,9 +161,11 @@ macro_rules! authorized {
     }};
 }
 
-pub async fn authorized_to_modify(audiobook_repo: &web::Data<AudiobookRepository>,
-                                  user_id: Id,
-                                  audiobook_id: Id) -> Result<Audiobook, AppError> {
+pub async fn authorized_to_modify(
+    audiobook_repo: &web::Data<AudiobookRepository>,
+    user_id: Id,
+    audiobook_id: Id,
+) -> Result<Audiobook, AppError> {
     let audiobook = audiobook_repo
         .read_one(&AudiobookGetById::new(&audiobook_id))
         .await?;
@@ -169,9 +173,11 @@ pub async fn authorized_to_modify(audiobook_repo: &web::Data<AudiobookRepository
     Ok(audiobook)
 }
 
-pub async fn authorized_to_modify_join(audiobook_repo: &web::Data<AudiobookRepository>,
-                                  user_id: Id,
-                                  audiobook_id: Id) -> Result<AudiobookDetail, AppError> {
+pub async fn authorized_to_modify_join(
+    audiobook_repo: &web::Data<AudiobookRepository>,
+    user_id: Id,
+    audiobook_id: Id,
+) -> Result<AudiobookDetail, AppError> {
     let audiobook = audiobook_repo
         .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id))
         .await?;
@@ -181,9 +187,9 @@ pub async fn authorized_to_modify_join(audiobook_repo: &web::Data<AudiobookRepos
 
 pub fn is_authorized(user_id: Id, author_id: Id) -> Result<(), AppError> {
     match user_id == author_id {
-        true =>  Ok(()),
+        true => Ok(()),
         false => Err(AppError::from(BackendError::new(
-                BackendErrorKind::UnauthorizedOperation,
-            )))
+            BackendErrorKind::UnauthorizedOperation,
+        ))),
     }
 }
