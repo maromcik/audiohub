@@ -82,3 +82,28 @@ WantedBy=multi-user.target default.target
 ```
 
 ***
+
+### Language based recommender system - gRPC
+
+#### build.rs Configuration
+
+The `build.rs` file houses the build target configuration necessary for compilation. 
+To generate the required libraries, execute the command:
+```
+cargo build
+```
+This command triggers the compilation process, ensuring the creation of the relevant
+libraries for your project.
+
+#### Running the gRPC Server
+
+Before proceeding, it's crucial to initiate the gRPC server, an integral component of 
+the application. The server's GitLab repository, along with comprehensive instructions
+on how to run it, can be accessed at the following URL:
+
+https://gitlab.fi.muni.cz/x460349/recommender_ai_grpc
+
+Refer to the provided documentation for detailed steps on setting up and launching the 
+gRPC server.
+Ensure the server is operational to enable seamless interaction with your application.  
+
