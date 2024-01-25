@@ -1,6 +1,6 @@
 use crate::authorized;
 use crate::database::repositories::user::repository::UserRepository;
-use crate::error::{AppError, AppErrorKind};
+use crate::error::{AppError};
 use crate::templates::user::{
     LoginTemplate, RegistrationTemplate, UserManagePasswordTemplate,
     UserManageProfileContentTemplate, UserManageProfilePageTemplate,
@@ -19,7 +19,7 @@ use uuid::Uuid;
 
 use crate::database::common::{DbCreate, DbReadOne, DbUpdate};
 
-use crate::database::models::user::{User, UserCreate, UserDisplay, UserGetById, UserLogin, UserUpdate, UserUpdatePassword};
+use crate::database::models::user::{UserCreate, UserDisplay, UserGetById, UserLogin, UserUpdate, UserUpdatePassword};
 use crate::error::AppErrorKind::InternalServerError;
 use crate::forms::user::{UserLoginReturnURL, ProfilePictureUploadForm, UserCreateForm, UserUpdateForm, UserUpdatePasswordForm, UserLoginForm};
 
@@ -299,8 +299,7 @@ pub async fn user_manage_picture(
         &form.picture,
         Uuid::new_v4(),
         "image",
-        "user",
-        AppErrorKind::ProfilePictureUploadError,
+        "user"
     )?;
     let user = get_user_from_identity(u, &user_repo).await?;
     if let Some(pic) = &user.profile_picture {
@@ -318,7 +317,7 @@ pub async fn user_manage_picture(
     );
 
     let users = user_repo.update(&user_update).await?;
-    save_file(form.picture, &path, AppErrorKind::ProfilePictureUploadError)?;
+    save_file(form.picture, &path)?;
     // // Ok(HttpResponse::Ok()
     // //     .insert_header(("HX-Redirect", "/user/manage"))
     // //     .finish())

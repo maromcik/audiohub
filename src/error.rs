@@ -34,10 +34,6 @@ pub enum AppErrorKind {
     Conflict,
     #[error("file error")]
     FileError,
-    #[error("audiobook error")]
-    AudiobookUploadError,
-    #[error("audiobook error")]
-    ProfilePictureUploadError,
     #[error("unauthorized")]
     Unauthorized,
 }
@@ -181,31 +177,12 @@ impl ResponseError for AppError {
             | AppErrorKind::PasswordHasherError
             | AppErrorKind::IdentityError
             | AppErrorKind::SessionError
-            | AppErrorKind::FileError => StatusCode::INTERNAL_SERVER_ERROR,
-            AppErrorKind::AudiobookUploadError | AppErrorKind::ProfilePictureUploadError => {
-                StatusCode::OK
-            }
+            | AppErrorKind::FileError => StatusCode::INTERNAL_SERVER_ERROR
         }
     }
 
     fn error_response(&self) -> HttpResponse {
-        match self.app_error_kind {
-            AppErrorKind::AudiobookUploadError => {
-                let template = AudiobookUploadFormTemplate {
-                    message: self.message.to_string(),
-                };
-                let body = template.render().unwrap_or_default();
-                render_custom(body)
-            }
-            AppErrorKind::ProfilePictureUploadError => {
-                let template = UserManageProfilePictureFormTemplate {
-                    message: self.message.to_string(),
-                };
-                let body = template.render().unwrap_or_default();
-                render_custom(body)
-            }
-            _ => render_generic(self),
-        }
+        render_generic(self)
     }
 }
 

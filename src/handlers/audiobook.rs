@@ -8,7 +8,7 @@ use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
-use crate::error::{AppError, AppErrorKind};
+use crate::error::{AppError};
 use crate::forms::audiobook::{AudiobookCreateForm, AudiobookQuickSearchQuery, AudiobookUploadForm, AudiobookEditForm, AudiobookThumbnailEditForm};
 use crate::handlers::utilities::{get_metadata_from_session, get_user_from_identity, parse_user_id, save_file, validate_file, AudiobookCreateSessionKeys, authorized_to_modify, authorized_to_modify_join};
 use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate, QuickSearchResults, AudiobookEditContentTemplate, AudiobookEditPageTemplate, AudiobookCoverUpload};
@@ -109,7 +109,6 @@ pub async fn upload_book_cover_post(
             uuid,
             "image",
             "audiobook",
-            AppErrorKind::AudiobookUploadError,
         )?),
     };
 
@@ -121,7 +120,7 @@ pub async fn upload_book_cover_post(
         None);
     let book_update = audiobook_repo.update(&book_update).await?;
     if let (Some(thumb_path), Some(thumbnail)) = (&thumbnail_path, form.thumbnail) {
-        save_file(thumbnail, thumb_path, AppErrorKind::AudiobookUploadError)?;
+        save_file(thumbnail, thumb_path)?;
     }
 
     if let Some(audiobook) = book_update.into_iter().next() {
@@ -179,7 +178,6 @@ pub async fn upload_audiobook(
         uuid,
         "audio",
         "audiobook",
-        AppErrorKind::AudiobookUploadError,
     )?;
     let thumbnail_path = match &form.thumbnail {
         None => None,
@@ -188,7 +186,6 @@ pub async fn upload_audiobook(
             uuid,
             "image",
             "audiobook",
-            AppErrorKind::AudiobookUploadError,
         )?),
     };
     let metadata = get_metadata_from_session(&session, &session_keys)?;
@@ -198,7 +195,7 @@ pub async fn upload_audiobook(
     let properties = lofty_audio_file.properties();
     let length = properties.duration().as_secs_f64();
     if let (Some(thumb_path), Some(thumbnail)) = (&thumbnail_path, form.thumbnail) {
-        save_file(thumbnail, thumb_path, AppErrorKind::AudiobookUploadError)?;
+        save_file(thumbnail, thumb_path)?;
     }
     let book_crate = AudiobookCreate::new(
         &metadata.name,
@@ -214,7 +211,6 @@ pub async fn upload_audiobook(
     save_file(
         form.audio_file,
         &audiobook_path,
-        AppErrorKind::AudiobookUploadError,
     )?;
 
     session.remove(session_keys.name.as_str());
