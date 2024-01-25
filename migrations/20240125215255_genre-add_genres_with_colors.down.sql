@@ -1,0 +1,28 @@
+ALTER TABLE "Genre" DROP COLUMN IF EXISTS color;
+
+INSERT INTO "Genre" (name) VALUES ('Biography');
+INSERT INTO "Genre" (name) VALUES ('SciFi');
+INSERT INTO "Genre" (name) VALUES ('Mystery');
+INSERT INTO "Genre" (name) VALUES ('Fantasy');
+INSERT INTO "Genre" (name) VALUES ('Crime');
+INSERT INTO "Genre" (name) VALUES ('Horror');
+INSERT INTO "Genre" (name) VALUES ('Thriller');
+INSERT INTO "Genre" (name) VALUES ('Dystopian');
+INSERT INTO "Genre" (name) VALUES ('Magic Realism');
+INSERT INTO "Genre" (name) VALUES ('Educational');
+INSERT INTO "Genre" (name) VALUES ('Romance');
+INSERT INTO "Genre" (name) VALUES ('Business and Economics');
+INSERT INTO "Genre" (name) VALUES ('Kids');
+INSERT INTO "Genre" (name) VALUES ('Cooking');
+INSERT INTO "Genre" (name) VALUES ('Fairy Tales');
+INSERT INTO "Genre" (name) VALUES ('Novels');
+INSERT INTO "Genre" (name) VALUES ('History');
+INSERT INTO "Genre" (name) VALUES ('Adventure');
+INSERT INTO "Genre" (name) VALUES ('Sports');
+INSERT INTO "Genre" (name) VALUES ('Entertainment');
+INSERT INTO "Genre" (name) VALUES ('Travel');
+INSERT INTO "Genre" (name) VALUES ('Politics');
+INSERT INTO "Genre" (name) VALUES ('Motorsport');
+INSERT INTO "Genre" (name) VALUES ('Computers');
+INSERT INTO "Genre" (name) VALUES ('Art');
+INSERT INTO "Genre" (name) VALUES ('Fiction');

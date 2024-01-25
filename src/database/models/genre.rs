@@ -5,6 +5,7 @@ use chrono::{DateTime, Utc};
 pub struct Genre {
     pub id: Id,
     pub name: String,
+    pub color: String,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
@@ -13,14 +14,16 @@ pub struct Genre {
 #[derive(Debug, Clone)]
 pub struct GenreCreate {
     pub name: String,
+    pub color: String,
 }
 
 impl GenreCreate {
     #[must_use]
     #[inline]
-    pub fn new(name: &str) -> Self {
+    pub fn new(name: &str, color: &str) -> Self {
         Self {
             name: name.to_owned(),
+            color: color.to_owned()
         }
     }
 }
@@ -44,14 +47,16 @@ impl GenreSearch {
 pub struct GenreUpdate {
     pub id: Id,
     pub name: Option<String>,
+    pub color: Option<String>
 }
 
 impl GenreUpdate {
-    pub fn new(id: &Id, name: Option<&str>) -> Self {
+    pub fn new(id: &Id, name: Option<&str>, color: Option<&str>) -> Self {
         let change_to_owned = |value: &str| Some(value.to_owned());
         Self {
             id: *id,
             name: name.and_then(change_to_owned),
+            color: color.and_then(change_to_owned)
         }
     }
 
