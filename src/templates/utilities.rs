@@ -28,6 +28,6 @@ pub fn get_percentage_from_int(part: &i64, whole: &i64) -> i64{
     get_percentage(&(*part as f64), &(*whole as f64))
 }
 
-pub fn get_star_filled_percentage(star_index: &i64, overall_rating: &f64) {
-
+pub fn format_overall_rating(rating: &f64) -> String {
+    format!("{:.2}", rating)
 }

@@ -84,9 +84,10 @@ pub async fn remove_rating_for_audiobook(
     path: web::Path<(Id,)>,
     request: HttpRequest,
 ) -> Result<HttpResponse, AppError> {
-    authorized!(identity, request.path());
+    let identity = authorized!(identity, request.path());
+    let user_id = parse_user_id(identity)?;
 
-    let _ = rating_repo.delete_rating_for_book(&path.into_inner().0).await?;
+    let _ = rating_repo.delete_rating_for_book(&path.into_inner().0, &user_id).await?;
 
     let template = DeletedRatingTemplate {};
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))

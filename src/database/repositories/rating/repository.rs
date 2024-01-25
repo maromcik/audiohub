@@ -110,11 +110,11 @@ impl RatingRepository {
         let _ = sqlx::query!(
             r#"
             UPDATE "Audiobook"
-            SET overall_rating = (
+            SET overall_rating = COALESCE((
                 SELECT AVG(R.Rating)
                 FROM "Rating" R
                 WHERE R.audiobook_id = $1 AND R.deleted_at IS NULL
-            )
+            ), 0)
             WHERE id = $1
 
             "#,
@@ -353,6 +353,7 @@ impl RatingRepository {
 
     pub async fn delete_rating_for_book(&self,
         book_id: &Id,
+        user_id: &Id,
     ) -> DbResultSingle<Rating> {
         let mut transaction = self.pool_handler.pool.begin().await?;
         let rating = sqlx::query_as!(
@@ -362,10 +363,11 @@ impl RatingRepository {
             SET
                 deleted_at = current_timestamp,
                 edited_at = current_timestamp
-            WHERE audiobook_id = $1
+            WHERE audiobook_id = $1 AND user_id = $2
             RETURNING *
             "#,
-            book_id
+            book_id,
+            user_id
         )
             .fetch_one(transaction.as_mut())
             .await?;

@@ -36,6 +36,9 @@
                             <i class="fa-solid fa-music text-3xl"></i> <p class="pl-5 text-gray-300 text-2xl">{{ audiobook.like_count }}</p>
                         </div>
                     </button>
+                    <div id="rating-average" class="flex items-center pl-5 text-3xl">
+                        <i class="fa-solid fa-star text-3xl"></i> <p class="pl-5 text-gray-300 text-2xl">{{  crate::templates::utilities::format_overall_rating(audiobook.overall_rating) }}</p>
+                    </div>
                 </div>
             </div>
             <div class="pt-5 flex flex-row items-center" >
@@ -94,17 +97,3 @@
         </button>
     </div>
 </div>
-
-<style>
-    .image-container {
-        width: 100%; /* Set the width of the container */
-        max-width: 320px;
-        margin-left: 0;
-    }
-
-    .responsive-image {
-        width: 100%; /* Make the image fill the container */
-        height: 100%; /* Make the image fill the container */
-        object-fit: cover; /* Maintain aspect ratio and cover the container */
-    }
-</style>
