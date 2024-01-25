@@ -224,7 +224,6 @@ impl RatingRepository {
         let existing_rating = self.get_user_book_rating(&params.audiobook_id, &params.user_id, &mut transaction).await?;
         let mut rating_id : Id;
         if let Some(review) = existing_rating {
-            print!("existing ratign");
             let rating_params = RatingUpdate {
                 id: review.id,
                 rating: params.rating,
@@ -243,7 +242,7 @@ impl RatingRepository {
                 COALESCE(R.review, '') AS review, R.created_at AS created_at, U.profile_picture AS user_thumbnail,
                 U.id AS user_id
             FROM "Rating" R LEFT JOIN "User" U ON R.user_id = U.id
-            WHERE R.id = $1
+            WHERE R.id = $1 AND R.deleted_at IS NULL
             "#,
             rating_id
         ).fetch_one(transaction.as_mut())
