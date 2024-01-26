@@ -314,30 +314,6 @@ impl DbReadOne<UserGetByUsername, User> for UserRepository {
 
 #[async_trait]
 impl DbReadMany<UserSearch, User> for UserRepository {
-    // ALTERNATIVE
-    // async fn read_many(&self, params: &UserSearch) -> DbResultMultiple<User> {
-    //     let mut query: QueryBuilder<Postgres> = QueryBuilder::new(r#" SELECT * FROM "User""#);
-    //     if !params.search_fields_none() {
-    //         query.push(" WHERE ");
-    //     }
-    //
-    //     let mut query_pairs: Vec<String> = Vec::new();
-    //     parse_value("username", &params.username, &mut query_pairs, None);
-    //     parse_value("name", &params.name, &mut query_pairs, None);
-    //     parse_value("surname", &params.surname, &mut query_pairs, None);
-    //     parse_value("email", &params.email, &mut query_pairs, None);
-    //
-    //     add_sql_to_query(&mut query, &query_pairs, Some(" AND "));
-    //
-    //     println!("query: {}", query.sql());
-    //     let mut transaction = self.pool_handler.pool.begin().await?;
-    //
-    //     let users = query
-    //         .build_query_as()
-    //         .fetch_all(transaction.as_mut())
-    //         .await?;
-    //     Ok(users)
-    // }
     async fn read_many(&self, params: &UserSearch) -> DbResultMultiple<User> {
         let users = sqlx::query_as!(
             User,
