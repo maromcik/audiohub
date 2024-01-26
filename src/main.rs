@@ -4,7 +4,6 @@ use actix_cors::Cors;
 use actix_identity::IdentityMiddleware;
 use actix_multipart::form::MultipartFormConfig;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
-use actix_web::cookie::SameSite;
 use actix_web::http::header;
 use actix_web::middleware::Logger;
 use actix_web::web::PayloadConfig;
@@ -14,7 +13,6 @@ use log::{info, warn};
 use std::env;
 use actix_session::config::PersistentSession;
 
-const SECS_IN_WEEK: i64 = 60 * 60 * 24 * 7;
 
 mod database;
 mod error;
@@ -24,6 +22,9 @@ mod init;
 mod templates;
 const DEFAULT_HOSTNAME: &str = "localhost";
 const DEFAULT_PORT: &str = "8000";
+const SECS_IN_WEEK: i64 = 60 * 60 * 24 * 7;
+
+const PAYLOAD_LIMIT: usize = 16 * 1024 * 1024 * 1024; // 16GiB
 const CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE: f64 = 98.0;
 
 #[actix_web::main]
@@ -57,10 +58,10 @@ async fn main() -> anyhow::Result<()> {
         App::new()
             .app_data(
                 MultipartFormConfig::default()
-                    .total_limit(16 * 1024 * 1024 * 1024)
-                    .memory_limit(16 * 1024 * 1024 * 1024),
+                    .total_limit(PAYLOAD_LIMIT)
+                    .memory_limit(PAYLOAD_LIMIT),
             )
-            .app_data(PayloadConfig::new(16 * 1024 * 1024 * 1024))
+            .app_data(PayloadConfig::new(PAYLOAD_LIMIT))
             .wrap(IdentityMiddleware::default())
             .wrap(
                 SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
