@@ -49,6 +49,18 @@ Please use these secrets modify the `example.env` file.
 ### Local app - Local Postgres with our DB contents
 If you do not wish to use our database you can always restore the database from the database dump file `db_dump.sql` and then reload it with this command `psql -d audiobooks -f db_dump.sql`.
 
+## Evaluation
+Use any of those credentials to log into to https://audiohub.dyn.cloud.e-infra.cz/ or your local instance (as long as migrations have been successfully applied).
+
+| username | email | name | surname | password |
+| :--- | :--- | :--- | :--- | :--- |
+| charlie | c@c.com | Charles | Dickens | Aa123! |
+| sop | s@s.com | Sophocles | of Greece | Aa123! |
+| archie | a@a.com | Arthur Conan | Doyle | Aa123! |
+| n | n@n.com | Ninka | Rybka | Aa123! |
+| r | r@r.com | Roman | Mar | Aa123! |
+| v | v@v.com | Vojta | Syk | Aa123! |
+| p | p@p.com | Pavel | Koh | Aa123! |
 
 ## Deployment
 We chose the CERIT-SC's Kubernetes cluster to deploy this application. YAML manifests used to do so are located in the `kubernetes` folder.
