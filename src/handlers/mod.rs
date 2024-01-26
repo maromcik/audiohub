@@ -20,8 +20,8 @@ pub use crate::handlers::user::user_manage_password;
 pub use crate::handlers::user::user_manage_password_form;
 pub use crate::handlers::user::user_manage_picture;
 pub use crate::handlers::user::user_manage_picture_form;
-pub use crate::handlers::user::user_manage_form_content;
-pub use crate::handlers::user::user_manage_profile_form;
+
+
 
 pub use crate::handlers::homepage::{*};
 pub use crate::handlers::audiobook::{*};

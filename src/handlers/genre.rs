@@ -1,12 +1,12 @@
 use crate::authorized;
-use crate::database::common::{DbReadMany, DbReadOne};
-use crate::database::models::audiobook::{AudiobookDisplay, AudiobookSearch};
-use crate::database::models::genre::{GenreGetById, GenreSearch};
+use crate::database::common::{DbReadMany};
+
+use crate::database::models::genre::{GenreSearch};
 use crate::database::models::Id;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::error::AppError;
-use crate::handlers::utilities::parse_user_id;
+
 use crate::templates::audiobook::{AudiobooksByGenreTemplate, AudiobooksByGenreContentTemplate};
 use crate::templates::genre::{GenresContentTemplate, GenresPageTemplate};
 use actix_identity::Identity;
