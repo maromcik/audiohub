@@ -5,7 +5,7 @@ use crate::database::common::{DbReadMany, DbReadOne};
 use crate::database::common::query_parameters::{BookState, DbOrder, DbOrderColumn, DbQueryParams};
 use crate::database::models::audiobook::{AudiobookDisplay, AudiobookGetByIdJoin, AudiobookSearch};
 use crate::database::models::chapter::{ChapterDisplay, ChaptersGetByBookId};
-use crate::database::models::genre::GenreSearch;
+use crate::database::models::genre::{GenreGetById, GenreSearch};
 use crate::database::models::Id;
 use crate::database::models::user::UserGetById;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
@@ -14,7 +14,7 @@ use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::AppError;
 use crate::handlers::utilities::{authorized_to_modify_join, parse_user_id};
-use crate::templates::audiobook::{AudiobookDetailBase, AudiobookEditBase};
+use crate::templates::audiobook::{AudiobookDetailBase, AudiobookEditBase, AudiobooksByGenreBase};
 use crate::templates::index::IndexBase;
 
 pub async fn get_releases(
@@ -95,6 +95,26 @@ pub async fn get_index_base(
         finished_audiobooks,
     };
     Ok(template)
+}
+
+pub async fn get_genre_base(
+    user: Identity,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    genre_repo: web::Data<GenreRepository>,
+    genre_id: Id
+) -> Result<AudiobooksByGenreBase, AppError> {
+    let book_search = AudiobookSearch::search_by_genre_id(genre_id, parse_user_id(user)?);
+    let books = audiobook_repo
+        .read_many(&book_search)
+        .await?
+        .into_iter()
+        .map(AudiobookDisplay::from)
+        .collect();
+    let genre = genre_repo.read_one(&GenreGetById::new(&genre_id)).await?;
+    Ok(AudiobooksByGenreBase {
+        audiobooks: books,
+        genre,
+    })
 }
 
 pub async fn get_library(
