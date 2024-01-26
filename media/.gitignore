@@ -1,3 +1,11 @@
 *
 !.gitignore
+!.dockerignore
 !antigone.mp3
+!antigone.jpg
+!ot.jpg
+!ot.mp3
+!totc.mp3
+!totc.jpg
+!sh.mp3
+!sh.jpg
