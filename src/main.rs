@@ -29,6 +29,13 @@ const CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE: f64 = 98.0;
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
+    // We are forced to change the TMP dir because TmpFile that is used in Actix multipart stores uploaded files in the /tmp dir.
+    // by default, and I was not able to alter the default configuration,
+    // then, after calling function persist, it uses the rename(2) syscall to unlink the file from /tmp and link
+    // it to another folder. However, this syscall fails on an attempt to move the file across file system boundaries.
+    // On many distros /tmp uses tmpfs and is mounted separately. Also, we are deploying in Kubernetes, and while the /tmp
+    // dir is not mounted separately, we use persistent volume claims to take advantage of the large NFS storage,
+    // so the target file path is on a different FS as well.
     env::set_var("TMPDIR", "./media");
     let _dir = env::temp_dir();
 
