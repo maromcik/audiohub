@@ -25,16 +25,17 @@ INSERT INTO "Genre" (id, name, color) VALUES (24,'Computers', '#00CED1') ON CONF
 INSERT INTO "Genre" (id, name, color) VALUES (25,'Art', '#FFD700') ON CONFLICT DO NOTHING;
 INSERT INTO "Genre" (id, name, color) VALUES (26,'Fiction', '#9400D3') ON CONFLICT DO NOTHING;
 INSERT INTO "Genre" (id, name, color) VALUES (27,'Tragedy', '#FF5E00') ON CONFLICT DO NOTHING;
+INSERT INTO "Genre" (id, name, color) VALUES (28,'Documentary', '#4000FF') ON CONFLICT DO NOTHING;
 
 
 INSERT INTO "User" (id, username, email, name, surname, bio, profile_picture, password_hash, password_salt)
-VALUES (1, 'charlie', 'c@c.com', 'Charles', 'Dickens', 'We forge the chains we wear in life.', '/media/c.jpg', '$pbkdf2-sha256$i=600000,l=32$xHr+sXyp5BtpPCIvIRrRvA$yjmxouyWA7I4mHhTPutuHThixR0gz7nuhYTgFJYAOYw', 'xHr+sXyp5BtpPCIvIRrRvA')
+VALUES (1, 'charlie', 'c@c.com', 'Charles', 'Dickens', 'We forge the chains we wear in life.', '/media/examples/c.jpg', '$pbkdf2-sha256$i=600000,l=32$xHr+sXyp5BtpPCIvIRrRvA$yjmxouyWA7I4mHhTPutuHThixR0gz7nuhYTgFJYAOYw', 'xHr+sXyp5BtpPCIvIRrRvA')
 ON CONFLICT DO NOTHING;
 INSERT INTO "User" (id, username, email, name, surname, bio, profile_picture, password_hash, password_salt)
-VALUES (2, 'sop', 's@s.com', 'Sophocles', 'of Greece', 'The only true wisdom is in knowing you know nothing.', '/media/s.jpg', '$pbkdf2-sha256$i=600000,l=32$xHr+sXyp5BtpPCIvIRrRvA$yjmxouyWA7I4mHhTPutuHThixR0gz7nuhYTgFJYAOYw', 'xHr+sXyp5BtpPCIvIRrRvA')
+VALUES (2, 'sop', 's@s.com', 'Sophocles', 'of Greece', 'The only true wisdom is in knowing you know nothing.', '/media/examples/s.jpg', '$pbkdf2-sha256$i=600000,l=32$xHr+sXyp5BtpPCIvIRrRvA$yjmxouyWA7I4mHhTPutuHThixR0gz7nuhYTgFJYAOYw', 'xHr+sXyp5BtpPCIvIRrRvA')
 ON CONFLICT DO NOTHING;
 INSERT INTO "User" (id, username, email, name, surname, bio, profile_picture, password_hash, password_salt)
-VALUES (3, 'archie', 'a@a.com', 'Arthur Conan', 'Doyle', 'I like detectives', '/media/a.jpg', '$pbkdf2-sha256$i=600000,l=32$xHr+sXyp5BtpPCIvIRrRvA$yjmxouyWA7I4mHhTPutuHThixR0gz7nuhYTgFJYAOYw', 'xHr+sXyp5BtpPCIvIRrRvA')
+VALUES (3, 'archie', 'a@a.com', 'Arthur Conan', 'Doyle', 'I like detectives', '/media/examples/a.jpg', '$pbkdf2-sha256$i=600000,l=32$xHr+sXyp5BtpPCIvIRrRvA$yjmxouyWA7I4mHhTPutuHThixR0gz7nuhYTgFJYAOYw', 'xHr+sXyp5BtpPCIvIRrRvA')
 ON CONFLICT DO NOTHING;
 
 ALTER SEQUENCE "User_id_seq" RESTART WITH 4;
@@ -53,9 +54,9 @@ VALUES (1,
         26,
         1,
         'Oliver Twist - Example',
-        '/media/ot.mp3',
+        '/media/examples/ot.mp3',
         456.378,
-        '/media/ot.jpg',
+        '/media/examples/ot.jpg',
         'Oliver Twist unromantically portrays the sordid lives of criminals and exposes the cruel treatment of the many orphans in London in the mid-19th century.',
         2,
         1)
@@ -75,9 +76,9 @@ VALUES (2,
         27,
         2,
         'Antigone',
-        '/media/antigone.mp3',
+        '/media/examples/antigone.mp3',
         4446.702,
-        '/media/antigone.jpg',
+        '/media/examples/antigone.jpg',
         'Antigone is an Athenian tragedy written by Sophocles in 441 BC and first performed at the Festival of Dionysus of the same year.',
         1,
         2)
@@ -97,9 +98,9 @@ VALUES (3,
         3,
         3,
         'Adventures of Sherlock Holmes - Example',
-        '/media/sh.mp3',
+        '/media/examples/sh.mp3',
         1662.856,
-        '/media/sh.jpg',
+        '/media/examples/sh.jpg',
         'A collection of twelve short stories featuring Conan Doyle''s legendary detective, originally published as single stories in Strand Magazine and subsequently collected into a single volume. There is not always a crime committed nor a culprit to find, and when there is, Holmes does not invariably get his man.',
         2,
         3)
@@ -119,9 +120,9 @@ VALUES (4,
         16,
         1,
         'Tale of Two Cities - Example',
-        '/media/totc.mp3',
+        '/media/examples/totc.mp3',
         407.914,
-        '/media/totc.jpg',
+        '/media/examples/totc.jpg',
         'A Tale of Two Cities is a historical novel published in 1859 by Charles Dickens, set in London and Paris before and during the French Revolution.',
         1,
         1)
