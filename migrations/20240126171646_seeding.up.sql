@@ -257,4 +257,30 @@ SET overall_rating = COALESCE((
                                   FROM "Rating" r
                                   WHERE
                                       r.deleted_at IS NULL
-                                    AND r.audiobook_id = a.id), 0)
+                                    AND r.audiobook_id = a.id), 0);
+
+
+BEGIN;
+LOCK TABLE "Genre" IN EXCLUSIVE MODE;
+SELECT setval('"Genre_id_seq"', COALESCE((SELECT MAX(id)+1 FROM "Genre"), 1), false);
+COMMIT;
+
+BEGIN;
+LOCK TABLE "User" IN EXCLUSIVE MODE;
+SELECT setval('"User_id_seq"', COALESCE((SELECT MAX(id)+1 FROM "User"), 1), false);
+COMMIT;
+
+BEGIN;
+LOCK TABLE "Audiobook" IN EXCLUSIVE MODE;
+SELECT setval('"Audiobook_id_seq"', COALESCE((SELECT MAX(id)+1 FROM "Audiobook"), 1), false);
+COMMIT;
+
+BEGIN;
+LOCK TABLE "Chapter" IN EXCLUSIVE MODE;
+SELECT setval('"Chapter_id_seq"', COALESCE((SELECT MAX(id)+1 FROM "Chapter"), 1), false);
+COMMIT;
+
+BEGIN;
+LOCK TABLE "Rating" IN EXCLUSIVE MODE;
+SELECT setval('"Rating_id_seq"', COALESCE((SELECT MAX(id)+1 FROM "Rating"), 1), false);
+COMMIT;
