@@ -176,7 +176,15 @@ pub async fn upload_audiobook(
     let metadata = get_metadata_from_session(&session, &session_keys)?;
 
     let audio_file = form.audio_file.file.as_file_mut();
-    let lofty_audio_file = lofty::read_from(audio_file)?;
+    let lofty_audio_file = match lofty::read_from(audio_file) {
+        Ok(f) => f,
+        Err(e) => {
+            let template = AudiobookUploadFormTemplate {
+                message: e.to_string(),
+            }.render()?;
+            return Ok(HttpResponse::Ok().content_type("text/html").body(template));
+        }
+    };
     let properties = lofty_audio_file.properties();
     let length = properties.duration().as_secs_f64();
     if let (Some(thumb_path), Some(thumbnail)) = (&thumbnail_path, form.thumbnail) {
