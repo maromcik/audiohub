@@ -43,12 +43,12 @@ impl DbQueryParams {
             book_state
         }
     }
-    pub fn state(book_state: Option<BookState>) -> Self {
+    pub fn state(book_state: BookState) -> Self {
         Self {
             order: Some(DbOrderColumn::default()),
             limit: None,
             offset: None,
-            book_state
+            book_state: Some(book_state)
         }
     }
 }

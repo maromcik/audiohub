@@ -23,7 +23,7 @@ pub async fn get_releases(
 ) -> Result<Vec<AudiobookDisplay>, AppError> {
     Ok(book_repo
         .read_many(&AudiobookSearch::with_params(
-            DbQueryParams::state(Some(BookState::Fresh(true))),
+            DbQueryParams::state(BookState::Fresh(true)),
             parse_user_id(u)?))
         .await?)
 }
