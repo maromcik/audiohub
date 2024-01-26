@@ -30,15 +30,14 @@ But we will include a couple of short songs and thumbnails in this repository (b
 
 You should add your owns books though.  
 
+Note that the app may not work correctly in certain browsers.
+For example Firefox does buffering differently to Chrome, which results in chapter jumps and general seeking
+working poorly and requiring a lot off buffering on Firefox.
+
 ### Kubernetes
 The application is deployed using CERIT-SC's Kubernetes cluster: https://audiohub.dyn.cloud.e-infra.cz/ for your convenience.
 
 While we do not intend to modify our project after submission, we understand your need to check the project at the time of submission. Therefore, we provided other options to test the app locally.
-
-Note that the app may not work correctly in certain browsers. 
-For example Firefox does buffering differently to Chrome, which results in chapter jumps and general seeking 
-working poorly and requiring a lot off buffering on Firefox
-
 
 ### Local app - Postgres in Kubernetes
 This project uses the Postgres database deployed in Kubernetes with the Cloudnative-PG operator. 
