@@ -26,7 +26,7 @@ impl GenreRepository {
             Genre,
             r#"
             SELECT * FROM "Genre"
-            WHERE id = $1
+            WHERE id = $1 AND deleted_at IS NULL
             "#,
             params.id
         )
@@ -74,7 +74,7 @@ impl DbReadOne<GenreGetById, Genre> for GenreRepository {
             Genre,
             r#"
             SELECT * FROM "Genre"
-            WHERE id = $1
+            WHERE id = $1 AND deleted_at IS NULL
             "#,
             params.id
         )
@@ -95,6 +95,7 @@ impl DbReadMany<GenreSearch, Genre> for GenreRepository {
             SELECT * FROM "Genre"
             WHERE
                 (name = $1 OR $1 IS NULL)
+                 AND deleted_at IS NULL
             ORDER BY name"#,
             params.name
         )
@@ -115,7 +116,7 @@ impl DbCreate<GenreCreate, Genre> for GenreRepository {
             VALUES ($1)
             RETURNING *
             "#,
-            params.name
+            params.name,
         )
         .fetch_one(&self.pool_handler.pool)
         .await?;
@@ -143,11 +144,13 @@ impl DbUpdate<GenreUpdate, Genre> for GenreRepository {
             UPDATE "Genre"
             SET
                 name = COALESCE($1, name),
+                color = COALESCE($2, color),
                 edited_at = current_timestamp
-            WHERE id = $2
+            WHERE id = $3
             RETURNING *
             "#,
             params.name,
+            params.color,
             params.id
         )
         .fetch_all(transaction.as_mut())

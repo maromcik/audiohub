@@ -1,4 +1,4 @@
-use std::convert::identity;
+
 use crate::authorized;
 use crate::database::models::Id;
 use crate::error::AppError;
@@ -13,7 +13,7 @@ use crate::database::repositories::rating::repository::RatingRepository;
 use crate::forms::rating::RatingCreateForm;
 
 use crate::handlers::utilities::parse_user_id;
-use crate::templates::rating::{AudiobookRatingsTemplate, DeletedRatingTemplate, MyRatingTemplate, RatingSummaryTemplate, UserRatingTemplate};
+use crate::templates::rating::{AudiobookRatingsTemplate, DeletedRatingTemplate, MyRatingTemplate, RatingSummaryTemplate};
 
 #[get("/create/form")]
 pub async fn create_rating_form(request: HttpRequest, identity: Option<Identity>) -> Result<HttpResponse, AppError> {

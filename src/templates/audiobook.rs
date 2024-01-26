@@ -77,6 +77,30 @@ pub struct AudiobooksByGenreContentTemplate {
     pub genre: Genre,
 }
 
+pub struct AudiobooksByGenreBase {
+    pub audiobooks: Vec<AudiobookDisplay>,
+    pub genre: Genre,
+}
+
+impl From<AudiobooksByGenreBase> for AudiobooksByGenreTemplate {
+    fn from(value: AudiobooksByGenreBase) -> Self {
+        Self {
+            audiobooks: value.audiobooks,
+            genre: value.genre
+        }
+    }
+}
+
+impl From<AudiobooksByGenreBase> for AudiobooksByGenreContentTemplate {
+    fn from(value: AudiobooksByGenreBase) -> Self {
+        Self {
+            audiobooks: value.audiobooks,
+            genre: value.genre
+        }
+    }
+}
+
+
 #[derive(Template)]
 #[template(path = "detail.html")]
 pub struct AudiobookDetailPageTemplate {

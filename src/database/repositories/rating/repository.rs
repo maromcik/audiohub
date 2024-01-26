@@ -240,7 +240,7 @@ impl RatingRepository {
     pub async fn create_or_update_displayed_rating(&self, params: &RatingCreate) -> DbResultSingle<UserRatingDisplay> {
         let mut transaction = self.pool_handler.pool.begin().await?;
         let existing_rating = self.get_user_book_rating(&params.audiobook_id, &params.user_id, &mut transaction).await?;
-        let mut rating_id : Id;
+        let rating_id : Id;
         if let Some(review) = existing_rating {
             let rating_params = RatingUpdate {
                 id: review.id,

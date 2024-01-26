@@ -14,16 +14,14 @@ pub struct Genre {
 #[derive(Debug, Clone)]
 pub struct GenreCreate {
     pub name: String,
-    pub color: String,
 }
 
 impl GenreCreate {
     #[must_use]
     #[inline]
-    pub fn new(name: &str, color: &str) -> Self {
+    pub fn new(name: &str) -> Self {
         Self {
             name: name.to_owned(),
-            color: color.to_owned()
         }
     }
 }
@@ -64,6 +62,7 @@ impl GenreUpdate {
     #[must_use]
     pub const fn update_fields_none(&self) -> bool {
         self.name.is_none()
+        && self.color.is_none()
     }
 }
 
