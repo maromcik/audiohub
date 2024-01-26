@@ -250,3 +250,11 @@ VALUES (12, 3, 3, 5, 'Thrilling')
 ON CONFLICT DO NOTHING;
 
 ALTER SEQUENCE "Rating_id_seq" RESTART WITH 13;
+
+UPDATE "Audiobook" a
+SET overall_rating = COALESCE((
+                                  SELECT AVG(r.Rating)
+                                  FROM "Rating" r
+                                  WHERE
+                                      r.deleted_at IS NULL
+                                    AND r.audiobook_id = a.id), 0)
