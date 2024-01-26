@@ -293,6 +293,7 @@ impl AudiobookRepository {
 
                 a.genre_id,
                 g.name AS genre_name,
+                g.color AS genre_color,
 
                 ab.playback_position AS "playback_position?",
                 ab.edited_at AS "active_audiobook_edited_at?",
@@ -380,6 +381,7 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
 
                 a.genre_id,
                 g.name AS genre_name,
+                g.color AS genre_color,
 
                 ab.playback_position AS "playback_position?",
                 ab.edited_at AS "active_audiobook_edited_at?",
@@ -438,6 +440,7 @@ impl DbReadMany<AudiobookSearch, AudiobookDisplay> for AudiobookRepository {
 
                 a.genre_id,
                 g.name AS genre_name,
+                g.color AS genre_color,
 
                 ab.playback_position,
                 ab.edited_at AS active_audiobook_edited_at,
