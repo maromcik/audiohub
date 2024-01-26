@@ -41,11 +41,9 @@
                         {% endif %}
                     </div>
                 </button>
-                <button hx-patch="/audiobook/{{audiobook.id}}/likes" hx-target="#like-count" hx-swap="outerHTML">
-                    <div id="stream-count" class="flex items-center pl-5 text-3xl">
-                        <i class="fa-solid fa-music text-3xl"></i> <p class="pl-5 text-gray-300 text-2xl">{{ audiobook.like_count }}</p>
-                    </div>
-                </button>
+                <div id="stream-count" class="flex items-center pl-5 text-3xl">
+                    <i class="fa-solid fa-music text-3xl"></i> <p class="pl-5 text-gray-300 text-2xl">{{ audiobook.stream_count }}</p>
+                </div>
             </div>
         </div>
         <div class="flex flex-row justify-end sm:col-span-3 xl:col-span-2">
