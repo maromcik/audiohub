@@ -1,5 +1,5 @@
 <div class="container h-40 w-full mx-auto bg-black p-4">
-    <a class="cursor-pointer" hx-get="/genre/{{ genre.id }}" hx-target="#content-area">
+    <a class="cursor-pointer" hx-get="/genre/{{ genre.id }}"  hx-push-url="/genre/{{ genre.id }}/content" hx-target="#content-area">
         <div class="flex w-full h-full flex-row items-center justify-center overflow-hidden rounded shadow-lg shadow-inner px-4 py-2"
             style="background: linear-gradient(180deg, {{genre.color}} 0%, rgba(0,0,0, 0) 100%);">
             <div class="text-center text-lg font-bold text-white">{{ genre.name }}</div>

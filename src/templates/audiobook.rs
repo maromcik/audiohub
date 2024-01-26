@@ -71,6 +71,13 @@ pub struct AudiobooksByGenreTemplate {
 }
 
 #[derive(Template)]
+#[template(path = "audiobook/audiobooks_by_genre_content.html")]
+pub struct AudiobooksByGenreContentTemplate {
+    pub audiobooks: Vec<AudiobookDisplay>,
+    pub genre: Genre,
+}
+
+#[derive(Template)]
 #[template(path = "detail.html")]
 pub struct AudiobookDetailPageTemplate {
     pub audiobook: AudiobookDisplay,
