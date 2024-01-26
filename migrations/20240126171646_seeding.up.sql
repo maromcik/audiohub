@@ -253,7 +253,7 @@ ALTER SEQUENCE "Rating_id_seq" RESTART WITH 13;
 
 UPDATE "Audiobook" a
 SET overall_rating = COALESCE((
-                                  SELECT AVG(r.Rating)
+                                  SELECT round(AVG(r.Rating), 2)
                                   FROM "Rating" r
                                   WHERE
                                       r.deleted_at IS NULL
