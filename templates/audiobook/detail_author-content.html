@@ -19,19 +19,7 @@
             <div id="book-cover-box" class="relative inline-block group w-25 h-25 md:w-45 md:h-45 lg:w-80 lg:h-80 mb-4">
                 {% include "audiobook/book_cover_thumbnail.html" %}
             </div>
-        </div>
-        <div class="mb-4 sm:ml-0 xl:ml-10 sm:mb-0 xl:col-span-1">
-            <div class="pt-1">{{ audiobook.genre_name }}</div>
-            <div class="book-name  text-6xl font-bold">{{audiobook.name}}</div>
-            <div class="pt-5 flex flex-row items-center" >
-                {% if audiobook.profile_picture == "" %}
-                <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="./media/user_icon.png" />
-                {% else %}
-                <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="{{ audiobook.profile_picture }}" />
-                {% endif %}
-                <div class="text-3xl pl-5">{{ audiobook.author_name }}</div>
-            </div>
-            <div class="pt-5 like-count flex flex-row justify-between">
+            <div class="mt-5 like-count flex flex-row justify-between">
                 <button hx-patch="/audiobook/{{audiobook.id}}/likes" hx-target="#like-count" hx-swap="outerHTML">
                     <div id="like-count" class="flex items-center pl-5 text-3xl">
                         {% if is_liked %}
@@ -44,6 +32,18 @@
                 <div id="stream-count" class="flex items-center pl-5 text-3xl">
                     <i class="fa-solid fa-music text-3xl"></i> <p class="pl-5 text-gray-300 text-2xl">{{ audiobook.stream_count }}</p>
                 </div>
+            </div>
+        </div>
+        <div class="mb-4 sm:ml-0 xl:ml-10 sm:mb-0 xl:col-span-1">
+            <div class="pt-1">{{ audiobook.genre_name }}</div>
+            <div class="book-name  text-6xl font-bold">{{audiobook.name}}</div>
+            <div class="pt-5 flex flex-row items-center" >
+                {% if audiobook.profile_picture == "" %}
+                <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="./media/user_icon.png" />
+                {% else %}
+                <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="{{ audiobook.profile_picture }}" />
+                {% endif %}
+                <div class="text-3xl pl-5">{{ audiobook.author_name }}</div>
             </div>
         </div>
         <div class="flex flex-row justify-end sm:col-span-3 xl:col-span-2">
