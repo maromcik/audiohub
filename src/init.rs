@@ -63,7 +63,8 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(get_audiobook_detail_content)
         .service(get_audiobook_player)
         .service(upload_book_cover)
-        .service(upload_book_cover_post);
+        .service(upload_book_cover_post)
+        .service(recommend_audiobooks);
 
     let chapter_scope = web::scope("chapter")
         .app_data(web::Data::new(chapter_repository.clone()))

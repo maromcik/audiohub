@@ -307,6 +307,21 @@ impl AudiobookRepository {
             .await?;
         Ok(results)
     }
+
+    pub async fn get_books_by_ids(&self, book_ids: Vec<i64>) -> DbResultMultiple<Audiobook> {
+        let results = sqlx::query_as!(
+            Audiobook,
+            r#"
+            SELECT * FROM "Audiobook"
+            WHERE deleted_at IS NULL AND id = ANY($1)
+            "#,
+            &book_ids
+        )
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
+
+        Ok(results)
+    }
 }
 
 #[async_trait]

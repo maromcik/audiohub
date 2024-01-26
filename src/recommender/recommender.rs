@@ -2,7 +2,7 @@ use crate::database::common::{DbPoolHandler, DbReadMany, DbRepository, PoolHandl
 use crate::database::models::genre::GenreSearch;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
-use crate::recommender::recommandation_system::{add_book_to_recommandation_system, init_recommandation_system};
+use crate::recommender::recommandation_system::{add_book_to_recommandation_system, init_recommandation_system, recommend_books};
 use sqlx::PgPool;
 use crate::database::models::audiobook::Audiobook;
 

@@ -1,6 +1,6 @@
-
+use std::error::Error;
 use crate::database::common::{DbCreate, DbDelete, DbReadMany, DbReadOne, DbUpdate};
-use crate::database::models::audiobook::{AudiobookCreate, AudiobookDelete, AudiobookDisplay, AudiobookGetByIdJoin, AudiobookUpdate};
+use crate::database::models::audiobook::{AudiobookCreate, AudiobookDelete, AudiobookDisplay, AudiobookGetById, AudiobookGetByIdJoin, AudiobookUpdate};
 use crate::database::models::genre::{GenreGetById, GenreSearch};
 
 use crate::database::models::Id;
@@ -11,7 +11,7 @@ use crate::database::repositories::user::repository::UserRepository;
 use crate::error::{AppError, AppErrorKind};
 use crate::forms::audiobook::{AudiobookCreateForm, AudiobookQuickSearchQuery, AudiobookUploadForm, AudiobookEditForm, AudiobookThumbnailEditForm};
 use crate::handlers::utilities::{get_metadata_from_session, get_user_from_identity, parse_user_id, save_file, validate_file, AudiobookCreateSessionKeys, authorized_to_modify, authorized_to_modify_join};
-use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate, QuickSearchResults, AudiobookEditContentTemplate, AudiobookEditPageTemplate, AudiobookCoverUpload};
+use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate, QuickSearchResults, AudiobookEditContentTemplate, AudiobookEditPageTemplate, AudiobookCoverUpload, AudiobookRecommendationTemplate};
 use crate::templates::audiobook::{AudiobookDetailAuthorContentTemplate, AudiobookDetailAuthorPageTemplate, DetailLikesTemplate};
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
@@ -26,13 +26,13 @@ use lofty::AudioFile;
 use log::{info, warn};
 use serde::Deserialize;
 
-use crate::authorized;
+use crate::{authorized, RECOMMEND_BOOKS_CNT};
 use crate::database::models::active_audiobook::SetActiveAudiobook;
 use crate::database::models::bookmark::BookmarkOperation;
 
 use uuid::Uuid;
 use crate::handlers::helpers::{get_audiobook_detail_base, get_audiobook_edit, get_releases};
-use crate::recommender::recommandation_system::delete_book_from_recommandation;
+use crate::recommender::recommandation_system::{delete_book_from_recommandation, recommend_books};
 use crate::recommender::recommender::{add_book_recommender, init_recommender};
 
 #[get("/create")]
@@ -351,9 +351,42 @@ pub async fn get_audiobook(
         parse_user_id(identity)?,
         path.into_inner().0
     )
-    .await?;
+        .await?;
 
     let body = AudiobookDetailPageTemplate::from(base).render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+#[get("/{id}/similar")]
+pub async fn recommend_audiobooks(
+    request: HttpRequest,
+    identity: Option<Identity>,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    genre_repo: web::Data<GenreRepository>,
+    path: web::Path<(Id,)>,
+) -> Result<HttpResponse, AppError> {
+    let identity = authorized!(identity, request.path());
+    let book = audiobook_repo.read_one(&AudiobookGetById { id: path.into_inner().0 })
+        .await?;
+
+    let genre = genre_repo
+        .read_one(&GenreGetById::new(&book.genre_id))
+        .await?;
+
+    let recommendations = match recommend_books(&book.description, book.id, &genre.name, RECOMMEND_BOOKS_CNT).await{
+        Ok(books) => {books}
+        Err(e) => {
+            warn!("Book recommendation failed! {e}");
+            vec![]
+        }
+    };
+    let audiobooks = audiobook_repo.get_books_by_ids(recommendations).await?;
+
+    let template = AudiobookRecommendationTemplate {
+        books: audiobooks.iter().map(|b| AudiobookDisplay::from(b.clone())).collect()
+    };
+
+    let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 

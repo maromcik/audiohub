@@ -26,6 +26,7 @@ mod templates;
 const DEFAULT_HOSTNAME: &str = "localhost";
 const DEFAULT_PORT: &str = "8000";
 const CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE: f64 = 98.0;
+const RECOMMEND_BOOKS_CNT: i32 = 2;
 
 pub mod recommender_grpc_api {
     tonic::include_proto!("recommender");
