@@ -111,7 +111,7 @@ impl RatingRepository {
             r#"
             UPDATE "Audiobook"
             SET overall_rating = COALESCE((
-                SELECT AVG(R.Rating)
+                SELECT round(AVG(R.Rating), 2)
                 FROM "Rating" R
                 WHERE R.audiobook_id = $1 AND R.deleted_at IS NULL
             ), 0)
