@@ -50,6 +50,7 @@ pub struct AudiobookDetail {
     pub profile_picture: Option<String>,
 
     pub genre_name: String,
+    pub genre_color: String,
 
     pub playback_position: Option<f64>,
     pub active_audiobook_edited_at: Option<DateTime<Utc>>,
@@ -109,6 +110,7 @@ pub struct AudiobookDisplay {
     pub profile_picture: String,
 
     pub genre_name: String,
+    pub genre_color: String,
 
     pub playback_position: f64,
     pub progress: f64,
@@ -141,6 +143,7 @@ impl AudiobookDisplay {
             bio: audiobook.bio.to_owned(),
             profile_picture: get_default_profile_picture(&audiobook.profile_picture),
             genre_name: audiobook.genre_name.to_owned(),
+            genre_color: audiobook.genre_color.to_owned(),
 
             playback_position: audiobook.playback_position.unwrap_or_default(),
             progress: audiobook.playback_position.unwrap_or_default() / audiobook.length * 100f64,
@@ -177,6 +180,7 @@ impl From<AudiobookDetail> for AudiobookDisplay {
             surname: audiobook.surname,
             bio: audiobook.bio,
             genre_name: audiobook.genre_name,
+            genre_color: audiobook.genre_color,
 
             playback_position: audiobook.playback_position.unwrap_or_default(),
             progress: audiobook.playback_position.unwrap_or_default() / audiobook.length * 100f64,
