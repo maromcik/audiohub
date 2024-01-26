@@ -27,6 +27,7 @@ INSERT INTO "Genre" (id, name, color) VALUES (26,'Fiction', '#9400D3') ON CONFLI
 INSERT INTO "Genre" (id, name, color) VALUES (27,'Tragedy', '#FF5E00') ON CONFLICT DO NOTHING;
 INSERT INTO "Genre" (id, name, color) VALUES (28,'Documentary', '#4000FF') ON CONFLICT DO NOTHING;
 
+ALTER SEQUENCE "Genre_id_seq" RESTART WITH 29;
 
 INSERT INTO "User" (id, username, email, name, surname, bio, profile_picture, password_hash, password_salt)
 VALUES (1, 'charlie', 'c@c.com', 'Charles', 'Dickens', 'We forge the chains we wear in life.', '/static/examples/c.jpg', '$pbkdf2-sha256$i=600000,l=32$xHr+sXyp5BtpPCIvIRrRvA$yjmxouyWA7I4mHhTPutuHThixR0gz7nuhYTgFJYAOYw', 'xHr+sXyp5BtpPCIvIRrRvA')
