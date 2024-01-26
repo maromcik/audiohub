@@ -27,9 +27,7 @@ use crate::handlers::utilities::{get_user_from_identity, parse_user_id, remove_f
 
 #[get("/register")]
 pub async fn register() -> Result<HttpResponse, AppError> {
-    let template = RegistrationTemplate {
-        message: "".to_string(),
-    };
+    let template = RegistrationTemplate::default();
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -64,9 +62,7 @@ pub async fn register_user(
         return Ok(HttpResponse::Ok().content_type("text/html").body(body));
     }
     if !validate_password(&form.password) {
-        let template = RegistrationTemplate {
-            message: "Weak password, must contain at least one from each: lower case character, upper case character, number, special character".to_string(),
-        };
+        let template = RegistrationTemplate::weak_password();
         let body = template.render()?;
         return Ok(HttpResponse::Ok().content_type("text/html").body(body));
     }
@@ -188,9 +184,7 @@ pub async fn user_manage_picture_form(
     identity: Option<Identity>,
 ) -> Result<impl Responder, AppError> {
     authorized!(identity, request.path());
-    let template = UserManageProfilePictureFormTemplate {
-        message: "".to_string(),
-    };
+    let template = UserManageProfilePictureFormTemplate::default();
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -265,10 +259,7 @@ pub async fn user_manage_password(
     }
 
     if !validate_password(&form.new_password) {
-        let template = UserManagePasswordTemplate {
-            message: "Weak password, must contain at least one from each: lower case character, upper case character, number, special character".to_string(),
-            success: false
-        };
+        let template = UserManagePasswordTemplate::weak_password();
         let body = template.render()?;
         return Ok(HttpResponse::Ok().content_type("text/html").body(body));
     }

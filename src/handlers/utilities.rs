@@ -8,10 +8,10 @@ use actix_identity::Identity;
 use actix_multipart::form::tempfile::TempFile;
 use actix_session::Session;
 use actix_web::web;
-use tokio::fs::try_exists;
 use uuid::{Uuid};
 use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
+use crate::MIN_PASS_LEN;
 
 pub struct AudiobookCreateSessionKeys {
     pub name: String,
@@ -222,5 +222,5 @@ pub fn validate_password(password: &str) -> bool {
                   )
               },
         );
-    lower && upper && numeric && special
+    lower && upper && numeric && special && password.len() >= MIN_PASS_LEN
 }
