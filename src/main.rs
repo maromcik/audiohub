@@ -23,9 +23,9 @@ mod templates;
 const DEFAULT_HOSTNAME: &str = "localhost";
 const DEFAULT_PORT: &str = "8000";
 const SECS_IN_WEEK: i64 = 60 * 60 * 24 * 7;
-
 const PAYLOAD_LIMIT: usize = 16 * 1024 * 1024 * 1024; // 16GiB
 const CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE: f64 = 98.0;
+const MIN_PASS_LEN: usize = 6;
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
