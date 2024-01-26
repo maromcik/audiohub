@@ -8,6 +8,7 @@ use actix_identity::Identity;
 use actix_multipart::form::tempfile::TempFile;
 use actix_session::Session;
 use actix_web::web;
+use tokio::fs::try_exists;
 use uuid::{Uuid};
 use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
@@ -72,6 +73,7 @@ pub async fn get_user_from_identity(
         .read_one(&UserGetById::new(&parse_user_id(identity)?))
         .await?)
 }
+
 pub fn validate_file(
     file: &TempFile,
     uuid: Uuid,
@@ -169,8 +171,8 @@ pub async fn authorized_to_modify(audiobook_repo: &web::Data<AudiobookRepository
 }
 
 pub async fn authorized_to_modify_join(audiobook_repo: &web::Data<AudiobookRepository>,
-                                  user_id: Id,
-                                  audiobook_id: Id) -> Result<AudiobookDetail, AppError> {
+                                       user_id: Id,
+                                       audiobook_id: Id) -> Result<AudiobookDetail, AppError> {
     let audiobook = audiobook_repo
         .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id))
         .await?;
@@ -180,9 +182,45 @@ pub async fn authorized_to_modify_join(audiobook_repo: &web::Data<AudiobookRepos
 
 pub fn is_authorized(user_id: Id, author_id: Id) -> Result<(), AppError> {
     match user_id == author_id {
-        true =>  Ok(()),
+        true => Ok(()),
         false => Err(AppError::from(BackendError::new(
-                BackendErrorKind::UnauthorizedOperation,
-            )))
+            BackendErrorKind::UnauthorizedOperation,
+        )))
     }
+}
+
+pub fn validate_password(password: &str) -> bool {
+    let (lower, upper, numeric, special) = password
+        .chars()
+        .fold((false, false, false, false),
+              |(l, u, n, s), c| {
+                  (
+                      {
+                          match c.is_lowercase() {
+                              true => true,
+                              false => l
+                          }
+                      },
+                      {
+                          match c.is_uppercase() {
+                              true => true,
+                              false => u
+                          }
+                      },
+                      {
+                          match c.is_numeric() {
+                              true => true,
+                              false => n
+                          }
+                      },
+                      {
+                          match !c.is_alphanumeric() {
+                              true => true,
+                              false => s
+                          }
+                      }
+                  )
+              },
+        );
+    lower && upper && numeric && special
 }

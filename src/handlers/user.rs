@@ -23,9 +23,7 @@ use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::models::user::{UserCreate, UserDisplay, UserGetById, UserLogin, UserUpdate, UserUpdatePassword};
 use crate::forms::user::{UserLoginReturnURL, ProfilePictureUploadForm, UserCreateForm, UserUpdateForm, UserUpdatePasswordForm, UserLoginForm};
 
-use crate::handlers::utilities::{
-    get_user_from_identity, parse_user_id, remove_file, save_file, validate_file,
-};
+use crate::handlers::utilities::{get_user_from_identity, parse_user_id, remove_file, save_file, validate_file, validate_password};
 
 #[get("/register")]
 pub async fn register() -> Result<HttpResponse, AppError> {
@@ -61,6 +59,13 @@ pub async fn register_user(
     if form.password != form.confirm_password {
         let template = RegistrationTemplate {
             message: "Passwords do not match".to_string(),
+        };
+        let body = template.render()?;
+        return Ok(HttpResponse::Ok().content_type("text/html").body(body));
+    }
+    if !validate_password(&form.password) {
+        let template = RegistrationTemplate {
+            message: "Weak password, must contain at least one from each: lower case character, upper case character, number, special character".to_string(),
         };
         let body = template.render()?;
         return Ok(HttpResponse::Ok().content_type("text/html").body(body));
@@ -253,6 +258,15 @@ pub async fn user_manage_password(
     if form.new_password != form.confirm_password {
         let template = UserManagePasswordTemplate {
             message: "Passwords do not match".to_string(),
+            success: false
+        };
+        let body = template.render()?;
+        return Ok(HttpResponse::Ok().content_type("text/html").body(body));
+    }
+
+    if !validate_password(&form.new_password) {
+        let template = UserManagePasswordTemplate {
+            message: "Weak password, must contain at least one from each: lower case character, upper case character, number, special character".to_string(),
             success: false
         };
         let body = template.render()?;
