@@ -18,7 +18,7 @@ pub struct LoginTemplate {
 #[template(path = "user/password.html")]
 pub struct UserManagePasswordTemplate {
     pub message: String,
-    pub message_success: String,
+    pub success: bool
 }
 
 #[derive(Template)]
@@ -26,7 +26,7 @@ pub struct UserManagePasswordTemplate {
 pub struct UserManageProfilePageTemplate {
     pub user: UserDisplay,
     pub message: String,
-    pub message_success: String,
+    pub success: bool
 }
 
 #[derive(Template)]
@@ -34,7 +34,7 @@ pub struct UserManageProfilePageTemplate {
 pub struct UserManageProfileContentTemplate {
     pub user: UserDisplay,
     pub message: String,
-    pub message_success: String,
+    pub success: bool
 }
 
 #[derive(Template)]
@@ -62,5 +62,5 @@ pub struct UserManageProfileSuccessfulUpdatePassword {}
 pub struct UserManageProfileUserFormTemplate {
     pub user: UserDisplay,
     pub message: String,
-    pub message_success: String,
+    pub success: bool
 }

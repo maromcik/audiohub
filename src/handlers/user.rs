@@ -1,6 +1,6 @@
 use crate::authorized;
 use crate::database::repositories::user::repository::UserRepository;
-use crate::error::{AppError};
+use crate::error::{AppError, AppErrorKind};
 use crate::templates::user::{
     LoginTemplate, RegistrationTemplate, UserManagePasswordTemplate,
     UserManageProfileContentTemplate, UserManageProfilePageTemplate,
@@ -18,9 +18,9 @@ use hmac::Mac;
 use uuid::Uuid;
 
 use crate::database::common::{DbCreate, DbReadOne, DbUpdate};
+use crate::database::common::error::{BackendError, BackendErrorKind};
 
 use crate::database::models::user::{UserCreate, UserDisplay, UserGetById, UserLogin, UserUpdate, UserUpdatePassword};
-use crate::error::AppErrorKind::InternalServerError;
 use crate::forms::user::{UserLoginReturnURL, ProfilePictureUploadForm, UserCreateForm, UserUpdateForm, UserUpdatePasswordForm, UserLoginForm};
 
 use crate::handlers::utilities::{
@@ -47,7 +47,7 @@ pub async fn login(identity: Option<Identity>,
     }
     let template = LoginTemplate {
         message: "".to_string(),
-        return_url
+        return_url,
     };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -58,7 +58,6 @@ pub async fn register_user(
     form: web::Form<UserCreateForm>,
     user_repo: web::Data<UserRepository>,
 ) -> Result<impl Responder, AppError> {
-
     if form.password != form.confirm_password {
         let template = RegistrationTemplate {
             message: "Passwords do not match".to_string(),
@@ -81,7 +80,6 @@ pub async fn register_user(
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/user/login"))
         .finish())
-
 }
 
 #[post("/login")]
@@ -108,7 +106,7 @@ pub async fn login_user(
             if backend_error.is_login_error() {
                 let template = LoginTemplate {
                     message: backend_error.to_string(),
-                    return_url: form.return_url.clone()
+                    return_url: form.return_url.clone(),
                 };
                 let body = template.render()?;
                 return Ok(HttpResponse::Ok().content_type("text/html").body(body));
@@ -140,7 +138,7 @@ pub async fn user_manage_form_page(
     let template = UserManageProfilePageTemplate {
         user: UserDisplay::from(user),
         message: "".to_string(),
-        message_success: "".to_string(),
+        success: true,
     };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -159,7 +157,7 @@ pub async fn user_manage_form_content(
     let template = UserManageProfileContentTemplate {
         user: UserDisplay::from(user),
         message: "".to_string(),
-        message_success: "".to_string(),
+        success: true,
     };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -173,7 +171,7 @@ pub async fn user_manage_password_form(
     authorized!(identity, request.path());
     let template = UserManagePasswordTemplate {
         message: "".to_string(),
-        message_success: "".to_string(),
+        success: true
     };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -205,7 +203,7 @@ pub async fn user_manage_profile_form(
     let template = UserManageProfileUserFormTemplate {
         user: UserDisplay::from(user),
         message: "".to_string(),
-        message_success: "".to_string(),
+        success: true,
     };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -231,17 +229,16 @@ pub async fn user_manage(
     );
     let user = user_repo.update(&user_update).await?;
 
-    if let Some(user_valid) = user.get(0) {
-        let template = UserManageProfileUserFormTemplate {
-            user: UserDisplay::from(user_valid.clone()),
-            message: "".to_string(),
-            message_success: "Profile update successful".to_string(),
-        };
-        let body = template.render()?;
-        return Ok(HttpResponse::Ok().content_type("text/html").body(body));
-    }
-
-    Err(AppError::new(InternalServerError, "Update of user profile failed"))
+    let Some(user_valid) = user.into_iter().next() else {
+        return Err(AppError::from(BackendError::new(BackendErrorKind::UserUpdateParametersEmpty)));
+    };
+    let template = UserManageProfileUserFormTemplate {
+        user: UserDisplay::from(user_valid.clone()),
+        message: "Profile update successful".to_string(),
+        success: true,
+    };
+    let body = template.render()?;
+    return Ok(HttpResponse::Ok().content_type("text/html").body(body));
 }
 
 #[post("/manage/password")]
@@ -256,7 +253,7 @@ pub async fn user_manage_password(
     if form.new_password != form.confirm_password {
         let template = UserManagePasswordTemplate {
             message: "Passwords do not match".to_string(),
-            message_success: "".to_string(),
+            success: false
         };
         let body = template.render()?;
         return Ok(HttpResponse::Ok().content_type("text/html").body(body));
@@ -273,15 +270,15 @@ pub async fn user_manage_password(
     if update_status.is_err() {
         let template = UserManagePasswordTemplate {
             message: "Old password incorrect".to_string(),
-            message_success: "".to_string(),
+            success: false
         };
         let body = template.render()?;
         return Ok(HttpResponse::Ok().content_type("text/html").body(body));
     }
 
     let template = UserManagePasswordTemplate {
-        message: "".to_string(),
-        message_success: "Password update successful".to_string(),
+        message: "Password update successful".to_string(),
+        success: true
     };
     let body = template.render()?;
     return Ok(HttpResponse::Ok().content_type("text/html").body(body));
@@ -299,7 +296,7 @@ pub async fn user_manage_picture(
         &form.picture,
         Uuid::new_v4(),
         "image",
-        "user"
+        "user",
     )?;
     let user = get_user_from_identity(u, &user_repo).await?;
     if let Some(pic) = &user.profile_picture {
@@ -318,19 +315,12 @@ pub async fn user_manage_picture(
 
     let users = user_repo.update(&user_update).await?;
     save_file(form.picture, &path)?;
-    // // Ok(HttpResponse::Ok()
-    // //     .insert_header(("HX-Redirect", "/user/manage"))
-    // //     .finish())
 
-    if let Some(user) = users.into_iter().next() {
-        let template = UserManageProfilePictureTemplate {
-            user: UserDisplay::from(user),
-        };
-        let body = template.render()?;
-        return Ok(HttpResponse::Ok().content_type("text/html").body(body));
-    }
-    // TEMPORARY SOLUTION
-    Ok(HttpResponse::SeeOther()
-        .insert_header((LOCATION, "/"))
-        .finish())
+    let Some(user) = users.into_iter().next() else {
+        return Err(AppError::new(AppErrorKind::FileError, "Update of user profile failed"));
+    };
+
+    let template = UserManageProfilePictureTemplate { user: UserDisplay::from(user) };
+    let body = template.render()?;
+    return Ok(HttpResponse::Ok().content_type("text/html").body(body));
 }
