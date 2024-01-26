@@ -38,7 +38,23 @@ INSERT INTO "User" (id, username, email, name, surname, bio, profile_picture, pa
 VALUES (3, 'archie', 'a@a.com', 'Arthur Conan', 'Doyle', 'I like detectives', '/media/examples/a.jpg', '$pbkdf2-sha256$i=600000,l=32$xHr+sXyp5BtpPCIvIRrRvA$yjmxouyWA7I4mHhTPutuHThixR0gz7nuhYTgFJYAOYw', 'xHr+sXyp5BtpPCIvIRrRvA')
 ON CONFLICT DO NOTHING;
 
-ALTER SEQUENCE "User_id_seq" RESTART WITH 4;
+INSERT INTO "User" (id, username, email, name, surname, bio, profile_picture, password_hash, password_salt)
+VALUES (4, 'n', 'n@n.com', 'Ninka', 'Rybka', '', null, '$pbkdf2-sha256$i=600000,l=32$xHr+sXyp5BtpPCIvIRrRvA$yjmxouyWA7I4mHhTPutuHThixR0gz7nuhYTgFJYAOYw', 'xHr+sXyp5BtpPCIvIRrRvA')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO "User" (id, username, email, name, surname, bio, profile_picture, password_hash, password_salt)
+VALUES (5, 'r', 'r@r.com', 'Roman', 'Mar', '', null, '$pbkdf2-sha256$i=600000,l=32$xHr+sXyp5BtpPCIvIRrRvA$yjmxouyWA7I4mHhTPutuHThixR0gz7nuhYTgFJYAOYw', 'xHr+sXyp5BtpPCIvIRrRvA')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO "User" (id, username, email, name, surname, bio, profile_picture, password_hash, password_salt)
+VALUES (6, 'v', 'v@v.com', 'Vojta', 'Syk', '', null, '$pbkdf2-sha256$i=600000,l=32$xHr+sXyp5BtpPCIvIRrRvA$yjmxouyWA7I4mHhTPutuHThixR0gz7nuhYTgFJYAOYw', 'xHr+sXyp5BtpPCIvIRrRvA')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO "User" (id, username, email, name, surname, bio, profile_picture, password_hash, password_salt)
+VALUES (7, 'p', 'p@p.com', 'Pavel', 'Koh', '', null, '$pbkdf2-sha256$i=600000,l=32$xHr+sXyp5BtpPCIvIRrRvA$yjmxouyWA7I4mHhTPutuHThixR0gz7nuhYTgFJYAOYw', 'xHr+sXyp5BtpPCIvIRrRvA')
+ON CONFLICT DO NOTHING;
+
+ALTER SEQUENCE "User_id_seq" RESTART WITH 8;
 
 INSERT INTO "Audiobook" (id,
                          genre_id,
