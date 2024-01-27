@@ -36,12 +36,12 @@
                     {% if audiobook.profile_picture == "" %}
                     <a class="cursor-pointer text-3xl" hx-get="/user/{{ audiobook.author_id }}/author-content" hx-target="#content-area"
                        hx-push-url="/user/{{ audiobook.author_id }}">
-                        <img class="responsive-image w-full h-full rounded-full" style="background-color: #cccccc" src="./media/user_icon.png" />
+                        <img class="w-full h-full rounded-full" style="background-color: #cccccc" src="./media/user_icon.png" />
                     </a>
                     {% else %}
                     <a class="cursor-pointer text-3xl" hx-get="/user/{{ audiobook.author_id }}/author-content" hx-target="#content-area"
                        hx-push-url="/user/{{ audiobook.author_id }}">
-                        <img class="responsive-image w-full h-full rounded-full" style="background-color: #cccccc" src="{{ audiobook.profile_picture }}" />
+                        <img class="w-full h-full rounded-full" style="background-color: #cccccc" src="{{ audiobook.profile_picture }}" />
                     </a>
                     {% endif %}
                 </div>

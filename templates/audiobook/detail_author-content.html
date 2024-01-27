@@ -37,13 +37,17 @@
         <div class="mb-4 sm:ml-0 xl:ml-10 sm:mb-0 xl:col-span-1">
             <div class="pt-1">{{ audiobook.genre_name }}</div>
             <div class="book-name  text-6xl font-bold">{{audiobook.name}}</div>
-            <div class="pt-5 flex flex-row items-center" >
-                {% if audiobook.profile_picture == "" %}
-                <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="./media/user_icon.png" />
-                {% else %}
-                <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="{{ audiobook.profile_picture }}" />
-                {% endif %}
-                <div class="text-3xl pl-5">{{ audiobook.author_name }}</div>
+            <div class="pt-5 items-center" >
+                <div class="w-10 h-10 md:w-12 md:h-12 lg:w-24 lg:h-24" style="float: left ">
+                    {% if audiobook.profile_picture == "" %}
+                    <img class="w-full h-full rounded-full" style="background-color: #cccccc" src="./media/user_icon.png" />
+                    {% else %}
+                    <img class="w-full h-full rounded-full" style="background-color: #cccccc" src="{{ audiobook.profile_picture }}" />
+                    {% endif %}
+                </div>
+                <div class="w-auto h-10 md:h-12 lg:h-24 pt-1 md:pt-2 lg:pt-8 pl-10 md:pl-12 lg:pl-24">
+                    <div class="text-3xl pl-5">{{ audiobook.author_name }}</div>
+                </div>
             </div>
         </div>
         <div class="flex flex-row justify-end sm:col-span-3 xl:col-span-2">
