@@ -1,7 +1,7 @@
 <div class="container h-full w-full  p-4 bg-black">
     <div class="max-w-full max-h-full h-full rounded overflow-hidden border border-gray-800 flex flex-col transition duration-500 items-center hover:shadow-sm hover:shadow-gray-500 hover:border-gray-500"
          style="background: linear-gradient(180deg,{{audiobook.genre_color}} 0%, rgba(0,0,0, 0) 75%, rgba(0,0,0, 0) 100%);">
-        <div class="px-4 py-2 w-full h-full text-center">
+        <div class="px-4 py-2 flex flex-col w-full h-full text-center">
                 <div class="w-48 h-48 mx-auto relative">
                     <img class="w-full h-full" src="{{ audiobook.thumbnail }}" alt="Audiobook Image">
                     {% if audiobook.is_finished %}
@@ -20,7 +20,7 @@
                 <p class="text-gray-300 text-sm">
                     by {{ audiobook.author_name }}
                 </p>
-                <div class="w-full flex items-center justify-between mb-4">
+                <div class="w-full flex justify-between mt-auto mb-2">
                     <div class="flex items-center ml-4">
                         {% if audiobook.is_liked %}
                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-1">
