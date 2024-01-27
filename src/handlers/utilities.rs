@@ -164,7 +164,7 @@ pub async fn authorized_to_modify(audiobook_repo: &web::Data<AudiobookRepository
                                   user_id: Id,
                                   audiobook_id: Id) -> Result<Audiobook, AppError> {
     let audiobook = audiobook_repo
-        .read_one(&AudiobookGetById::new(&audiobook_id))
+        .read_one(&AudiobookGetById::new(&audiobook_id, true))
         .await?;
     is_authorized(user_id, audiobook.author_id)?;
     Ok(audiobook)
@@ -174,7 +174,7 @@ pub async fn authorized_to_modify_join(audiobook_repo: &web::Data<AudiobookRepos
                                        user_id: Id,
                                        audiobook_id: Id) -> Result<AudiobookDetail, AppError> {
     let audiobook = audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id))
+        .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id, true))
         .await?;
     is_authorized(user_id, audiobook.author_id)?;
     Ok(audiobook)

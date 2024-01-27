@@ -48,7 +48,7 @@
         </div>
         <div class="flex flex-row justify-end sm:col-span-3 xl:col-span-2">
             <div class="rounded w-full overflow-hidden shadow-lg">
-                <div class="pr-4 pb-4 pl-4 xl:ml-40 sm:ml-0">
+                <div id="chapters-container" class="pr-4 pb-4 pl-4 xl:ml-40 sm:ml-0">
                     <h2 class="font-bold text-xl text-white mb-2">Chapters</h2>
                     <div id="chapters-list" class="h-72 overflow-auto"
                          hx-get="/chapter/audiobook/{{ audiobook.id }}/manage" hx-swap="outerHTML" hx-target="#chapters-list" hx-trigger="load">
@@ -73,11 +73,24 @@
             <button hx-get="/audiobook/{{ audiobook.id }}/edit-content" hx-target-error="#content-area" hx-push-url="/audiobook/{{ audiobook.id }}/edit" hx-target="#content-area" class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300 mr-2">
                 <i class="fa-solid fa-pencil"></i>
             </button>
+            {% if audiobook.deleted %}
+            <button class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300 mr-2"
+                    hx-target-error="#content-area"
+                    hx-put="/audiobook/{{ audiobook.id }}/restore" hx-target="#content-area">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+            <button class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300 mr-2"
+                    hx-target-error="#content-area"
+                    hx-delete="/audiobook/{{ audiobook.id }}/hard-delete" hx-target="#content-area">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+            {% else %}
             <button class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300 mr-2"
                     hx-target-error="#content-area"
                     hx-delete="/audiobook/{{ audiobook.id }}/delete" hx-target="#content-area">
                 <i class="fa-solid fa-trash"></i>
             </button>
+            {% endif %}
         </div>
     </div>
 

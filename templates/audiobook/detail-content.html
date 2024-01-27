@@ -68,10 +68,6 @@
     <div class="flex flex-col justify-between pt-4 overflow-hidden">
         <h2 class="text-2xl font-bold mb-4">Description</h2>
         <p class="mb-4"> {{audiobook.description}}</p>
-        <!--                <h2 class="text-2xl font-bold mb-4">About {{audiobook.author_name}} {{audiobook.surname}}</h2>-->
-        <!--                <p class="mb-4">-->
-        <!--                    {{audiobook.bio}}-->
-        <!--                </p>-->
     </div>
 
     <div class="pl-10 pt-10 pb-3 mb-3 text-4xl font-bold">Ratings</div>
@@ -87,16 +83,11 @@
 
     </div>
     <div id="ratings-container"
-         hx-get="/rating/audiobook/{{ audiobook.id }}?offset=0"
-         hx-trigger="load" hx-swap="innerHTML" class="flex flex-col pl-10">
+         hx-get="/rating/audiobook/{{ audiobook.id }}?page=1"
+         hx-trigger="load" hx-target-error="#content-area" hx-swap="beforeend" class="flex flex-col pl-10">
     </div>
 
-
-    <div class="pl-10 flex flex-col items-center">
-        <button id="load-more-ratings-btn" hx-target="#ratings-container" hx-swap="beforeend"
-                hx-get="/rating/audiobook/{{audiobook.id}}?offset={{ rating_count }}"
-                class="w-1/8 bg-blue-600 hover:bg-blue-300 py-3 px-6 text-white font-bold rounded focus:outline-none focus:shadow-outline-blue">
-            Load more
-        </button>
-    </div>
+    <div id="rating-pagination" hx-get="/rating/audiobook/{{ audiobook.id }}/pagination" hx-trigger="load"
+         hx-target="#rating-pagination" hx-swap="outerHTML" hx-target-error="#content-area"
+    ></div>
 </div>

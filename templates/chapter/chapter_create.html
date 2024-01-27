@@ -38,14 +38,3 @@
     </form>
 </div>
 <div class="hidden" id="trash"></div>
-
-<script>
-    document.addEventListener("htmx:afterRequest", (e) => {
-        if (e.detail.elt.id === 'create-chapter-form') {
-            document.getElementById('create-chapter-form').reset();
-            htmx.trigger("#chapters-list", "studio-form-submit")
-            htmx.trigger("#chapters-timeline", "studio-form-submit")
-        }
-    });
-
-</script>

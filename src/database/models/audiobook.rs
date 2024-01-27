@@ -32,6 +32,7 @@ impl HasDeletedAt for Audiobook {
         self.deleted_at.is_some()
     }
 }
+
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq)]
 pub struct AudiobookDetail {
     pub id: Id,
@@ -62,7 +63,7 @@ pub struct AudiobookDetail {
 
     pub playback_position: Option<f64>,
     pub active_audiobook_edited_at: Option<DateTime<Utc>>,
-    pub is_liked: bool
+    pub is_liked: bool,
 }
 
 impl AudiobookDetail {
@@ -131,7 +132,7 @@ pub struct AudiobookDisplay {
     pub progress: f64,
     pub is_finished: bool,
     pub is_started: bool,
-    pub is_liked: bool
+    pub is_liked: bool,
 }
 
 impl AudiobookDisplay {
@@ -165,7 +166,7 @@ impl AudiobookDisplay {
             progress: audiobook.playback_position.unwrap_or_default() / audiobook.length * 100f64,
             is_finished: audiobook.is_finished(),
             is_started: audiobook.is_started(),
-            is_liked: audiobook.is_liked
+            is_liked: audiobook.is_liked,
         }
     }
 }
@@ -201,7 +202,7 @@ impl From<AudiobookDetail> for AudiobookDisplay {
 
             playback_position: audiobook.playback_position.unwrap_or_default(),
             progress: audiobook.playback_position.unwrap_or_default() / audiobook.length * 100f64,
-            is_liked: audiobook.is_liked
+            is_liked: audiobook.is_liked,
         }
     }
 }
@@ -511,13 +512,17 @@ impl AudiobookDelete {
 #[derive(Deserialize, Debug, Clone)]
 pub struct AudiobookGetById {
     pub id: Id,
+    pub fetch_deleted: bool,
 }
 
 impl AudiobookGetById {
     #[must_use]
     #[inline]
-    pub const fn new(id: &Id) -> Self {
-        Self { id: *id }
+    pub const fn new(id: &Id, fetch_deleted: bool) -> Self {
+        Self {
+            id: *id,
+            fetch_deleted,
+        }
     }
 }
 
@@ -525,27 +530,20 @@ impl AudiobookGetById {
 pub struct AudiobookGetByIdJoin {
     pub user_id: Id,
     pub audiobook_id: Id,
-    pub fetch_deleted: bool
+    pub fetch_deleted: bool,
 }
 
 impl AudiobookGetByIdJoin {
     #[must_use]
     #[inline]
-    pub const fn new(user_id: Id, audiobook_id: Id) -> Self {
+    pub const fn new(user_id: Id, audiobook_id: Id, fetch_deleted: bool) -> Self {
         Self {
             user_id,
             audiobook_id,
-            fetch_deleted: false
+            fetch_deleted
         }
     }
-
-    pub const fn new_fetch_deleted(user_id: Id, audiobook_id: Id) -> Self {
-        Self {
-            user_id,
-            audiobook_id,
-            fetch_deleted: true
-        }
-    }
+    
 }
 
 #[derive(Debug, Clone)]

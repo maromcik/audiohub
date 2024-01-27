@@ -10,7 +10,7 @@ use crate::handlers::audiobook::{
     get_last_active_audiobook, releases_content, releases_page,
 };
 use crate::handlers::genre::get_genres_content;
-use crate::handlers::rating::{create_rating, create_rating_form, get_ratings_by_audiobook, remove_rating_for_audiobook};
+use crate::handlers::rating::{create_rating, get_ratings_by_audiobook, remove_rating_for_audiobook};
 use crate::handlers::user::{user_manage_form_content, user_manage_profile_form};
 use crate::handlers::*;
 use actix_files::Files as ActixFiles;
@@ -65,7 +65,9 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(get_audiobook_detail_content)
         .service(get_audiobook_player)
         .service(upload_book_cover)
-        .service(upload_book_cover_post);
+        .service(upload_book_cover_post)
+        .service(restore_audiobook)
+        .service(hard_remove_audiobook);
 
     let chapter_scope = web::scope("chapter")
         .app_data(web::Data::new(chapter_repository.clone()))
@@ -87,10 +89,10 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
     let rating_scope = web::scope("rating")
         .app_data(web::Data::new(rating_repository.clone()))
         .service(create_rating)
-        .service(create_rating_form)
         .service(get_ratings_by_audiobook)
         .service(get_my_rating)
         .service(get_rating_summary)
+        .service(get_pagination)
         .service(remove_rating_for_audiobook);
 
     Box::new(move |cfg: &mut ServiceConfig| {

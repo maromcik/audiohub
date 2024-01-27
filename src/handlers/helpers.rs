@@ -44,7 +44,7 @@ pub async fn get_audiobook_detail_base(
     audiobook_id: Id,
 ) -> Result<AudiobookDetailBase, AppError> {
     let audiobook = audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id))
+        .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id, false))
         .await?;
 
     let displayed_chapters = get_displayable_chapters(chapter_repo, audiobook_id).await?;
@@ -141,7 +141,12 @@ pub async fn get_studio(
 ) -> Result<Vec<AudiobookDisplay>, AppError> {
     let user_id = parse_user_id(u)?;
     Ok(book_repo
-        .read_many(&AudiobookSearch::search_by_author_id(user_id, user_id, DbQueryParams::default()))
+        .read_many(&AudiobookSearch::search_by_author_id(user_id, user_id, DbQueryParams::new(
+            Some(DbOrderColumn::new("a.created_at", DbOrder::Desc)),
+            None,
+            None,
+            None,
+            true)))
         .await?)
 }
 

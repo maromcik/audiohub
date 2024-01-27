@@ -4,8 +4,8 @@
 </audio>
 
 <script>
+    document.getElementById('chapter-begin-selection').value = 0;
     document.getElementById('chapter-creator-player').addEventListener('timeupdate', () => {
-        console.log(document.getElementById('chapter-creator-player').currentTime);
         document.getElementById('chapter-begin-selection').value = document.getElementById('chapter-creator-player').currentTime;
     });
 </script>

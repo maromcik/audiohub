@@ -12,6 +12,7 @@
     <!-- font awesome-->
     <script src="https://kit.fontawesome.com/34be06a8e3.js" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
+    <script src="./static/js/script.js"></script>
 </head>
 <body class="bg-black text-white">
 {% block navbar %}
@@ -29,113 +30,4 @@
 
 </div>
 </body>
-
-{% let rating_count = crate::database::models::rating::DISPLAYED_RATINGS_COUNT %}
-<script>
-    let playerIntervalId = 0;
-    let currentBookId = -1;
-
-    const getCurrentPlayerTime = () => {
-        return document.getElementById('audiobook-player').currentTime;;
-    }
-
-    const getBeginningPlayerTime = () => {
-        return document.getElementById('audiobook-player').getAttribute("begin-time");
-
-    }
-    // player init
-    document.addEventListener("htmx:load", (e) => {
-        if (e.detail.elt.id === 'player-container') {
-            clearInterval(playerIntervalId);
-            let audio = document.getElementById('audiobook-player');
-            let bookId = audio.lastElementChild.id;
-            attachInterval(parseBookIdFromSource(bookId));
-
-            audio.play();
-
-            let beginTime = getBeginningPlayerTime();
-            // initially set active book to current selection
-            fetch(`/audiobook/${currentBookId}/active?position=${beginTime}`, {
-                method: "PUT",
-            });
-            audio.currentTime = beginTime;
-
-            audio.onpause = () => {
-                clearInterval(playerIntervalId);
-            }
-
-            audio.onended = () => {
-                clearInterval(playerIntervalId);
-                updateActiveBook()
-            }
-        }
-    });
-
-
-    const attachInterval = (bookId) => {
-        currentBookId = bookId;
-        document.getElementById('audiobook-player').onplay = () => {
-            createInterval(bookId)
-        }
-    };
-
-    // TODO: prolong interval
-    const createInterval = () => {
-        playerIntervalId  = setInterval(() => {
-           updateActiveBook()
-        }, 3_000);
-    }
-
-    const parseBookIdFromSource = (sourceId ) => {
-        return sourceId.slice(7, sourceId.length);
-    };
-
-    const updateActiveBook = () => {
-        fetch(`/audiobook/${currentBookId}/active?position=${getCurrentPlayerTime()}`, {
-            method: "PUT",
-        });
-    }
-
-    const attachHideQuickSearchListener = () => {
-        document.body.addEventListener('click', hideQuickSearchResults)
-    }
-    const hideQuickSearchResults = () => {
-        document.getElementById('quick-search-input').value = '';
-        document.getElementById('search-result').style.display = 'none';
-        document.body.removeEventListener('click', this);
-    }
-
-
-    document.addEventListener("htmx:afterRequest", (e) => {
-        // rating clear
-        if (e.detail.elt.id === 'rating-form') {
-            document.getElementById('rating-form').reset();
-        }
-
-        // rating button offset handling
-        if (e.detail.target.id === 'ratings-container' && e.detail.elt.id === 'load-more-ratings-btn') {
-            if (e.detail.failed) {
-                document.getElementById('load-more-ratings-btn').remove()
-            }
-            incrementRatingButtonOffset()
-        }
-
-        // update rating summary
-        if (e.detail.target.id === 'my-rating-container' && e.detail.elt.id === 'rating-form') {
-           htmx.trigger('#ratings-summary-container', 'change')
-        }
-    });
-
-    const incrementRatingButtonOffset = () => {
-        const button = document.getElementById('load-more-ratings-btn');
-        const hxUrl = button.getAttribute('hx-get');
-        const parts = hxUrl.split('=');
-        let offset = parseInt(parts[1]);
-        offset += {{ rating_count }}
-        const newUrl = `${parts[0]}=${offset}`;
-        console.log(newUrl);
-        button.setAttribute('hx-get', `${parts[0]}=${offset}`)
-        htmx.process(button)
-    }
-</script>
 </html>

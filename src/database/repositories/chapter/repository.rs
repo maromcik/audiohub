@@ -108,7 +108,7 @@ impl ChapterRepository {
     /// - `Ok(chapter)`: when the chapter exists and is not deleted
     /// - `Err(DbError)`: with appropriate error description otherwise
     pub fn is_correct(chapter: Option<Chapter>) -> DbResultSingle<Chapter> {
-        entity_is_correct(chapter, EntityError::new(ChapterDeleted, ChapterDoesNotExist))
+        entity_is_correct(chapter, EntityError::new(ChapterDeleted, ChapterDoesNotExist), false)
     }
 }
 

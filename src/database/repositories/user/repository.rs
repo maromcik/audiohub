@@ -88,7 +88,7 @@ impl UserRepository {
     /// - `Ok(user)`: when the user exists and is not deleted
     /// - `Err(DbError)`: with appropriate error description otherwise
     pub fn user_is_correct(user: Option<User>) -> DbResultSingle<User> {
-        entity_is_correct(user, EntityError::new(UserDeleted, UserDoesNotExist))
+        entity_is_correct(user, EntityError::new(UserDeleted, UserDoesNotExist), false)
     }
 
     pub fn verify_password(user: User, given_password: &str) -> DbResultSingle<User> {
