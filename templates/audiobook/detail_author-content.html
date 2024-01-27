@@ -79,6 +79,11 @@
                     hx-put="/audiobook/{{ audiobook.id }}/restore" hx-target="#content-area">
                 <i class="fa-solid fa-rotate-right"></i>
             </button>
+            <button class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300 mr-2"
+                    hx-target-error="#content-area"
+                    hx-delete="/audiobook/{{ audiobook.id }}/hard-delete" hx-target="#content-area">
+                <i class="fa-solid fa-trash"></i>
+            </button>
             {% else %}
             <button class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300 mr-2"
                     hx-target-error="#content-area"

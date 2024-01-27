@@ -320,7 +320,21 @@ impl AudiobookRepository {
         transaction.commit().await?;
         Ok(books)
     }
-    
+
+    pub async fn hard_delete(&self, params: &AudiobookDelete) -> DbResultMultiple<Audiobook> {
+        let books = sqlx::query_as!(
+            Audiobook,
+            r#"
+            DELETE FROM "Audiobook"
+            WHERE id = $1
+            RETURNING *
+            "#,
+            params.id,
+        )
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
+        Ok(books)
+    }
 }
 
 #[async_trait]

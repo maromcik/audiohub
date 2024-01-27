@@ -9,7 +9,7 @@ use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::{AppError};
 use crate::forms::audiobook::{AudiobookCreateForm, AudiobookQuickSearchQuery, AudiobookUploadForm, AudiobookEditForm, AudiobookThumbnailEditForm};
-use crate::handlers::utilities::{get_metadata_from_session, get_user_from_identity, parse_user_id, save_file, validate_file, AudiobookCreateSessionKeys, authorized_to_modify, authorized_to_modify_join};
+use crate::handlers::utilities::{get_metadata_from_session, get_user_from_identity, parse_user_id, save_file, validate_file, AudiobookCreateSessionKeys, authorized_to_modify, authorized_to_modify_join, remove_file};
 use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate, QuickSearchResults, AudiobookEditContentTemplate, AudiobookEditPageTemplate, AudiobookCoverUpload};
 use crate::templates::audiobook::{AudiobookDetailAuthorContentTemplate, AudiobookDetailAuthorPageTemplate, DetailLikesTemplate};
 use actix_identity::Identity;
@@ -386,17 +386,33 @@ pub async fn remove_audiobook(
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity, request.path());
     let audiobook = authorized_to_modify(&audiobook_repo, parse_user_id(u)?, path.into_inner().0).await?;
-    // DEPRECATED BECAUSE OF SOFT DELETES
-    // remove_file(&audiobook.file_path)?;
-    // if let Some(thumbnail) = &audiobook.thumbnail {
-    //     remove_file(thumbnail)?;
-    // }
     audiobook_repo
         .delete(&AudiobookDelete::new(&audiobook.id))
         .await?;
     let path = format!("/audiobook/{}/manage-content", audiobook.id);
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, path))
+        .finish())
+}
+
+#[delete("/{id}/hard-delete")]
+pub async fn hard_remove_audiobook(
+    request: HttpRequest,
+    identity: Option<Identity>,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    path: web::Path<(Id, )>,
+) -> Result<HttpResponse, AppError> {
+    let u = authorized!(identity, request.path());
+    let audiobook = authorized_to_modify(&audiobook_repo, parse_user_id(u)?, path.into_inner().0).await?;
+    remove_file(&audiobook.file_path)?;
+    if let Some(thumbnail) = &audiobook.thumbnail {
+        remove_file(thumbnail)?;
+    }
+    audiobook_repo
+        .hard_delete(&AudiobookDelete::new(&audiobook.id))
+        .await?;
+    Ok(HttpResponse::SeeOther()
+        .insert_header((LOCATION, "/studio-content"))
         .finish())
 }
 
