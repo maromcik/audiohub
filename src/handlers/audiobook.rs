@@ -29,7 +29,7 @@ use crate::database::models::active_audiobook::SetActiveAudiobook;
 use crate::database::models::bookmark::BookmarkOperation;
 
 use uuid::Uuid;
-use crate::handlers::helpers::{get_audiobook_detail_base, get_audiobook_edit, get_releases};
+use crate::handlers::helpers::{get_audiobook_detail_base, get_audiobook_edit, get_chapters_by_book, get_releases};
 
 #[get("/create")]
 pub async fn create_audiobook_page(
@@ -227,11 +227,10 @@ pub async fn manage_audiobook(
     let u = authorized!(identity, request.path());
     let user_id = parse_user_id(u)?;
     let audiobook = authorized_to_modify_join(&audiobook_repo, user_id, path.into_inner().0).await?;
-    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, user_id, audiobook.id).await?;
     let body = AudiobookDetailAuthorPageTemplate {
-        audiobook: base.audiobook,
-        chapters: base.chapters,
+        chapters: get_chapters_by_book(chapter_repo, audiobook.id).await?,
         is_liked: audiobook.is_liked,
+        audiobook: AudiobookDisplay::from(audiobook),
     }
         .render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -248,11 +247,10 @@ pub async fn manage_audiobook_content(
     let u = authorized!(identity, request.path());
     let user_id = parse_user_id(u)?;
     let audiobook = authorized_to_modify_join(&audiobook_repo, user_id, path.into_inner().0).await?;
-    let base = get_audiobook_detail_base(audiobook_repo, chapter_repo, user_id, audiobook.id).await?;
     let body = AudiobookDetailAuthorContentTemplate {
-        audiobook: base.audiobook,
-        chapters: base.chapters,
+        chapters: get_chapters_by_book(chapter_repo, audiobook.id).await?,
         is_liked: audiobook.is_liked,
+        audiobook: AudiobookDisplay::from(audiobook),
     }
         .render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))

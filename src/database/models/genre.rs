@@ -1,5 +1,6 @@
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
+use crate::database::common::HasDeletedAt;
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]
 pub struct Genre {
@@ -9,6 +10,12 @@ pub struct Genre {
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
+}
+
+impl HasDeletedAt for Genre {
+    fn is_deleted(&self) -> bool {
+        self.deleted_at.is_some()
+    }
 }
 
 #[derive(Debug, Clone)]

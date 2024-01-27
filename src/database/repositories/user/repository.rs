@@ -9,11 +9,12 @@ use sqlx::{Postgres, Transaction};
 use crate::database::common::error::BackendErrorKind::{
     UserDeleted, UserDoesNotExist, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
 };
-use crate::database::common::error::{BackendError, DbError};
+use crate::database::common::error::{BackendError, DbError, EntityError};
 use crate::database::common::error::{DbResultMultiple, DbResultSingle};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
+use crate::database::common::utilities::entity_is_correct;
 
 
 use crate::database::models::bookmark::{Bookmark, BookmarkOperation};
@@ -87,14 +88,7 @@ impl UserRepository {
     /// - `Ok(user)`: when the user exists and is not deleted
     /// - `Err(DbError)`: with appropriate error description otherwise
     pub fn user_is_correct(user: Option<User>) -> DbResultSingle<User> {
-        if let Some(user) = user {
-            if user.deleted_at.is_none() {
-                return Ok(user);
-            }
-            return Err(DbError::from(BackendError::new(UserDeleted)));
-        }
-
-        Err(DbError::from(BackendError::new(UserDoesNotExist)))
+        entity_is_correct(user, EntityError::new(UserDeleted, UserDoesNotExist))
     }
 
     pub fn verify_password(user: User, given_password: &str) -> DbResultSingle<User> {

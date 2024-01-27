@@ -2,6 +2,8 @@ use crate::database::common::query_parameters::{BookState, DbOrder, DbQueryParam
 use sqlx::{Postgres, QueryBuilder};
 use std::fmt::Display;
 use crate::CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE;
+use crate::database::common::error::{BackendError, DbError, DbResultSingle, EntityError};
+use crate::database::common::HasDeletedAt;
 
 pub fn add_sql_to_query(
     query_builder: &mut QueryBuilder<Postgres>,
@@ -31,6 +33,9 @@ pub fn parse_value<T>(
 pub fn generate_query_param_string(params: &DbQueryParams) -> String {
     let ratio = CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE / 100f64;
     let mut qp_string = String::new();
+    if !params.fetch_deleted {
+        qp_string.push_str("AND a.deleted_at IS NULL\n");
+    }
     if let Some(state) = &params.book_state {
         match state {
             BookState::Finished(val) => {
@@ -64,4 +69,15 @@ pub fn generate_query_param_string(params: &DbQueryParams) -> String {
         qp_string.push_str(o.to_string().as_str());
     }
     qp_string
+}
+
+pub fn entity_is_correct<T: HasDeletedAt>(entity: Option<T>, error: EntityError) -> DbResultSingle<T> {
+    if let Some(ent) = entity {
+        if ent.is_deleted() {
+            return Err(DbError::from(BackendError::new(error.deleted)));
+        }
+        return Ok(ent);
+    }
+
+    Err(DbError::from(BackendError::new(error.does_not_exist)))
 }

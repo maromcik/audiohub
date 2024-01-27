@@ -1,10 +1,8 @@
 use crate::database::common::error::BackendErrorKind::{
     AudiobookDeleted, AudiobookDoesNotExist, AudiobookUpdateParametersEmpty,
 };
-use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle};
-use crate::database::common::{
-    DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
-};
+use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle, EntityError};
+use crate::database::common::{DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler};
 use async_trait::async_trait;
 
 use crate::database::common::utilities::generate_query_param_string;
@@ -15,6 +13,7 @@ use sqlx::{Postgres, Transaction};
 
 use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookDisplay, AudiobookGetById, AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookSearch, AudiobookUpdate};
 use crate::database::models::Id;
+use crate::database::common::utilities::entity_is_correct;
 
 #[derive(Clone)]
 pub struct AudiobookRepository {
@@ -23,9 +22,9 @@ pub struct AudiobookRepository {
 
 impl AudiobookRepository {
     pub async fn get_audiobook<'a>(
-        params: AudiobookGetById,
+        params: &AudiobookGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
-    ) -> DbResultSingle<Option<Audiobook>> {
+    ) -> DbResultSingle<Audiobook> {
         let query = sqlx::query_as!(
             Audiobook,
             r#"
@@ -34,25 +33,9 @@ impl AudiobookRepository {
             "#,
             params.id
         )
-        .fetch_optional(transaction_handle.as_mut())
-        .await?;
-
-        if let Some(book) = query {
-            return Ok(Option::from(book));
-        }
-
-        Err(DbError::from(BackendError::new(AudiobookDoesNotExist)))
-    }
-
-    pub fn audiobook_is_correct(audiobook: Option<Audiobook>) -> DbResultSingle<Audiobook> {
-        if let Some(audiobook) = audiobook {
-            if audiobook.deleted_at.is_none() {
-                return Ok(audiobook);
-            }
-            return Err(DbError::from(BackendError::new(AudiobookDeleted)));
-        }
-
-        Err(DbError::from(BackendError::new(AudiobookDoesNotExist)))
+            .fetch_optional(transaction_handle.as_mut())
+            .await?;
+        entity_is_correct(query, EntityError::new(AudiobookDeleted, AudiobookDoesNotExist))
     }
 
     pub async fn increment_stream_count<'a>(book_id: &Id, transaction_handle: &mut Transaction<'a, Postgres>) -> DbResultSingle<()> {
@@ -65,7 +48,6 @@ impl AudiobookRepository {
             book_id,
         ).execute(transaction_handle.as_mut()).await?;
         Ok(())
-
     }
 
     pub async fn quick_search(&self, query: &str) -> DbResultMultiple<AudiobookQuickSearch> {
@@ -82,8 +64,8 @@ impl AudiobookRepository {
             "#,
             comparison_string
         )
-        .fetch_all(&self.pool_handler.pool)
-        .await?;
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
 
         Ok(results)
     }
@@ -102,8 +84,8 @@ impl AudiobookRepository {
             params.user_id,
             params.audiobook_id,
         )
-        .fetch_one(&self.pool_handler.pool)
-        .await?;
+            .fetch_one(&self.pool_handler.pool)
+            .await?;
 
         Ok(removed_active_audiobook)
     }
@@ -128,8 +110,8 @@ impl AudiobookRepository {
             params.user_id,
             params.audiobook_id,
         )
-        .fetch_all(transaction.as_mut())
-        .await?;
+            .fetch_all(transaction.as_mut())
+            .await?;
 
         if let Some(updated) = updated_active_audiobook.into_iter().nth(0) {
             transaction.commit().await?;
@@ -147,8 +129,8 @@ impl AudiobookRepository {
             params.audiobook_id,
             params.playback_position
         )
-        .fetch_one(transaction.as_mut())
-        .await?;
+            .fetch_one(transaction.as_mut())
+            .await?;
 
         transaction.commit().await?;
 
@@ -181,8 +163,8 @@ impl AudiobookRepository {
             "#,
             user_id,
         )
-        .fetch_optional(&self.pool_handler.pool)
-        .await?;
+            .fetch_optional(&self.pool_handler.pool)
+            .await?;
         Ok(last_active_book.map(PlayedAudiobook::from))
     }
 
@@ -192,7 +174,6 @@ impl AudiobookRepository {
         user_id: &Id,
         book_id: &Id,
     ) -> DbResultSingle<PlayedAudiobook> {
-
         let mut transaction = self.pool_handler.pool.begin().await?;
         let exists = sqlx::query_as!(
             ActiveAudiobook,
@@ -204,8 +185,8 @@ impl AudiobookRepository {
             user_id,
             book_id,
         )
-        .fetch_optional(transaction.as_mut())
-        .await?;
+            .fetch_optional(transaction.as_mut())
+            .await?;
 
         AudiobookRepository::increment_stream_count(book_id, &mut transaction).await?;
 
@@ -226,8 +207,8 @@ impl AudiobookRepository {
                 user_id,
                 book_id
             )
-            .fetch_one(transaction.as_mut())
-            .await?;
+                .fetch_one(transaction.as_mut())
+                .await?;
 
             transaction.commit().await?;
             return Ok(PlayedAudiobook::from(played_audiobook));
@@ -259,8 +240,8 @@ impl AudiobookRepository {
             user_id,
             book_id
         )
-        .fetch_one(transaction.as_mut())
-        .await?;
+            .fetch_one(transaction.as_mut())
+            .await?;
 
         transaction.commit().await?;
         Ok(PlayedAudiobook::from(played_audiobook))
@@ -282,6 +263,7 @@ impl AudiobookRepository {
                 a.like_count,
                 a.created_at,
                 a.edited_at,
+                a.deleted_at,
 
                 a.author_id,
                 u.name AS author_name,
@@ -336,18 +318,10 @@ impl DbRepository for AudiobookRepository {
 #[async_trait]
 impl DbReadOne<AudiobookGetById, Audiobook> for AudiobookRepository {
     async fn read_one(&self, params: &AudiobookGetById) -> DbResultSingle<Audiobook> {
-        let maybe_audiobook = sqlx::query_as!(
-            Audiobook,
-            r#"
-            SELECT * FROM "Audiobook"
-            WHERE id = $1
-            "#,
-            params.id
-        )
-        .fetch_optional(&self.pool_handler.pool)
-        .await?;
-
-        let audiobook = AudiobookRepository::audiobook_is_correct(maybe_audiobook)?;
+        let mut transaction = self.pool_handler.pool.begin().await?;
+        let audiobook = AudiobookRepository::get_audiobook(
+            params, &mut transaction)
+            .await?;
         Ok(audiobook)
     }
 }
@@ -370,6 +344,7 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
                 a.like_count,
                 a.created_at,
                 a.edited_at,
+                a.deleted_at,
 
                 a.author_id,
                 u.name AS author_name,
@@ -397,19 +372,21 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
                     LEFT JOIN
                 "Bookmark" as b ON a.id = b.audiobook_id AND b.user_id = $2
             WHERE
-                a.deleted_at IS NULL
-                AND a.id = $1
+                a.id = $1
             "#,
             params.audiobook_id,
             params.user_id
         )
-        .fetch_optional(&self.pool_handler.pool)
-        .await?;
-
-        match maybe_audiobook {
-            None => Err(DbError::from(BackendError::new(AudiobookDoesNotExist))),
-            Some(audiobook) => Ok(audiobook),
+            .fetch_optional(&self.pool_handler.pool)
+            .await?;
+        if !params.fetch_deleted {
+            let audiobook = entity_is_correct(maybe_audiobook, EntityError::new(AudiobookDeleted, AudiobookDoesNotExist))?;
+            return Ok(audiobook);
         }
+        if let Some(audiobook) = maybe_audiobook {
+            return Ok(audiobook);
+        }
+        Err(DbError::from(BackendError::new(AudiobookDoesNotExist)))
     }
 }
 
@@ -429,6 +406,7 @@ impl DbReadMany<AudiobookSearch, AudiobookDisplay> for AudiobookRepository {
                 a.like_count,
                 a.created_at,
                 a.edited_at,
+                a.deleted_at,
 
                 a.author_id,
                 u.name AS author_name,
@@ -456,8 +434,7 @@ impl DbReadMany<AudiobookSearch, AudiobookDisplay> for AudiobookRepository {
                     LEFT JOIN
                 "Bookmark" as b ON a.id = b.audiobook_id AND b.user_id = $12
             WHERE
-                a.deleted_at IS NULL
-                AND u.deleted_at IS NULL
+                u.deleted_at IS NULL
                 AND g.deleted_at IS NULL
                 AND (a.name = $1 OR $1 IS NULL)
                 AND (author_id = $2 OR $2 IS NULL)
@@ -471,10 +448,11 @@ impl DbReadMany<AudiobookSearch, AudiobookDisplay> for AudiobookRepository {
                 AND (u.name = $10 OR $10 IS NULL)
                 AND (g.name = $11 OR $11 IS NULL)
             "#
-        .to_owned();
+            .to_owned();
 
         let query_params = generate_query_param_string(&params.query_params);
         query.push_str(query_params.as_str());
+
         let audiobooks = sqlx::query_as::<_, AudiobookDetail>(query.as_str())
             .bind(&params.name)
             .bind(params.author_id)
@@ -513,8 +491,8 @@ impl DbCreate<AudiobookCreate, Audiobook> for AudiobookRepository {
             params.thumbnail,
             params.description
         )
-        .fetch_one(&self.pool_handler.pool)
-        .await?;
+            .fetch_one(&self.pool_handler.pool)
+            .await?;
 
         Ok(book)
     }
@@ -531,11 +509,10 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
 
         let mut transaction = self.pool_handler.pool.begin().await?;
         let audiobook = AudiobookRepository::get_audiobook(
-            AudiobookGetById { id: params.id },
+            &AudiobookGetById { id: params.id },
             &mut transaction,
         )
-        .await?;
-        let validated_audiobook = AudiobookRepository::audiobook_is_correct(audiobook)?;
+            .await?;
         let updated_audio_books = sqlx::query_as!(
             Audiobook,
             r#"
@@ -565,10 +542,10 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
             params.overall_rating,
             params.thumbnail,
             params.description,
-            validated_audiobook.id
+            audiobook.id
         )
-        .fetch_all(transaction.as_mut())
-        .await?;
+            .fetch_all(transaction.as_mut())
+            .await?;
         transaction.commit().await?;
 
         Ok(updated_audio_books)
@@ -579,19 +556,48 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
 impl DbDelete<AudiobookDelete, Audiobook> for AudiobookRepository {
     async fn delete(&self, params: &AudiobookDelete) -> DbResultMultiple<Audiobook> {
         let mut transaction = self.pool_handler.pool.begin().await?;
-        let book_query = AudiobookRepository::get_audiobook(
-            AudiobookGetById { id: params.id },
+        let audiobook = AudiobookRepository::get_audiobook(
+            &AudiobookGetById { id: params.id },
             &mut transaction,
         )
-        .await?;
+            .await?;
 
-        let _ = AudiobookRepository::audiobook_is_correct(book_query.clone())?;
+        sqlx::query!(
+            r#"
+            DELETE FROM "Bookmark"
+            WHERE audiobook_id = $1
+            "#,
+            audiobook.id,
+        )
+            .fetch_all(transaction.as_mut())
+            .await?;
+
+        sqlx::query!(
+            r#"
+            DELETE FROM "Active_Audiobook"
+            WHERE audiobook_id = $1
+            "#,
+            audiobook.id,
+        )
+            .fetch_all(transaction.as_mut())
+            .await?;
+
+        sqlx::query!(
+            r#"
+            UPDATE "Chapter" SET
+                deleted_at = current_timestamp,
+                edited_at = current_timestamp
+            WHERE audiobook_id = $1
+            "#,
+            audiobook.id,
+        )
+            .fetch_all(transaction.as_mut())
+            .await?;
 
         let books = sqlx::query_as!(
             Audiobook,
             r#"
             UPDATE "Audiobook" SET
-                name = $1,
                 deleted_at = current_timestamp,
                 edited_at = current_timestamp
             WHERE id = $1
@@ -599,8 +605,9 @@ impl DbDelete<AudiobookDelete, Audiobook> for AudiobookRepository {
             "#,
             params.id,
         )
-        .fetch_all(transaction.as_mut())
-        .await?;
+            .fetch_all(transaction.as_mut())
+            .await?;
+
         transaction.commit().await?;
 
         Ok(books)

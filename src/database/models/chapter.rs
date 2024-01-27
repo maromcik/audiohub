@@ -1,6 +1,7 @@
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
+use crate::database::common::HasDeletedAt;
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Clone)]
 pub struct Chapter {
@@ -13,6 +14,11 @@ pub struct Chapter {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
+impl HasDeletedAt for Chapter {
+    fn is_deleted(&self) -> bool {
+        self.deleted_at.is_some()
+    }
+}
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Clone)]
 pub struct ChapterDetail {
@@ -27,6 +33,13 @@ pub struct ChapterDetail {
     pub audiobook_name: String,
     pub author_id: Id,
 }
+
+impl HasDeletedAt for ChapterDetail {
+    fn is_deleted(&self) -> bool {
+        self.deleted_at.is_some()
+    }
+}
+
 
 
 #[derive(Debug, Clone, Deserialize, Default)]

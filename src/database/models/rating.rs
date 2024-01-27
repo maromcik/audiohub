@@ -1,6 +1,7 @@
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
+use crate::database::common::HasDeletedAt;
 
 pub const DISPLAYED_RATINGS_COUNT: i32 = 5;
 
@@ -14,6 +15,12 @@ pub struct Rating {
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
+}
+
+impl HasDeletedAt for Rating {
+    fn is_deleted(&self) -> bool {
+        self.deleted_at.is_some()
+    }
 }
 
 #[derive(Debug, Clone, Default)]

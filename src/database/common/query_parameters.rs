@@ -13,16 +13,18 @@ pub struct DbQueryParams {
     pub order: Option<DbOrderColumn>,
     pub limit: Option<i64>,
     pub offset: Option<i64>,
-    pub book_state: Option<BookState>
+    pub book_state: Option<BookState>,
+    pub fetch_deleted: bool
 }
 
 impl DbQueryParams {
-    pub fn new(order: Option<DbOrderColumn>, limit: Option<i64>, offset: Option<i64>, book_state: Option<BookState>) -> Self {
+    pub fn new(order: Option<DbOrderColumn>, limit: Option<i64>, offset: Option<i64>, book_state: Option<BookState>, fetch_deleted: bool) -> Self {
         Self {
             order,
             limit,
             offset,
-            book_state
+            book_state,
+            fetch_deleted
         }
     }
 
@@ -31,7 +33,8 @@ impl DbQueryParams {
             order: Some(DbOrderColumn::default()),
             limit: Some(limit),
             offset: Some(offset),
-            book_state
+            book_state,
+            fetch_deleted: false
         }
     }
 
@@ -40,7 +43,8 @@ impl DbQueryParams {
             order: Some(order),
             limit: None,
             offset: None,
-            book_state
+            book_state,
+            fetch_deleted: false
         }
     }
     pub fn state(book_state: BookState) -> Self {
@@ -48,7 +52,17 @@ impl DbQueryParams {
             order: Some(DbOrderColumn::default()),
             limit: None,
             offset: None,
-            book_state: Some(book_state)
+            book_state: Some(book_state),
+            fetch_deleted: false,
+        }
+    }
+    pub fn deleted() -> Self {
+        Self {
+            order: Some(DbOrderColumn::default()),
+            limit: None,
+            offset: None,
+            book_state: None,
+            fetch_deleted: true,
         }
     }
 }
@@ -59,7 +73,8 @@ impl Default for DbQueryParams {
             order: Some(DbOrderColumn::default()),
             limit: None,
             offset: None,
-            book_state: None
+            book_state: None, 
+            fetch_deleted: false
         }
     }
 }

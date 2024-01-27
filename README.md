@@ -10,7 +10,7 @@ The website is deployed and published in a Kubernetes cluster.
 
 Use this link https://audiohub.dyn.cloud.e-infra.cz/ to evaluate the app without having to set up your own Postgres instance and clone this repo
 ## Features
-
+    TODO EDIT
 - Book Management: Enables users to browse, purchase, and view books. Each book has properties like name, price, stock in storage, overall rating, genres, publisher, and authors.
 - Author and Publisher Management: Provides administrative privileges to view, add, update, and delete authors and publishers.
 - User Account Management: Allows customers to create accounts, review their purchase history, rate books, and create wishlists.
@@ -26,7 +26,7 @@ The application is built using Actix, Askama and HTMX.
 We have provided multiple options to test and deploy this web application for you. 
 
 If you choose a local deployment, please bear in mind that media files are stored locally for obvious reasons (DB size, RAM). 
-But we will include a couple of short songs and thumbnails in this repository (by subtracting them from .gitignore with `!`) to showcase the functionality out of the box. 
+But we will include a couple of short songs and thumbnails in this repository (in static files) to showcase the functionality out of the box. 
 
 You should add your owns books though.  
 
@@ -44,10 +44,10 @@ This project uses the Postgres database deployed in Kubernetes with the Cloudnat
 
 Our `.env` file is obviously included in `.gitignore`, but since we will have given you the maintainer role in our Gitlab repository, you should be able to get all the data from the environment variables there https://gitlab.fi.muni.cz/xmarianc/pv281-project/-/settings/ci_cd
 
-Please use these secrets modify the `example.env` file. 
+Please use these secrets to modify the `example.env` file. 
 
 ### Local app - Local Postgres with our DB contents
-If you do not wish to use our database you can always restore the database from the database dump file `db_dump.sql` and then reload it with this command `psql -d audiobooks -f db_dump.sql`.
+If you do not wish to use our database you can always restore the database by running migrations.
 
 ## Evaluation
 Use any of those credentials to log into to https://audiohub.dyn.cloud.e-infra.cz/ or your local instance (as long as migrations have been successfully applied).
