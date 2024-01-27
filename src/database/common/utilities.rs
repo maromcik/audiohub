@@ -34,7 +34,7 @@ pub fn generate_query_param_string(params: &DbQueryParams) -> String {
     let ratio = CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE / 100f64;
     let mut qp_string = String::new();
     if !params.fetch_deleted {
-        qp_string.push_str("AND deleted_at IS NULL\n");
+        qp_string.push_str("AND a.deleted_at IS NULL\n");
     }
     if let Some(state) = &params.book_state {
         match state {
