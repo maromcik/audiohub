@@ -1,5 +1,5 @@
 use crate::database::common::DbReadOne;
-use crate::database::models::audiobook::{Audiobook, AudiobookDetail, AudiobookDisplay, AudiobookGetById, AudiobookGetByIdJoin, AudiobookMetadataForm};
+use crate::database::models::audiobook::{Audiobook, AudiobookDetail, AudiobookGetById, AudiobookGetByIdJoin, AudiobookMetadataForm};
 use crate::database::models::user::{User, UserGetById};
 use crate::database::models::Id;
 use crate::database::repositories::user::repository::UserRepository;
@@ -8,7 +8,7 @@ use actix_identity::Identity;
 use actix_multipart::form::tempfile::TempFile;
 use actix_session::Session;
 use actix_web::web;
-use askama::filters::format;
+
 use uuid::{Uuid};
 use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
@@ -129,23 +129,6 @@ pub fn remove_file(path: &str) -> Result<(), AppError> {
     }
     Ok(())
 }
-
-pub fn get_active_audiobooks(audiobooks: &[AudiobookDetail]) -> Vec<AudiobookDisplay> {
-    audiobooks
-        .iter()
-        .filter(|a| a.is_active())
-        .map(AudiobookDisplay::from_reference)
-        .collect()
-}
-
-pub fn get_finished_audiobooks(audiobooks: &[AudiobookDetail]) -> Vec<AudiobookDisplay> {
-    audiobooks
-        .iter()
-        .filter(|a| a.is_finished())
-        .map(AudiobookDisplay::from_reference)
-        .collect()
-}
-
 
 #[macro_export]
 macro_rules! authorized {
