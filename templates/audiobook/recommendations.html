@@ -3,12 +3,12 @@
 {% endif %}
 <div id="recommandation-container" class="flex flex-row justify-center">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-        <div></div>
+        <div class="hidden lg:block"></div>
         {% for book in books %}
         <div class="book-info-link cursor-pointer" hx-get="/audiobook/{{ book.id }}/detail-content" hx-push-url="/audiobook/{{ book.id }}/detail" hx-target="#content-area">
             {% include "audiobook/audiobook_recommend.html" %}
         </div>
         {% endfor %}
-        <div></div>
+        <div class="hidden lg:block"></div>
     </div>
 </div>
