@@ -1,5 +1,5 @@
 <div class="container mx-auto max-w-5xl bg-black p-6">
-    <form hx-post="/audiobook/edit" hx-push-url="/audiobook/{{ audiobook.id }}/manage" hx-target="#content-area" class="mb-4 rounded bg-gray-800 px-8 pb-8 pt-6 shadow-md">
+    <form hx-post="/audiobook/edit" hx-push-url="/audiobook/{{ audiobook.id }}/manage" hx-target="#content-area" hx-target-error="#content-area" class="mb-4 rounded bg-gray-800 px-8 pb-8 pt-6 shadow-md">
         <h2 class="mb-2 block text-center text-xl font-bold text-gray-300">Edit Audiobook</h2>
         <input class="hidden" name="audiobook_id" value="{{audiobook.id}}">
         <div class="mb-4">
@@ -26,7 +26,7 @@
         </div>
 
         <div class="flex justify-end">
-            <button hx-target="#content-area" class="focus:shadow-outline rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 focus:outline-none" type="submit">
+            <button hx-target="#content-area" hx-target-error="#content-area" class="focus:shadow-outline rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 focus:outline-none" type="submit">
                 Save
             </button>
         </div>

@@ -1,4 +1,4 @@
-<form method="post" action="/audiobook/cover/upload" enctype="multipart/form-data" hx-post="/audiobook/ cover/upload"
+<form method="post" action="/audiobook/cover/upload" enctype="multipart/form-data" hx-target-error="#content-area" hx-post="/audiobook/ cover/upload"
       hx-trigger="submit" hx-target="#content-area">
     <div id="error-area" class="text-red-500 mb-3">
         {{ message }}

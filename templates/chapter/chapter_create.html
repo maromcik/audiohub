@@ -1,5 +1,5 @@
 <div class="container mx-auto pt-6 bg-black">
-    <form id="create-chapter-form" hx-post="/chapter/create" hx-target="#trash" class="bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4">
+    <form id="create-chapter-form" hx-post="/chapter/create" hx-target="#trash" hx-target-error="#content-area" class="bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4">
         <h2 class="block text-gray-300 text-xl font-bold mb-2">Add New Chapter</h2>
         <input class="hidden" name="audiobook_id" value="{{audiobook.id}}">
         <div class="mb-4">
@@ -15,14 +15,14 @@
 
             <div id="chapters-timeline" class="w-full h-4 bg-neutral-500 relative mb-8"
                  hx-get="/chapter/audiobook/{{ audiobook.id }}/chapter-timeline"
-                 hx-trigger="load" hx-swap="outerHTML" hx-target="#chapters-timeline"
+                 hx-trigger="load" hx-target-error="#content-area" hx-swap="outerHTML" hx-target="#chapters-timeline"
             >
             </div>
         </div>
 
         <div class="mb-4">
             <div class="text-gray-300 text-sm font-bold mb-2">New chapter beginning (drag to chapter beginning)</div>
-            <div id="select-player-container" hx-target="#select-player-container" hx-get="/chapter/audiobook/{{ audiobook.id }}/creator-player" hx-trigger="load" hx-swap="beforeend">
+            <div id="select-player-container" hx-target="#select-player-container" hx-target-error="#content-area" hx-get="/chapter/audiobook/{{ audiobook.id }}/creator-player" hx-trigger="load" hx-swap="beforeend">
 
             </div>
             <input name="position" id="chapter-begin-selection" class="hidden">

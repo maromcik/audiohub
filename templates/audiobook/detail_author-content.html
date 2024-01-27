@@ -20,7 +20,7 @@
                 {% include "audiobook/book_cover_thumbnail.html" %}
             </div>
             <div class="mt-5 like-count flex flex-row justify-between">
-                <button hx-patch="/audiobook/{{audiobook.id}}/likes" hx-target="#like-count" hx-swap="outerHTML">
+                <button hx-patch="/audiobook/{{audiobook.id}}/likes" hx-target="#like-count" hx-target-error="#content-area" hx-swap="outerHTML">
                     <div id="like-count" class="flex items-center pl-5 text-3xl">
                         {% if is_liked %}
                         <i class="fa-solid fa-heart text-4xl"></i> <p class="pl-5 text-gray-300 text-2xl">{{ audiobook.like_count }}</p>
@@ -66,13 +66,15 @@
             <button id="play-from-detail-btn" hx-get="/audiobook/{{audiobook.id}}/player"
                     hx-target="#player-container"
                     hx-swap="outerHTML"
+                    hx-target-error="#content-area"
                     class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300 mr-2">
                 <i class="fa-solid fa-play"></i>
             </button>
-            <button hx-get="/audiobook/{{ audiobook.id }}/edit-content" hx-push-url="/audiobook/{{ audiobook.id }}/edit" hx-target="#content-area" class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300 mr-2">
+            <button hx-get="/audiobook/{{ audiobook.id }}/edit-content" hx-target-error="#content-area" hx-push-url="/audiobook/{{ audiobook.id }}/edit" hx-target="#content-area" class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300 mr-2">
                 <i class="fa-solid fa-pencil"></i>
             </button>
             <button class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300 mr-2"
+                    hx-target-error="#content-area"
                     hx-delete="/audiobook/{{ audiobook.id }}/delete" hx-target="#content-area">
                 <i class="fa-solid fa-trash"></i>
             </button>

@@ -3,6 +3,7 @@
     <a onclick="hideQuickSearchResults()"
        hx-get="/audiobook/{{ result.id }}/detail-content"
        hx-target="#content-area"
+       hx-target-error="#content-area"
        hx-push-url="/audiobook/{{ result.id }}/detail" class="border-t text-slate-400 p-2 border-slate-400 hover:text-white hover:bg-gray-700">
         {{ result.name }}
     </a>

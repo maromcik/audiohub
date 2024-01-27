@@ -1,4 +1,4 @@
-<form method="post" action="/user/manage/picture" enctype="multipart/form-data" hx-post="/user/manage/picture" hx-trigger="submit" hx-target="#profile-picture-box" hx-swap="innerHTML">
+<form method="post" action="/user/manage/picture" enctype="multipart/form-data" hx-post="/user/manage/picture" hx-trigger="submit" hx-target="#profile-picture-box" hx-target-error="#content-area" hx-swap="innerHTML">
     <div id="error-area" class="text-red-500 mb-3">
         {{ message }}
     </div>

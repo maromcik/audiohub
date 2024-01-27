@@ -7,7 +7,7 @@
                 <img class="responsive-image object-cover bg-blue-600 w-full h-full sm:h-mr-10" src="{{ audiobook.thumbnail }}" alt="book-cover">
             </div>
             <div class="flex flex-row mt-5 justify-between">
-                <button hx-patch="/audiobook/{{audiobook.id}}/likes" hx-target="#like-count" hx-swap="outerHTML">
+                <button hx-patch="/audiobook/{{audiobook.id}}/likes" hx-target="#like-count" hx-swap="outerHTML" hx-target-error="#content-area">
                     <div id="like-count" class="flex items-center pl-5 text-3xl">
                         {% if is_liked %}
                         <i class="fa-solid fa-heart text-3xl"></i> <p class="pl-5 text-gray-300 text-2xl">{{ audiobook.like_count }}</p>
@@ -74,22 +74,22 @@
     {% include "rating/rating-form.html" %}
     <div class="pl-10 pt-10 pb-3 mb-3 text-2xl font-bold">My Rating</div>
     <div id="my-rating-container" class="pl-10"
-         hx-get="/rating/audiobook/{{audiobook.id}}/my-rating" hx-trigger="load" hx-target="#my-rating-container" hx-swap="beforeend"></div>
+         hx-get="/rating/audiobook/{{audiobook.id}}/my-rating" hx-target-error="#content-area" hx-trigger="load" hx-target="#my-rating-container" hx-swap="beforeend"></div>
     <div class="pl-10 pt-10 pb-3 mb-3 text-2xl font-bold">All ratings</div>
     <div id="ratings-summary-container" class="flex flex-row justify-center"
-         hx-get="/rating/audiobook/{{audiobook.id}}/rating-summary" hx-trigger="load" hx-target="#ratings-summary-container"
+         hx-get="/rating/audiobook/{{audiobook.id}}/rating-summary" hx-trigger="load" hx-target="#ratings-summary-container" hx-target-error="#content-area"
          hx-swap="outerHTML"
     >
 
     </div>
     <div id="ratings-container"
          hx-get="/rating/audiobook/{{ audiobook.id }}?offset=0"
-         hx-trigger="load" hx-swap="innerHTML" class="flex flex-col pl-10">
+         hx-trigger="load" hx-target-error="#content-area" hx-swap="innerHTML" class="flex flex-col pl-10">
     </div>
 
 
     <div class="pl-10 flex flex-col items-center">
-        <button id="load-more-ratings-btn" hx-target="#ratings-container" hx-swap="beforeend"
+        <button id="load-more-ratings-btn" hx-target="#ratings-container" hx-target-error="#content-area" hx-swap="beforeend"
                 hx-get="/rating/audiobook/{{audiobook.id}}?offset={{ rating_count }}"
                 class="w-1/8 bg-blue-600 hover:bg-blue-300 py-3 px-6 text-white font-bold rounded focus:outline-none focus:shadow-outline-blue">
             Load more
