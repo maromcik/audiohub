@@ -2,9 +2,7 @@ use crate::database::common::error::BackendErrorKind::{
     AudiobookDeleted, AudiobookDoesNotExist, AudiobookUpdateParametersEmpty,
 };
 use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle};
-use crate::database::common::{
-    DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
-};
+use crate::database::common::{DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, HasDeletedAt, PoolHandler};
 use async_trait::async_trait;
 
 use crate::database::common::utilities::generate_query_param_string;
@@ -44,12 +42,12 @@ impl AudiobookRepository {
         Err(DbError::from(BackendError::new(AudiobookDoesNotExist)))
     }
 
-    pub fn audiobook_is_correct(audiobook: Option<Audiobook>) -> DbResultSingle<Audiobook> {
+    pub fn audiobook_is_correct<T: HasDeletedAt>(audiobook: Option<T>) -> DbResultSingle<T> {
         if let Some(audiobook) = audiobook {
-            if audiobook.deleted_at.is_none() {
-                return Ok(audiobook);
+            if audiobook.is_deleted() {
+                return Err(DbError::from(BackendError::new(AudiobookDeleted)));
             }
-            return Err(DbError::from(BackendError::new(AudiobookDeleted)));
+            return Ok(audiobook);
         }
 
         Err(DbError::from(BackendError::new(AudiobookDoesNotExist)))
@@ -282,6 +280,7 @@ impl AudiobookRepository {
                 a.like_count,
                 a.created_at,
                 a.edited_at,
+                a.deleted_at,
 
                 a.author_id,
                 u.name AS author_name,
@@ -370,6 +369,7 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
                 a.like_count,
                 a.created_at,
                 a.edited_at,
+                a.deleted_at,
 
                 a.author_id,
                 u.name AS author_name,
@@ -397,8 +397,7 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
                     LEFT JOIN
                 "Bookmark" as b ON a.id = b.audiobook_id AND b.user_id = $2
             WHERE
-                a.deleted_at IS NULL
-                AND a.id = $1
+                a.id = $1
             "#,
             params.audiobook_id,
             params.user_id
@@ -406,10 +405,8 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
         .fetch_optional(&self.pool_handler.pool)
         .await?;
 
-        match maybe_audiobook {
-            None => Err(DbError::from(BackendError::new(AudiobookDoesNotExist))),
-            Some(audiobook) => Ok(audiobook),
-        }
+        let audiobook = AudiobookRepository::audiobook_is_correct(maybe_audiobook)?;
+        Ok(audiobook)
     }
 }
 
@@ -429,6 +426,7 @@ impl DbReadMany<AudiobookSearch, AudiobookDisplay> for AudiobookRepository {
                 a.like_count,
                 a.created_at,
                 a.edited_at,
+                a.deleted_at,
 
                 a.author_id,
                 u.name AS author_name,

@@ -2,9 +2,11 @@ use crate::database::models::Id;
 use crate::CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
+use crate::database::common::HasDeletedAt;
 
 use crate::database::common::query_parameters::DbQueryParams;
 use crate::database::models::utilities::{get_default_profile_picture, get_default_thumbnail};
+
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq)]
 pub struct Audiobook {
@@ -25,6 +27,11 @@ pub struct Audiobook {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
+impl HasDeletedAt for Audiobook {
+    fn is_deleted(&self) -> bool {
+        self.deleted_at.is_some()
+    }
+}
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq)]
 pub struct AudiobookDetail {
     pub id: Id,
@@ -41,6 +48,7 @@ pub struct AudiobookDetail {
     pub description: String,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 
     pub username: String,
     pub email: String,
@@ -83,6 +91,12 @@ impl AudiobookDetail {
                 false
             }
         }
+    }
+}
+
+impl HasDeletedAt for AudiobookDetail {
+    fn is_deleted(&self) -> bool {
+        self.deleted_at.is_some()
     }
 }
 
