@@ -5,23 +5,16 @@ use crate::error::AppError;
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, post, web, HttpResponse, HttpRequest, delete};
+use actix_web::cookie::time::macros::offset;
 use askama::Template;
 use serde::Deserialize;
 
-use crate::database::models::rating::{RatingCreate, RatingSearch, UserRatingDisplay};
+use crate::database::models::rating::{DISPLAYED_RATINGS_COUNT, RatingCreate, RatingSearch, UserRatingDisplay};
 use crate::database::repositories::rating::repository::RatingRepository;
 use crate::forms::rating::RatingCreateForm;
 
 use crate::handlers::utilities::parse_user_id;
-use crate::templates::rating::{AudiobookRatingsTemplate, DeletedRatingTemplate, MyRatingTemplate, RatingSummaryTemplate};
-
-#[get("/create/form")]
-pub async fn create_rating_form(request: HttpRequest, identity: Option<Identity>) -> Result<HttpResponse, AppError> {
-    authorized!(identity, request.path());
-    todo!()
-    // let template = ...
-    // Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
-}
+use crate::templates::rating::{AudiobookRatingsTemplate, DeletedRatingTemplate, MyRatingTemplate, RatingPaginationTemplate, RatingSummaryTemplate};
 
 #[post("/audiobook/{book_id}")]
 pub async fn create_rating(
@@ -46,8 +39,8 @@ pub async fn create_rating(
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
 }
 #[derive(Deserialize)]
-struct OffsetQuery {
-    offset: i32,
+struct PageQuery {
+    page: i32,
 }
 
 /// returns DISPLAYED_RATINGS_COUNT ratings transformed to html from query param offset, only returns reviews that
@@ -58,22 +51,21 @@ pub async fn get_ratings_by_audiobook(
     identity: Option<Identity>,
     rating_repo: web::Data<RatingRepository>,
     path: web::Path<(Id,)>,
-    query: web::Query<OffsetQuery>
+    query: web::Query<PageQuery>
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity, request.path());
     let user_id = parse_user_id(identity)?;
+    let page = query.page;
+    let book_id = path.into_inner().0;
 
-    let search_params = RatingSearch::new(Some(path.into_inner().0),None,None,None,None,Some(query.offset));
+    let search_params = RatingSearch::new(Some(book_id.clone()),None,None,None,None,Some((page - 1) * DISPLAYED_RATINGS_COUNT));
     let ratings : Vec<UserRatingDisplay> = rating_repo
         .get_ratings_display(&search_params)
         .await?;
     let ratings : Vec<UserRatingDisplay> = ratings.into_iter()
         .filter(|rating| rating.user_id != user_id).collect();
 
-    if ratings.len() == 0 {
-        return Ok(HttpResponse::PreconditionFailed().finish());
-    }
-    let template = AudiobookRatingsTemplate {ratings,};
+    let template = AudiobookRatingsTemplate {ratings};
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
 }
 
@@ -126,5 +118,25 @@ pub async fn get_rating_summary(
     let summary = rating_repo.get_rating_summary(&audiobook_id).await?;
 
     let template = RatingSummaryTemplate {summary, audiobook_id};
+    Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
+}
+
+#[get("/audiobook/{id}/pagination")]
+pub async fn get_pagination(
+    request: HttpRequest,
+    identity: Option<Identity>,
+    rating_repo: web::Data<RatingRepository>,
+    path: web::Path<(Id,)>,
+) -> Result<HttpResponse, AppError> {
+    authorized!(identity, request.path());
+    let book_id = path.into_inner().0;
+
+    let rating_count = rating_repo.get_rating_count(&book_id).await?;
+    let mut max_page =  rating_count / (DISPLAYED_RATINGS_COUNT as i64);
+    if rating_count * (DISPLAYED_RATINGS_COUNT as i64) != max_page {
+        max_page += 1;
+    }
+
+    let template = RatingPaginationTemplate {max_page, book_id,};
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))
 }

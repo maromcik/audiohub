@@ -33,6 +33,9 @@ pub fn parse_value<T>(
 pub fn generate_query_param_string(params: &DbQueryParams) -> String {
     let ratio = CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE / 100f64;
     let mut qp_string = String::new();
+    if !params.fetch_deleted {
+        qp_string.push_str("AND a.deleted_at IS NULL\n");
+    }
     if let Some(state) = &params.book_state {
         match state {
             BookState::Finished(val) => {
@@ -73,12 +76,12 @@ pub fn generate_query_param_string(params: &DbQueryParams) -> String {
     qp_string
 }
 
-pub fn entity_is_correct<T: HasDeletedAt>(entity: Option<T>, error: EntityError) -> DbResultSingle<T> {
+pub fn entity_is_correct<T: HasDeletedAt>(entity: Option<T>, error: EntityError, fetch_deleted: bool) -> DbResultSingle<T> {
     if let Some(ent) = entity {
-        if ent.is_deleted() {
-            return Err(DbError::from(BackendError::new(error.deleted)));
+        if fetch_deleted || !ent.is_deleted() {
+            return Ok(ent);
         }
-        return Ok(ent);
+        return Err(DbError::from(BackendError::new(error.deleted)));
     }
 
     Err(DbError::from(BackendError::new(error.does_not_exist)))

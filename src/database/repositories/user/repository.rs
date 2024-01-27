@@ -15,6 +15,7 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::common::utilities::entity_is_correct;
+use crate::database::models::audiobook::QuickSearch;
 
 use crate::database::models::bookmark::{Bookmark, BookmarkOperation};
 use crate::database::models::user::{
@@ -87,7 +88,7 @@ impl UserRepository {
     /// - `Ok(user)`: when the user exists and is not deleted
     /// - `Err(DbError)`: with appropriate error description otherwise
     pub fn user_is_correct(user: Option<User>) -> DbResultSingle<User> {
-        entity_is_correct(user, EntityError::new(UserDeleted, UserDoesNotExist))
+        entity_is_correct(user, EntityError::new(UserDeleted, UserDoesNotExist), false)
     }
 
     pub fn verify_password(user: User, given_password: &str) -> DbResultSingle<User> {
@@ -198,6 +199,28 @@ impl UserRepository {
         transaction.commit().await?;
 
         Ok(users)
+    }
+
+    pub async fn quick_search(&self, query: &str) -> DbResultMultiple<QuickSearch> {
+        let mut comparison_string: String = "%".to_owned();
+        comparison_string.push_str(query);
+        comparison_string.push('%');
+
+        let results = sqlx::query!(
+            r#"
+            SELECT id, (name || ' ' || surname) AS name FROM "User"
+            WHERE name || surname ILIKE $1
+            LIMIT 5
+            "#,
+            comparison_string
+        )
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
+
+        let results = results.into_iter()
+            .map(|record| QuickSearch {id: record.id, name: record.name.unwrap_or(String::new())})
+            .collect();
+        Ok(results)
     }
 }
 

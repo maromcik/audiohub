@@ -45,7 +45,7 @@ pub async fn audio_selection_for_chapter(
     audiobook_repo: web::Data<AudiobookRepository>,
 ) -> Result<HttpResponse, AppError> {
     authorized!(identity, request.path());
-    let book = audiobook_repo.read_one(&AudiobookGetById { id: path.into_inner() })
+    let book = audiobook_repo.read_one(&AudiobookGetById { id: path.into_inner(), fetch_deleted: true })
         .await?;
 
     let template = ChapterCreatorPlayerTemplate { source: book.file_path };
@@ -62,7 +62,7 @@ pub async fn get_chapter_timeline(
     authorized!(identity, request.path());
 
     let audiobook_id = path.into_inner();
-    let book = audiobook_repo.read_one(&AudiobookGetById { id: audiobook_id }).await?;
+    let book = audiobook_repo.read_one(&AudiobookGetById { id: audiobook_id, fetch_deleted: true }).await?;
     let displayable_chapters = get_displayable_chapters(chapter_repo, audiobook_id).await?;
     let template = ChapterTimelineTemplate { audiobook_id, chapters: displayable_chapters, length: book.length };
     Ok(HttpResponse::Ok().content_type("text/html").body(template.render()?))

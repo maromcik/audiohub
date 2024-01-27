@@ -22,8 +22,9 @@
 
         <div class="mb-4">
             <div class="text-gray-300 text-sm font-bold mb-2">New chapter beginning (drag to chapter beginning)</div>
-            <div id="select-player-container" hx-target="#select-player-container" hx-target-error="#content-area" hx-get="/chapter/audiobook/{{ audiobook.id }}/creator-player" hx-trigger="load" hx-swap="beforeend">
-
+            <div id="select-player-container" hx-target="#chapter-creator-player" hx-target-error="#content-area" hx-get="/chapter/audiobook/{{ audiobook.id }}/creator-player" hx-trigger="load" hx-swap="outerHTML">
+                <audio id="chapter-creator-player" class="w-full" controls>
+                </audio>
             </div>
             <input name="position" id="chapter-begin-selection" class="hidden">
         </div>
@@ -38,14 +39,3 @@
     </form>
 </div>
 <div class="hidden" id="trash"></div>
-
-<script>
-    document.addEventListener("htmx:afterRequest", (e) => {
-        if (e.detail.elt.id === 'create-chapter-form') {
-            document.getElementById('create-chapter-form').reset();
-            htmx.trigger("#chapters-list", "studio-form-submit")
-            htmx.trigger("#chapters-timeline", "studio-form-submit")
-        }
-    });
-
-</script>

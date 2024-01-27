@@ -28,6 +28,15 @@ pub async fn get_releases(
         .await?)
 }
 
+pub async fn get_chapters_by_book(
+    chapter_repo: web::Data<ChapterRepository>,
+    audiobook_id: Id,
+) -> Result<Vec<ChapterDisplay>, AppError> {
+    let displayed_chapters = get_displayable_chapters(chapter_repo, audiobook_id).await?;
+    Ok(displayed_chapters)
+}
+
+
 pub async fn get_audiobook_detail_base(
     audiobook_repo: web::Data<AudiobookRepository>,
     chapter_repo: web::Data<ChapterRepository>,
@@ -35,7 +44,7 @@ pub async fn get_audiobook_detail_base(
     audiobook_id: Id,
 ) -> Result<AudiobookDetailBase, AppError> {
     let audiobook = audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id))
+        .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id, false))
         .await?;
 
     let displayed_chapters = get_displayable_chapters(chapter_repo, audiobook_id).await?;
@@ -101,7 +110,7 @@ pub async fn get_genre_base(
     user: Identity,
     audiobook_repo: web::Data<AudiobookRepository>,
     genre_repo: web::Data<GenreRepository>,
-    genre_id: Id
+    genre_id: Id,
 ) -> Result<AudiobooksByGenreBase, AppError> {
     let book_search = AudiobookSearch::search_by_genre_id(genre_id, parse_user_id(user)?);
     let books = audiobook_repo
@@ -132,7 +141,16 @@ pub async fn get_studio(
 ) -> Result<Vec<AudiobookDisplay>, AppError> {
     let user_id = parse_user_id(u)?;
     Ok(book_repo
-        .read_many(&AudiobookSearch::search_by_author_id(user_id, user_id))
+        .read_many(&AudiobookSearch::search_by_author_id(user_id, user_id, DbQueryParams::deleted()))
+        .await?)
+}
+
+pub async fn get_author_profile(
+    user_id: Id,
+    book_repo: web::Data<AudiobookRepository>,
+) -> Result<Vec<AudiobookDisplay>, AppError> {
+    Ok(book_repo
+        .read_many(&AudiobookSearch::search_by_author_id(user_id, user_id, DbQueryParams::default()))
         .await?)
 }
 

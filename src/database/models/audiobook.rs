@@ -32,6 +32,7 @@ impl HasDeletedAt for Audiobook {
         self.deleted_at.is_some()
     }
 }
+
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq)]
 pub struct AudiobookDetail {
     pub id: Id,
@@ -62,7 +63,7 @@ pub struct AudiobookDetail {
 
     pub playback_position: Option<f64>,
     pub active_audiobook_edited_at: Option<DateTime<Utc>>,
-    pub is_liked: bool
+    pub is_liked: bool,
 }
 
 impl AudiobookDetail {
@@ -115,6 +116,7 @@ pub struct AudiobookDisplay {
     pub description: String,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
+    pub deleted: bool,
 
     pub username: String,
     pub email: String,
@@ -130,7 +132,7 @@ pub struct AudiobookDisplay {
     pub progress: f64,
     pub is_finished: bool,
     pub is_started: bool,
-    pub is_liked: bool
+    pub is_liked: bool,
 }
 
 impl AudiobookDisplay {
@@ -149,6 +151,7 @@ impl AudiobookDisplay {
             overall_rating: audiobook.overall_rating,
             created_at: audiobook.created_at,
             edited_at: audiobook.edited_at,
+            deleted: audiobook.deleted_at.map_or_else(|| false, |v| true),
 
             username: audiobook.username.to_owned(),
             email: audiobook.email.to_owned(),
@@ -163,7 +166,7 @@ impl AudiobookDisplay {
             progress: audiobook.playback_position.unwrap_or_default() / audiobook.length * 100f64,
             is_finished: audiobook.is_finished(),
             is_started: audiobook.is_started(),
-            is_liked: audiobook.is_liked
+            is_liked: audiobook.is_liked,
         }
     }
 }
@@ -187,6 +190,7 @@ impl From<AudiobookDetail> for AudiobookDisplay {
             overall_rating: audiobook.overall_rating,
             created_at: audiobook.created_at,
             edited_at: audiobook.edited_at,
+            deleted: audiobook.deleted_at.map_or_else(|| false, |v| true),
 
             username: audiobook.username,
             email: audiobook.email,
@@ -198,7 +202,7 @@ impl From<AudiobookDetail> for AudiobookDisplay {
 
             playback_position: audiobook.playback_position.unwrap_or_default(),
             progress: audiobook.playback_position.unwrap_or_default() / audiobook.length * 100f64,
-            is_liked: audiobook.is_liked
+            is_liked: audiobook.is_liked,
         }
     }
 }
@@ -330,7 +334,7 @@ impl AudiobookSearch {
         }
     }
 
-    pub fn search_by_author_id(author_id: Id, user_id: Id) -> Self {
+    pub fn search_by_author_id(author_id: Id, user_id: Id, query_params: DbQueryParams) -> Self {
         Self {
             user_id,
             name: None,
@@ -344,7 +348,7 @@ impl AudiobookSearch {
             max_like_count: None,
             min_overall_rating: None,
             max_overall_rating: None,
-            query_params: DbQueryParams::default(),
+            query_params,
         }
     }
 
@@ -531,13 +535,17 @@ impl AudiobookDelete {
 #[derive(Deserialize, Debug, Clone)]
 pub struct AudiobookGetById {
     pub id: Id,
+    pub fetch_deleted: bool,
 }
 
 impl AudiobookGetById {
     #[must_use]
     #[inline]
-    pub const fn new(id: &Id) -> Self {
-        Self { id: *id }
+    pub const fn new(id: &Id, fetch_deleted: bool) -> Self {
+        Self {
+            id: *id,
+            fetch_deleted,
+        }
     }
 }
 
@@ -545,17 +553,20 @@ impl AudiobookGetById {
 pub struct AudiobookGetByIdJoin {
     pub user_id: Id,
     pub audiobook_id: Id,
+    pub fetch_deleted: bool,
 }
 
 impl AudiobookGetByIdJoin {
     #[must_use]
     #[inline]
-    pub const fn new(user_id: Id, audiobook_id: Id) -> Self {
+    pub const fn new(user_id: Id, audiobook_id: Id, fetch_deleted: bool) -> Self {
         Self {
             user_id,
             audiobook_id,
+            fetch_deleted
         }
     }
+    
 }
 
 #[derive(Debug, Clone)]
@@ -566,7 +577,7 @@ pub struct AudiobookMetadataForm {
 }
 
 #[derive(Debug, Clone)]
-pub struct AudiobookQuickSearch {
+pub struct QuickSearch {
     pub id: Id,
     pub name: String,
 }

@@ -40,7 +40,7 @@ impl GenreRepository {
     }
 
     pub fn genre_is_correct(genre: Option<Genre>) -> DbResultSingle<Genre> {
-        entity_is_correct(genre, EntityError::new(GenreDeleted, GenreDoesNotExist))
+        entity_is_correct(genre, EntityError::new(GenreDeleted, GenreDoesNotExist), false)
     }
 }
 

@@ -1,5 +1,6 @@
 use crate::database::models::user::UserDisplay;
 use askama::Template;
+use crate::database::models::audiobook::AudiobookDisplay;
 
 const WEAK_PASSWORD_MESSAGE: &str = "Weak password! Password must contain at least one from each: {lower case character, upper case character, number, special character} and must be at least 6 characters long";
 
@@ -84,4 +85,19 @@ pub struct UserManageProfileUserFormTemplate {
     pub user: UserDisplay,
     pub message: String,
     pub success: bool
+}
+
+
+#[derive(Template)]
+#[template(path = "user/author_profile.html")]
+pub struct AuthorPageTemplate {
+    pub user: UserDisplay,
+    pub audiobooks: Vec<AudiobookDisplay>
+}
+
+#[derive(Template)]
+#[template(path = "user/author_profile_content.html")]
+pub struct AuthorContentTemplate {
+    pub user: UserDisplay,
+    pub audiobooks: Vec<AudiobookDisplay>
 }

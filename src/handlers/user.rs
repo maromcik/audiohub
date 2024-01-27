@@ -5,7 +5,7 @@ use crate::templates::user::{
     LoginTemplate, RegistrationTemplate, UserManagePasswordTemplate,
     UserManageProfileContentTemplate, UserManageProfilePageTemplate,
     UserManageProfilePictureFormTemplate, UserManageProfilePictureTemplate,
-    UserManageProfileUserFormTemplate,
+    UserManageProfileUserFormTemplate, AuthorPageTemplate, AuthorContentTemplate
 };
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
@@ -14,16 +14,19 @@ use actix_web::http::StatusCode;
 use actix_web::web::Redirect;
 use actix_web::{get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use askama::Template;
-use hmac::Mac;
 use uuid::Uuid;
 
 use crate::database::common::{DbCreate, DbReadOne, DbUpdate};
 use crate::database::common::error::{BackendError, BackendErrorKind};
+use crate::database::models::Id;
 
 use crate::database::models::user::{UserCreate, UserDisplay, UserGetById, UserLogin, UserUpdate, UserUpdatePassword};
+use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::forms::user::{UserLoginReturnURL, ProfilePictureUploadForm, UserCreateForm, UserUpdateForm, UserUpdatePasswordForm, UserLoginForm};
+use crate::handlers::helpers::{get_author_profile};
 
 use crate::handlers::utilities::{get_user_from_identity, parse_user_id, remove_file, save_file, validate_file, validate_password};
+
 
 #[get("/register")]
 pub async fn register() -> Result<HttpResponse, AppError> {
@@ -331,4 +334,44 @@ pub async fn user_manage_picture(
     let template = UserManageProfilePictureTemplate { user: UserDisplay::from(user) };
     let body = template.render()?;
     return Ok(HttpResponse::Ok().content_type("text/html").body(body));
+}
+
+#[get("/{id}")]
+pub async fn author_index(
+    request: HttpRequest,
+    identity: Option<Identity>,
+    user_repo: web::Data<UserRepository>,
+    book_repo: web::Data<AudiobookRepository>,
+    path: web::Path<(Id, )>,
+) -> Result<HttpResponse, AppError> {
+    let u = authorized!(identity, request.path());
+    let user_id = path.into_inner().0;
+    let user_by_id = UserGetById::new(
+        &user_id
+    );
+    let user = user_repo.read_one(&user_by_id).await?;
+
+    let template = AuthorPageTemplate { user: UserDisplay::from(user), audiobooks: get_author_profile(user_id, book_repo).await? };
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
+#[get("{id}/author-content")]
+pub async fn author_content(
+    request: HttpRequest,
+    identity: Option<Identity>,
+    user_repo: web::Data<UserRepository>,
+    book_repo: web::Data<AudiobookRepository>,
+    path: web::Path<(Id, )>,
+) -> Result<HttpResponse, AppError> {
+    let u = authorized!(identity, request.path());
+    let user_id = path.into_inner().0;
+    let user_by_id = UserGetById::new(
+        &user_id
+    );
+    let user = user_repo.read_one(&user_by_id).await?;
+
+    let template = AuthorContentTemplate { user: UserDisplay::from(user), audiobooks: get_author_profile(user_id, book_repo).await? };
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }

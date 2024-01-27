@@ -30,3 +30,10 @@ pub struct RatingSummaryTemplate {
     pub summary: RatingSummaryDisplay,
     pub audiobook_id: Id,
 }
+
+#[derive(Template)]
+#[template(path = "rating/pagination.html")]
+pub struct RatingPaginationTemplate {
+    pub max_page: i64,
+    pub book_id: Id,
+}

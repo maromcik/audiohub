@@ -1,9 +1,6 @@
 use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::common::DbReadOne;
-use crate::database::models::audiobook::{
-    Audiobook, AudiobookDetail, AudiobookDisplay, AudiobookGetById, AudiobookGetByIdJoin,
-    AudiobookMetadataForm,
-};
+use crate::database::models::audiobook::{Audiobook, AudiobookDetail, AudiobookGetById, AudiobookGetByIdJoin, AudiobookMetadataForm};
 use crate::database::models::user::{User, UserGetById};
 use crate::database::models::Id;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
@@ -13,6 +10,7 @@ use actix_identity::Identity;
 use actix_multipart::form::tempfile::TempFile;
 use actix_session::Session;
 use actix_web::web;
+
 use uuid::{Uuid};
 use crate::MIN_PASS_LEN;
 
@@ -126,26 +124,11 @@ pub fn save_file(file: TempFile, path: &str) -> Result<(), AppError> {
 }
 
 pub fn remove_file(path: &str) -> Result<(), AppError> {
-    if !path.is_empty() && std::path::Path::new(path).exists() {
-        std::fs::remove_file(path)?;
+    let fs_path = format!(".{path}");
+    if !path.is_empty() && std::path::Path::new(&fs_path).exists() {
+        std::fs::remove_file(&fs_path)?;
     }
     Ok(())
-}
-
-pub fn get_active_audiobooks(audiobooks: &[AudiobookDetail]) -> Vec<AudiobookDisplay> {
-    audiobooks
-        .iter()
-        .filter(|a| a.is_active())
-        .map(AudiobookDisplay::from_reference)
-        .collect()
-}
-
-pub fn get_finished_audiobooks(audiobooks: &[AudiobookDetail]) -> Vec<AudiobookDisplay> {
-    audiobooks
-        .iter()
-        .filter(|a| a.is_finished())
-        .map(AudiobookDisplay::from_reference)
-        .collect()
 }
 
 #[macro_export]
@@ -169,7 +152,7 @@ pub async fn authorized_to_modify(
     audiobook_id: Id,
 ) -> Result<Audiobook, AppError> {
     let audiobook = audiobook_repo
-        .read_one(&AudiobookGetById::new(&audiobook_id))
+        .read_one(&AudiobookGetById::new(&audiobook_id, true))
         .await?;
     is_authorized(user_id, audiobook.author_id)?;
     Ok(audiobook)
@@ -179,7 +162,7 @@ pub async fn authorized_to_modify_join(audiobook_repo: &web::Data<AudiobookRepos
                                        user_id: Id,
                                        audiobook_id: Id) -> Result<AudiobookDetail, AppError> {
     let audiobook = audiobook_repo
-        .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id))
+        .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id, true))
         .await?;
     is_authorized(user_id, audiobook.author_id)?;
     Ok(audiobook)

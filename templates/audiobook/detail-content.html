@@ -4,7 +4,7 @@
         <div class="mb-4 sm:mb-0 xl:col-span-1">
             <div class="w-25 h-25 md:w-40 md:h-40 lg:w-80 lg:h-80 overflow-hidden">
                 <!--            <div class="">-->
-                <img class="responsive-image object-cover bg-blue-600 w-full h-full sm:h-mr-10" src="{{ audiobook.thumbnail }}" alt="book-cover">
+                <img class="responsive-image bg-blue-600 w-full h-full sm:h-mr-10" src="{{ audiobook.thumbnail }}" alt="book-cover">
             </div>
             <div class="flex flex-row mt-5 justify-between">
                 <button hx-patch="/audiobook/{{audiobook.id}}/likes" hx-target="#like-count" hx-swap="outerHTML" hx-target-error="#content-area">
@@ -33,11 +33,20 @@
             </div>
             <div class="pt-5 flex flex-row items-center" >
                 {% if audiobook.profile_picture == "" %}
-                <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="./media/user_icon.png" />
+                <a class="cursor-pointer text-3xl pl-5" hx-get="/user/{{ audiobook.author_id }}/author-content" hx-target="#content-area"
+                   hx-push-url="/user/{{ audiobook.author_id }}">
+                    <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="./media/user_icon.png" />
+                </a>
                 {% else %}
-                <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="{{ audiobook.profile_picture }}" />
+                <a class="cursor-pointer text-3xl pl-5" hx-get="/user/{{ audiobook.author_id }}/author-content" hx-target="#content-area"
+                   hx-push-url="/user/{{ audiobook.author_id }}">
+                    <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="{{ audiobook.profile_picture }}" />
+                </a>
                 {% endif %}
-                <div class="text-3xl pl-5">{{ audiobook.author_name }}</div>
+                <a class="cursor-pointer text-3xl pl-5" hx-get="/user/{{ audiobook.author_id }}/author-content" hx-target="#content-area"
+                   hx-push-url="/user/{{ audiobook.author_id }}">
+                    {{ audiobook.author_name }}
+                </a>
             </div>
             <div class="pt-5 like-count flex flex-row mt-11 justify-start">
                 <button id="play-from-detail-btn" hx-get="/audiobook/{{audiobook.id}}/player"
@@ -66,10 +75,6 @@
     <div class="flex flex-col justify-between pt-4 overflow-hidden">
         <h2 class="text-2xl font-bold mb-4">Description</h2>
         <p class="mb-4"> {{audiobook.description}}</p>
-        <!--                <h2 class="text-2xl font-bold mb-4">About {{audiobook.author_name}} {{audiobook.surname}}</h2>-->
-        <!--                <p class="mb-4">-->
-        <!--                    {{audiobook.bio}}-->
-        <!--                </p>-->
     </div>
 
     <div id="recommandation-container" class="flex flex-row justify-center"
@@ -84,23 +89,12 @@
     <div id="my-rating-container" class="pl-10"
          hx-get="/rating/audiobook/{{audiobook.id}}/my-rating" hx-trigger="load" hx-target="#my-rating-container" hx-swap="beforeend"></div>
     <div class="pl-10 pt-10 pb-3 mb-3 text-2xl font-bold">All ratings</div>
-    <div id="ratings-summary-container" class="flex flex-row justify-center"
-         hx-get="/rating/audiobook/{{audiobook.id}}/rating-summary" hx-trigger="load" hx-target="#ratings-summary-container" hx-target-error="#content-area"
-         hx-swap="outerHTML"
-    >
-
-    </div>
     <div id="ratings-container"
-         hx-get="/rating/audiobook/{{ audiobook.id }}?offset=0"
-         hx-trigger="load" hx-swap="innerHTML" class="flex flex-col pl-10">
+         hx-get="/rating/audiobook/{{ audiobook.id }}?page=1"
+         hx-trigger="load" hx-target-error="#content-area" hx-swap="beforeend" class="flex flex-col pl-10">
     </div>
 
-
-    <div class="pl-10 flex flex-col items-center">
-        <button id="load-more-ratings-btn" hx-target="#ratings-container" hx-swap="beforeend"
-                hx-get="/rating/audiobook/{{audiobook.id}}?offset={{ rating_count }}"
-                class="w-1/8 bg-blue-600 hover:bg-blue-300 py-3 px-6 text-white font-bold rounded focus:outline-none focus:shadow-outline-blue">
-            Load more
-        </button>
-    </div>
+    <div id="rating-pagination" hx-get="/rating/audiobook/{{ audiobook.id }}/pagination" hx-trigger="load"
+         hx-target="#rating-pagination" hx-swap="outerHTML" hx-target-error="#content-area"
+    ></div>
 </div>

@@ -153,6 +153,18 @@ impl RatingRepository {
         Ok(rating)
     }
 
+    pub async fn get_rating_count(&self, book_id: &Id) -> DbResultSingle<i64>{
+        let record = sqlx::query!(
+            r#"
+            SELECT COUNT(*) as count FROM "Rating"
+            WHERE audiobook_id = $1 AND deleted_at IS NULL
+            "#,
+            book_id,
+        ).fetch_one(&self.pool_handler.pool).await?;
+
+        Ok(record.count.unwrap_or(0))
+    }
+
     pub async fn delete_rating<'a>(
         params: &RatingGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
@@ -160,10 +172,7 @@ impl RatingRepository {
         let rating = sqlx::query_as!(
             Rating,
             r#"
-            UPDATE "Rating"
-            SET
-                deleted_at = current_timestamp,
-                edited_at = current_timestamp
+            DELETE FROM "Rating"
             WHERE id = $1
             RETURNING *
             "#,
@@ -228,7 +237,7 @@ impl RatingRepository {
     /// - `Ok(user)`: when the rating exists and is not deleted
     /// - `Err(DbError)`: with appropriate error description otherwise
     pub fn rating_is_correct(rating: Option<Rating>) -> DbResultSingle<Rating> {
-        entity_is_correct(rating, EntityError::new(RatingDeleted, RatingDoesNotExist))
+        entity_is_correct(rating, EntityError::new(RatingDeleted, RatingDoesNotExist), false)
     }
 
     pub async fn create_or_update_displayed_rating(&self, params: &RatingCreate) -> DbResultSingle<UserRatingDisplay> {
@@ -291,7 +300,7 @@ impl RatingRepository {
             params.min_rating,
             params.max_rating,
             params.review,
-            DISPLAYED_RATINGS_COUNT,
+            DISPLAYED_RATINGS_COUNT as i64,
             params.offset
         ).fetch_all(&self.pool_handler.pool).await?;
 
