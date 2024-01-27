@@ -10,7 +10,9 @@ use crate::handlers::audiobook::{
     get_last_active_audiobook, releases_content, releases_page,
 };
 use crate::handlers::genre::get_genres_content;
-use crate::handlers::rating::{create_rating, get_ratings_by_audiobook, remove_rating_for_audiobook};
+use crate::handlers::rating::{
+    create_rating, get_ratings_by_audiobook, remove_rating_for_audiobook,
+};
 use crate::handlers::user::{user_manage_form_content, user_manage_profile_form};
 use crate::handlers::*;
 use actix_files::Files as ActixFiles;

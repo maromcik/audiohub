@@ -1,7 +1,7 @@
+use crate::database::common::HasDeletedAt;
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use crate::database::common::HasDeletedAt;
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Clone)]
 pub struct Chapter {
@@ -109,9 +109,7 @@ pub struct ChapterGetById {
 
 impl ChapterGetById {
     pub fn new(id: Id) -> Self {
-        Self {
-            id,
-        }
+        Self { id }
     }
 }
 

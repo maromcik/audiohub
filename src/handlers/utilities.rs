@@ -1,5 +1,7 @@
 use crate::database::common::DbReadOne;
-use crate::database::models::audiobook::{Audiobook, AudiobookDetail, AudiobookGetById, AudiobookGetByIdJoin, AudiobookMetadataForm};
+use crate::database::models::audiobook::{
+    Audiobook, AudiobookDetail, AudiobookGetById, AudiobookGetByIdJoin, AudiobookMetadataForm,
+};
 use crate::database::models::user::{User, UserGetById};
 use crate::database::models::Id;
 use crate::database::repositories::user::repository::UserRepository;
@@ -9,10 +11,10 @@ use actix_multipart::form::tempfile::TempFile;
 use actix_session::Session;
 use actix_web::web;
 
-use uuid::{Uuid};
 use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::MIN_PASS_LEN;
+use uuid::Uuid;
 
 pub struct AudiobookCreateSessionKeys {
     pub name: String,
@@ -117,7 +119,10 @@ pub fn save_file(file: TempFile, path: &str) -> Result<(), AppError> {
     log::info!("saving file to .{path}");
     let path = format!(".{path}");
     if let Err(e) = file.file.persist(path) {
-        return Err(AppError::new(AppErrorKind::FileError, e.to_string().as_str()));
+        return Err(AppError::new(
+            AppErrorKind::FileError,
+            e.to_string().as_str(),
+        ));
     };
     Ok(())
 }
@@ -145,9 +150,11 @@ macro_rules! authorized {
     }};
 }
 
-pub async fn authorized_to_modify(audiobook_repo: &web::Data<AudiobookRepository>,
-                                  user_id: Id,
-                                  audiobook_id: Id) -> Result<Audiobook, AppError> {
+pub async fn authorized_to_modify(
+    audiobook_repo: &web::Data<AudiobookRepository>,
+    user_id: Id,
+    audiobook_id: Id,
+) -> Result<Audiobook, AppError> {
     let audiobook = audiobook_repo
         .read_one(&AudiobookGetById::new(&audiobook_id, true))
         .await?;
@@ -155,9 +162,11 @@ pub async fn authorized_to_modify(audiobook_repo: &web::Data<AudiobookRepository
     Ok(audiobook)
 }
 
-pub async fn authorized_to_modify_join(audiobook_repo: &web::Data<AudiobookRepository>,
-                                       user_id: Id,
-                                       audiobook_id: Id) -> Result<AudiobookDetail, AppError> {
+pub async fn authorized_to_modify_join(
+    audiobook_repo: &web::Data<AudiobookRepository>,
+    user_id: Id,
+    audiobook_id: Id,
+) -> Result<AudiobookDetail, AppError> {
     let audiobook = audiobook_repo
         .read_one(&AudiobookGetByIdJoin::new(user_id, audiobook_id, true))
         .await?;
@@ -170,42 +179,41 @@ pub fn is_authorized(user_id: Id, author_id: Id) -> Result<(), AppError> {
         true => Ok(()),
         false => Err(AppError::from(BackendError::new(
             BackendErrorKind::UnauthorizedOperation,
-        )))
+        ))),
     }
 }
 
 pub fn validate_password(password: &str) -> bool {
-    let (lower, upper, numeric, special) = password
-        .chars()
-        .fold((false, false, false, false),
-              |(l, u, n, s), c| {
-                  (
-                      {
-                          match c.is_lowercase() {
-                              true => true,
-                              false => l
-                          }
-                      },
-                      {
-                          match c.is_uppercase() {
-                              true => true,
-                              false => u
-                          }
-                      },
-                      {
-                          match c.is_numeric() {
-                              true => true,
-                              false => n
-                          }
-                      },
-                      {
-                          match !c.is_alphanumeric() {
-                              true => true,
-                              false => s
-                          }
-                      }
-                  )
-              },
-        );
+    let (lower, upper, numeric, special) =
+        password
+            .chars()
+            .fold((false, false, false, false), |(l, u, n, s), c| {
+                (
+                    {
+                        match c.is_lowercase() {
+                            true => true,
+                            false => l,
+                        }
+                    },
+                    {
+                        match c.is_uppercase() {
+                            true => true,
+                            false => u,
+                        }
+                    },
+                    {
+                        match c.is_numeric() {
+                            true => true,
+                            false => n,
+                        }
+                    },
+                    {
+                        match !c.is_alphanumeric() {
+                            true => true,
+                            false => s,
+                        }
+                    },
+                )
+            });
     lower && upper && numeric && special && password.len() >= MIN_PASS_LEN
 }

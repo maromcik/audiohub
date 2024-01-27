@@ -1,13 +1,20 @@
-use crate::database::common::error::BackendErrorKind::{ChapterDeleted, ChapterDoesNotExist, ChapterUpdateParametersEmpty};
-use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle, EntityError};
+use crate::database::common::error::BackendErrorKind::{
+    ChapterDeleted, ChapterDoesNotExist, ChapterUpdateParametersEmpty,
+};
+use crate::database::common::error::{
+    BackendError, DbError, DbResultMultiple, DbResultSingle, EntityError,
+};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 
-use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate, ChaptersGetByBookId, ChapterDetail, ChaptersGetByBookIdJoin};
+use crate::database::common::utilities::entity_is_correct;
+use crate::database::models::chapter::{
+    Chapter, ChapterCreate, ChapterDetail, ChapterGetById, ChapterSearch, ChapterUpdate,
+    ChaptersGetByBookId, ChaptersGetByBookIdJoin,
+};
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
-use crate::database::common::utilities::entity_is_correct;
 
 #[derive(Clone)]
 pub struct ChapterRepository {
@@ -105,7 +112,11 @@ impl ChapterRepository {
     /// - `Ok(chapter)`: when the chapter exists and is not deleted
     /// - `Err(DbError)`: with appropriate error description otherwise
     pub fn is_correct(chapter: Option<Chapter>) -> DbResultSingle<Chapter> {
-        entity_is_correct(chapter, EntityError::new(ChapterDeleted, ChapterDoesNotExist), false)
+        entity_is_correct(
+            chapter,
+            EntityError::new(ChapterDeleted, ChapterDoesNotExist),
+            false,
+        )
     }
 }
 
@@ -227,8 +238,8 @@ impl DbReadMany<ChaptersGetByBookIdJoin, ChapterDetail> for ChapterRepository {
             "#,
             params.audiobook_id,
         )
-            .fetch_all(&self.pool_handler.pool)
-            .await?;
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
         Ok(chapters)
     }
 }
@@ -239,7 +250,9 @@ impl DbDelete<ChapterGetById, Chapter> for ChapterRepository {
         let mut transaction = self.pool_handler.pool.begin().await?;
         let chapter = ChapterRepository::get(params, &mut transaction).await?;
         ChapterRepository::is_correct(chapter)?;
-        let chapter = ChapterRepository::delete_chapter(&ChapterGetById::new(params.id), &mut transaction).await?;
+        let chapter =
+            ChapterRepository::delete_chapter(&ChapterGetById::new(params.id), &mut transaction)
+                .await?;
         transaction.commit().await?;
         Ok(vec![chapter])
     }

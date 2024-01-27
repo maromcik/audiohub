@@ -1,6 +1,6 @@
 #![allow(dead_code)]
-use std::cmp::{min};
 use chrono::{DateTime, Utc};
+use std::cmp::min;
 
 pub fn format_date(timestamp: &DateTime<Utc>) -> String {
     timestamp.format("%d.%m.%Y").to_string()
@@ -26,7 +26,7 @@ pub fn get_percentage(part: &f64, whole: &f64) -> i64 {
     (fraction * 100.0).floor() as i64
 }
 
-pub fn get_percentage_from_int(part: &i64, whole: &i64) -> i64{
+pub fn get_percentage_from_int(part: &i64, whole: &i64) -> i64 {
     get_percentage(&(*part as f64), &(*whole as f64))
 }
 

@@ -1,8 +1,8 @@
+use crate::database::common::HasDeletedAt;
 use crate::database::models::utilities::get_default_profile_picture;
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use crate::database::common::HasDeletedAt;
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
 pub struct User {

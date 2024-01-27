@@ -1,6 +1,5 @@
 use std::fmt::{Debug, Display, Formatter};
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BookState {
     Finished(bool),
@@ -14,18 +13,24 @@ pub struct DbQueryParams {
     pub limit: Option<i64>,
     pub offset: Option<i64>,
     pub book_state: Option<BookState>,
-    pub fetch_deleted: bool
+    pub fetch_deleted: bool,
 }
 
 impl DbQueryParams {
     #[allow(dead_code)]
-    pub fn new(order: Option<DbOrderColumn>, limit: Option<i64>, offset: Option<i64>, book_state: Option<BookState>, fetch_deleted: bool) -> Self {
+    pub fn new(
+        order: Option<DbOrderColumn>,
+        limit: Option<i64>,
+        offset: Option<i64>,
+        book_state: Option<BookState>,
+        fetch_deleted: bool,
+    ) -> Self {
         Self {
             order,
             limit,
             offset,
             book_state,
-            fetch_deleted
+            fetch_deleted,
         }
     }
 
@@ -36,7 +41,7 @@ impl DbQueryParams {
             limit: Some(limit),
             offset: Some(offset),
             book_state,
-            fetch_deleted: false
+            fetch_deleted: false,
         }
     }
 
@@ -46,7 +51,7 @@ impl DbQueryParams {
             limit: None,
             offset: None,
             book_state,
-            fetch_deleted: false
+            fetch_deleted: false,
         }
     }
     pub fn state(book_state: BookState) -> Self {
@@ -75,8 +80,8 @@ impl Default for DbQueryParams {
             order: Some(DbOrderColumn::default()),
             limit: None,
             offset: None,
-            book_state: None, 
-            fetch_deleted: false
+            book_state: None,
+            fetch_deleted: false,
         }
     }
 }

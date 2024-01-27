@@ -18,7 +18,7 @@ use sqlx::{Postgres, Transaction};
 use crate::database::common::utilities::entity_is_correct;
 use crate::database::models::audiobook::{
     Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookDisplay,
-    AudiobookGetById, AudiobookGetByIdJoin, QuickSearch, AudiobookSearch, AudiobookUpdate,
+    AudiobookGetById, AudiobookGetByIdJoin, AudiobookSearch, AudiobookUpdate, QuickSearch,
 };
 use crate::database::models::Id;
 

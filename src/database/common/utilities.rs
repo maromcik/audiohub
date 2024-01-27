@@ -1,7 +1,7 @@
-use crate::database::common::query_parameters::{BookState, DbOrder, DbQueryParams};
-use crate::CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE;
 use crate::database::common::error::{BackendError, DbError, DbResultSingle, EntityError};
+use crate::database::common::query_parameters::{BookState, DbOrder, DbQueryParams};
 use crate::database::common::HasDeletedAt;
+use crate::CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE;
 
 pub fn generate_query_param_string(params: &DbQueryParams) -> String {
     let ratio = CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE / 100f64;
@@ -12,13 +12,18 @@ pub fn generate_query_param_string(params: &DbQueryParams) -> String {
     if let Some(state) = &params.book_state {
         match state {
             BookState::Finished(val) => {
-                qp_string.push_str(format!("AND ((ab.playback_position / a.length > {ratio}) = {val})\n").as_str());
+                qp_string.push_str(
+                    format!("AND ((ab.playback_position / a.length > {ratio}) = {val})\n").as_str(),
+                );
             }
             BookState::Fresh(val) => {
                 qp_string.push_str(format!("AND (ab.audiobook_id IS NULL = {val})\n").as_str());
             }
             BookState::Active(val) => {
-                qp_string.push_str(format!("AND ((ab.playback_position / a.length <= {ratio}) = {val})\n").as_str());
+                qp_string.push_str(
+                    format!("AND ((ab.playback_position / a.length <= {ratio}) = {val})\n")
+                        .as_str(),
+                );
             }
         }
     }
@@ -44,7 +49,11 @@ pub fn generate_query_param_string(params: &DbQueryParams) -> String {
     qp_string
 }
 
-pub fn entity_is_correct<T: HasDeletedAt>(entity: Option<T>, error: EntityError, fetch_deleted: bool) -> DbResultSingle<T> {
+pub fn entity_is_correct<T: HasDeletedAt>(
+    entity: Option<T>,
+    error: EntityError,
+    fetch_deleted: bool,
+) -> DbResultSingle<T> {
     if let Some(ent) = entity {
         if fetch_deleted || !ent.is_deleted() {
             return Ok(ent);

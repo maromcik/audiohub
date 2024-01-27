@@ -36,15 +36,15 @@ use actix_session::Session;
 use actix_web::http::header::LOCATION;
 use actix_web::{delete, get, patch, post, put, web, HttpRequest, HttpResponse, Responder};
 
-use askama::Template;
-use lofty::AudioFile;
-use serde::Deserialize;
 use crate::authorized;
 use crate::database::models::active_audiobook::SetActiveAudiobook;
 use crate::database::models::bookmark::BookmarkOperation;
 use crate::handlers::helpers::{
     get_audiobook_detail_base, get_audiobook_edit, get_chapters_by_book, get_releases,
 };
+use askama::Template;
+use lofty::AudioFile;
+use serde::Deserialize;
 use uuid::Uuid;
 
 #[get("/create")]
@@ -518,19 +518,22 @@ pub async fn search(
                 results,
                 root_path: String::from("audiobook"),
                 end_path: String::from("/detail-content"),
-                end_push_url: String::from("/detail")
+                end_push_url: String::from("/detail"),
             })
-        },
+        }
         "author" => {
             let results = user_repo.quick_search(query_string).await?;
             Ok(QuickSearchResults {
                 results,
                 root_path: String::from("user"),
                 end_path: String::from("/author-content"),
-                end_push_url: String::from("")
+                end_push_url: String::from(""),
             })
-        },
-        _ => Err(AppError{app_error_kind: AppErrorKind::BadRequest, message: String::from("No other quicksearch types supported")})
+        }
+        _ => Err(AppError {
+            app_error_kind: AppErrorKind::BadRequest,
+            message: String::from("No other quicksearch types supported"),
+        }),
     }?;
 
     Ok(HttpResponse::Ok()

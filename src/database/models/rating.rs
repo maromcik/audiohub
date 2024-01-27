@@ -1,7 +1,7 @@
+use crate::database::common::HasDeletedAt;
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use crate::database::common::HasDeletedAt;
 
 pub const DISPLAYED_RATINGS_COUNT: i32 = 5;
 
@@ -30,7 +30,7 @@ pub struct RatingSearch {
     pub min_rating: Option<i16>,
     pub max_rating: Option<i16>,
     pub review: Option<String>,
-    pub offset: Option<i32>
+    pub offset: Option<i32>,
 }
 
 impl RatingSearch {
@@ -52,7 +52,7 @@ impl RatingSearch {
             min_rating,
             max_rating,
             review: review.and_then(change_to_owned),
-            offset
+            offset,
         }
     }
 }
@@ -90,19 +90,19 @@ pub struct RatingGetById {
 
 #[derive(Debug, Clone)]
 pub struct UserRatingDisplay {
-        pub user_id: Id,
-        pub book_id: Id,
-        pub user_name: String,
-        pub user_surname: String,
-        pub user_thumbnail: Option<String>,
-        pub rating: i16,
-        pub review: Option<String>,
-        pub created_at: DateTime<Utc>,
+    pub user_id: Id,
+    pub book_id: Id,
+    pub user_name: String,
+    pub user_surname: String,
+    pub user_thumbnail: Option<String>,
+    pub rating: i16,
+    pub review: Option<String>,
+    pub created_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone)]
 pub struct RatingSummaryDisplay {
     pub all_ratings_count: i64,
     pub star_count: Vec<i64>,
-    pub overall_rating: f64
+    pub overall_rating: f64,
 }

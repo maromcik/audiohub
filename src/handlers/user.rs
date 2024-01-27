@@ -2,10 +2,10 @@ use crate::authorized;
 use crate::database::repositories::user::repository::UserRepository;
 use crate::error::{AppError, AppErrorKind};
 use crate::templates::user::{
-    LoginTemplate, RegistrationTemplate, UserManagePasswordTemplate,
-    UserManageProfileContentTemplate, UserManageProfilePageTemplate,
+    AuthorContentTemplate, AuthorPageTemplate, LoginTemplate, RegistrationTemplate,
+    UserManagePasswordTemplate, UserManageProfileContentTemplate, UserManageProfilePageTemplate,
     UserManageProfilePictureFormTemplate, UserManageProfilePictureTemplate,
-    UserManageProfileUserFormTemplate, AuthorPageTemplate, AuthorContentTemplate
+    UserManageProfileUserFormTemplate,
 };
 use actix_identity::Identity;
 use actix_multipart::form::MultipartForm;
@@ -16,17 +16,23 @@ use actix_web::{get, post, web, HttpMessage, HttpRequest, HttpResponse, Responde
 use askama::Template;
 use uuid::Uuid;
 
-use crate::database::common::{DbCreate, DbReadOne, DbUpdate};
 use crate::database::common::error::{BackendError, BackendErrorKind};
+use crate::database::common::{DbCreate, DbReadOne, DbUpdate};
 use crate::database::models::Id;
 
-use crate::database::models::user::{UserCreate, UserDisplay, UserGetById, UserLogin, UserUpdate, UserUpdatePassword};
+use crate::database::models::user::{
+    UserCreate, UserDisplay, UserGetById, UserLogin, UserUpdate, UserUpdatePassword,
+};
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
-use crate::forms::user::{UserLoginReturnURL, ProfilePictureUploadForm, UserCreateForm, UserUpdateForm, UserUpdatePasswordForm, UserLoginForm};
-use crate::handlers::helpers::{get_author_profile};
+use crate::forms::user::{
+    ProfilePictureUploadForm, UserCreateForm, UserLoginForm, UserLoginReturnURL, UserUpdateForm,
+    UserUpdatePasswordForm,
+};
+use crate::handlers::helpers::get_author_profile;
 
-use crate::handlers::utilities::{get_user_from_identity, parse_user_id, remove_file, save_file, validate_file, validate_password};
-
+use crate::handlers::utilities::{
+    get_user_from_identity, parse_user_id, remove_file, save_file, validate_file, validate_password,
+};
 
 #[get("/register")]
 pub async fn register() -> Result<HttpResponse, AppError> {
@@ -36,8 +42,10 @@ pub async fn register() -> Result<HttpResponse, AppError> {
 }
 
 #[get("/login")]
-pub async fn login(identity: Option<Identity>,
-                   query: web::Query<UserLoginReturnURL>) -> Result<HttpResponse, AppError> {
+pub async fn login(
+    identity: Option<Identity>,
+    query: web::Query<UserLoginReturnURL>,
+) -> Result<HttpResponse, AppError> {
     let return_url = query.ret.clone().unwrap_or("/".to_string());
     if identity.is_some() {
         return Ok(HttpResponse::SeeOther()
@@ -71,13 +79,13 @@ pub async fn register_user(
     }
 
     let new_user = UserCreate::new(
-     &form.username.to_string(),
-     &form.email.to_string(),
-     &form.name.to_string(),
-     &form.surname.to_string(),
-     &form.password.clone(),
-     "",
-     None,
+        &form.username.to_string(),
+        &form.email.to_string(),
+        &form.name.to_string(),
+        &form.surname.to_string(),
+        &form.password.clone(),
+        "",
+        None,
     );
 
     user_repo.create(&new_user).await?;
@@ -175,7 +183,7 @@ pub async fn user_manage_password_form(
     authorized!(identity, request.path());
     let template = UserManagePasswordTemplate {
         message: "".to_string(),
-        success: true
+        success: true,
     };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -232,7 +240,9 @@ pub async fn user_manage(
     let user = user_repo.update(&user_update).await?;
 
     let Some(user_valid) = user.into_iter().next() else {
-        return Err(AppError::from(BackendError::new(BackendErrorKind::UserUpdateParametersEmpty)));
+        return Err(AppError::from(BackendError::new(
+            BackendErrorKind::UserUpdateParametersEmpty,
+        )));
     };
     let template = UserManageProfileUserFormTemplate {
         user: UserDisplay::from(user_valid.clone()),
@@ -255,7 +265,7 @@ pub async fn user_manage_password(
     if form.new_password != form.confirm_password {
         let template = UserManagePasswordTemplate {
             message: "Passwords do not match".to_string(),
-            success: false
+            success: false,
         };
         let body = template.render()?;
         return Ok(HttpResponse::Ok().content_type("text/html").body(body));
@@ -278,7 +288,7 @@ pub async fn user_manage_password(
     if update_status.is_err() {
         let template = UserManagePasswordTemplate {
             message: "Old password incorrect".to_string(),
-            success: false
+            success: false,
         };
         let body = template.render()?;
         return Ok(HttpResponse::Ok().content_type("text/html").body(body));
@@ -286,7 +296,7 @@ pub async fn user_manage_password(
 
     let template = UserManagePasswordTemplate {
         message: "Password update successful".to_string(),
-        success: true
+        success: true,
     };
     let body = template.render()?;
     return Ok(HttpResponse::Ok().content_type("text/html").body(body));
@@ -300,12 +310,7 @@ pub async fn user_manage_picture(
     MultipartForm(form): MultipartForm<ProfilePictureUploadForm>,
 ) -> Result<impl Responder, AppError> {
     let u = authorized!(identity, request.path());
-    let path = validate_file(
-        &form.picture,
-        Uuid::new_v4(),
-        "image",
-        "user",
-    )?;
+    let path = validate_file(&form.picture, Uuid::new_v4(), "image", "user")?;
     let user = get_user_from_identity(u, &user_repo).await?;
     if let Some(pic) = &user.profile_picture {
         remove_file(pic)?;
@@ -325,10 +330,15 @@ pub async fn user_manage_picture(
     save_file(form.picture, &path)?;
 
     let Some(user) = users.into_iter().next() else {
-        return Err(AppError::new(AppErrorKind::FileError, "Update of user profile failed"));
+        return Err(AppError::new(
+            AppErrorKind::FileError,
+            "Update of user profile failed",
+        ));
     };
 
-    let template = UserManageProfilePictureTemplate { user: UserDisplay::from(user) };
+    let template = UserManageProfilePictureTemplate {
+        user: UserDisplay::from(user),
+    };
     let body = template.render()?;
     return Ok(HttpResponse::Ok().content_type("text/html").body(body));
 }
@@ -339,16 +349,17 @@ pub async fn author_index(
     identity: Option<Identity>,
     user_repo: web::Data<UserRepository>,
     book_repo: web::Data<AudiobookRepository>,
-    path: web::Path<(Id, )>,
+    path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
     authorized!(identity, request.path());
     let user_id = path.into_inner().0;
-    let user_by_id = UserGetById::new(
-        &user_id
-    );
+    let user_by_id = UserGetById::new(&user_id);
     let user = user_repo.read_one(&user_by_id).await?;
 
-    let template = AuthorPageTemplate { user: UserDisplay::from(user), audiobooks: get_author_profile(user_id, book_repo).await? };
+    let template = AuthorPageTemplate {
+        user: UserDisplay::from(user),
+        audiobooks: get_author_profile(user_id, book_repo).await?,
+    };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
@@ -359,16 +370,17 @@ pub async fn author_content(
     identity: Option<Identity>,
     user_repo: web::Data<UserRepository>,
     book_repo: web::Data<AudiobookRepository>,
-    path: web::Path<(Id, )>,
+    path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
     authorized!(identity, request.path());
     let user_id = path.into_inner().0;
-    let user_by_id = UserGetById::new(
-        &user_id
-    );
+    let user_by_id = UserGetById::new(&user_id);
     let user = user_repo.read_one(&user_by_id).await?;
 
-    let template = AuthorContentTemplate { user: UserDisplay::from(user), audiobooks: get_author_profile(user_id, book_repo).await? };
+    let template = AuthorContentTemplate {
+        user: UserDisplay::from(user),
+        audiobooks: get_author_profile(user_id, book_repo).await?,
+    };
     let body = template.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }

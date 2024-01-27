@@ -11,12 +11,11 @@ use crate::database::common::error::BackendErrorKind::{
 };
 use crate::database::common::error::{BackendError, DbError, EntityError};
 use crate::database::common::error::{DbResultMultiple, DbResultSingle};
+use crate::database::common::utilities::entity_is_correct;
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
-use crate::database::common::utilities::entity_is_correct;
 use crate::database::models::audiobook::QuickSearch;
-
 
 use crate::database::models::bookmark::{Bookmark, BookmarkOperation};
 use crate::database::models::user::{
@@ -180,11 +179,15 @@ impl UserRepository {
             "#,
             comparison_string
         )
-            .fetch_all(&self.pool_handler.pool)
-            .await?;
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
 
-        let results = results.into_iter()
-            .map(|record| QuickSearch {id: record.id, name: record.name.unwrap_or(String::new())})
+        let results = results
+            .into_iter()
+            .map(|record| QuickSearch {
+                id: record.id,
+                name: record.name.unwrap_or(String::new()),
+            })
             .collect();
         Ok(results)
     }

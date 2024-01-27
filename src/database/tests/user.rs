@@ -13,7 +13,15 @@ pub mod user_repo_tests {
     async fn create_user(pool: PgPool) {
         let user_repository = UserRepository::new(PoolHandler::new(pool));
         let u = user_repository
-            .create(&UserCreate::new("cokel", "cok@cok.com", "", "", "", "", None))
+            .create(&UserCreate::new(
+                "cokel",
+                "cok@cok.com",
+                "",
+                "",
+                "",
+                "",
+                None,
+            ))
             .await
             .unwrap();
         assert_eq!(u.username, "cokel");

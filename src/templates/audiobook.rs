@@ -4,7 +4,6 @@ use crate::database::models::chapter::ChapterDisplay;
 use crate::database::models::genre::Genre;
 use askama::Template;
 
-
 #[derive(Template)]
 #[template(path = "studio_create_audiobook.html")]
 pub struct AudiobookCreatePageTemplate {
@@ -49,7 +48,6 @@ pub struct DetailLikesTemplate {
     pub is_liked: bool,
 }
 
-
 #[derive(Template)]
 #[template(path = "audiobook/audiobooks_by_genre.html")]
 pub struct AudiobooksByGenreTemplate {
@@ -73,7 +71,7 @@ impl From<AudiobooksByGenreBase> for AudiobooksByGenreTemplate {
     fn from(value: AudiobooksByGenreBase) -> Self {
         Self {
             audiobooks: value.audiobooks,
-            genre: value.genre
+            genre: value.genre,
         }
     }
 }
@@ -82,11 +80,10 @@ impl From<AudiobooksByGenreBase> for AudiobooksByGenreContentTemplate {
     fn from(value: AudiobooksByGenreBase) -> Self {
         Self {
             audiobooks: value.audiobooks,
-            genre: value.genre
+            genre: value.genre,
         }
     }
 }
-
 
 #[derive(Template)]
 #[template(path = "detail.html")]
@@ -132,13 +129,13 @@ pub struct QuickSearchResults {
     pub results: Vec<QuickSearch>,
     pub root_path: String,
     pub end_path: String,
-    pub end_push_url: String
+    pub end_push_url: String,
 }
 
 pub struct AudiobookDetailBase {
     pub audiobook: AudiobookDisplay,
     pub chapters: Vec<ChapterDisplay>,
-    pub is_liked: bool
+    pub is_liked: bool,
 }
 
 impl From<AudiobookDetailBase> for AudiobookDetailPageTemplate {

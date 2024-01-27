@@ -137,11 +137,14 @@ impl BackendError {
     }
 
     pub fn is_login_error(&self) -> bool {
-        matches!(&self.error_kind, UserDoesNotExist
-            | UserDeleted
-            | UserPasswordDoesNotMatch
-            | UserUpdateParametersEmpty
-            | UserPasswordVerificationFailed)
+        matches!(
+            &self.error_kind,
+            UserDoesNotExist
+                | UserDeleted
+                | UserPasswordDoesNotMatch
+                | UserUpdateParametersEmpty
+                | UserPasswordVerificationFailed
+        )
     }
 }
 
@@ -276,14 +279,14 @@ impl From<pbkdf2::password_hash::Error> for DbError {
 
 pub struct EntityError {
     pub deleted: BackendErrorKind,
-    pub does_not_exist: BackendErrorKind
+    pub does_not_exist: BackendErrorKind,
 }
 
 impl EntityError {
     pub fn new(deleted: BackendErrorKind, does_not_exist: BackendErrorKind) -> Self {
         Self {
             deleted,
-            does_not_exist
+            does_not_exist,
         }
     }
 }

@@ -1,11 +1,15 @@
-use crate::database::common::error::BackendErrorKind::{GenreDeleted, GenreDoesNotExist, GenreUpdateParametersEmpty};
-use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle, EntityError};
+use crate::database::common::error::BackendErrorKind::{
+    GenreDeleted, GenreDoesNotExist, GenreUpdateParametersEmpty,
+};
+use crate::database::common::error::{
+    BackendError, DbError, DbResultMultiple, DbResultSingle, EntityError,
+};
+use crate::database::common::utilities::entity_is_correct;
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
-use crate::database::common::utilities::entity_is_correct;
 
 use crate::database::models::genre::{
     Genre, GenreCreate, GenreDelete, GenreGetById, GenreSearch, GenreUpdate,
@@ -40,7 +44,11 @@ impl GenreRepository {
     }
 
     pub fn genre_is_correct(genre: Option<Genre>) -> DbResultSingle<Genre> {
-        entity_is_correct(genre, EntityError::new(GenreDeleted, GenreDoesNotExist), false)
+        entity_is_correct(
+            genre,
+            EntityError::new(GenreDeleted, GenreDoesNotExist),
+            false,
+        )
     }
 }
 

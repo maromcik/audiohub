@@ -1,12 +1,11 @@
+use crate::database::common::HasDeletedAt;
 use crate::database::models::Id;
 use crate::CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use crate::database::common::HasDeletedAt;
 
 use crate::database::common::query_parameters::DbQueryParams;
 use crate::database::models::utilities::{get_default_profile_picture, get_default_thumbnail};
-
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq)]
 pub struct Audiobook {
@@ -546,10 +545,9 @@ impl AudiobookGetByIdJoin {
         Self {
             user_id,
             audiobook_id,
-            fetch_deleted
+            fetch_deleted,
         }
     }
-    
 }
 
 #[derive(Debug, Clone)]

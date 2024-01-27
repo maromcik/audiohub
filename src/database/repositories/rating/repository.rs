@@ -1,19 +1,23 @@
 use crate::database::common::error::BackendErrorKind::{
     RatingDeleted, RatingDoesNotExist, RatingUpdateParametersEmpty,
 };
-use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle, EntityError};
+use crate::database::common::error::{
+    BackendError, DbError, DbResultMultiple, DbResultSingle, EntityError,
+};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::models::audiobook::AudiobookGetById;
-use crate::database::models::rating::{Rating, RatingCreate, RatingGetById, RatingSearch, RatingUpdate, RatingsGetByBookId, UserRatingDisplay, DISPLAYED_RATINGS_COUNT, RatingSummaryDisplay};
+use crate::database::models::rating::{
+    Rating, RatingCreate, RatingGetById, RatingSearch, RatingSummaryDisplay, RatingUpdate,
+    RatingsGetByBookId, UserRatingDisplay, DISPLAYED_RATINGS_COUNT,
+};
 use crate::database::models::user::UserGetById;
 
-use async_trait::async_trait;
-use sqlx::{Postgres, Transaction};
 use crate::database::common::utilities::entity_is_correct;
 use crate::database::models::Id;
-
+use async_trait::async_trait;
+use sqlx::{Postgres, Transaction};
 
 #[derive(Clone)]
 pub struct RatingRepository {
@@ -109,7 +113,10 @@ impl RatingRepository {
     }
 
     /// recalculate books overall rating, usable in transaction
-    pub async fn update_overall_book_rating<'a>(book_id: &Id, transaction_handle : &mut Transaction<'a, Postgres>) -> DbResultSingle<()>{
+    pub async fn update_overall_book_rating<'a>(
+        book_id: &Id,
+        transaction_handle: &mut Transaction<'a, Postgres>,
+    ) -> DbResultSingle<()> {
         let _ = sqlx::query!(
             r#"
             UPDATE "Audiobook"
@@ -122,7 +129,9 @@ impl RatingRepository {
 
             "#,
             book_id
-        ).execute(transaction_handle.as_mut()).await?;
+        )
+        .execute(transaction_handle.as_mut())
+        .await?;
         Ok(())
     }
 
@@ -135,7 +144,8 @@ impl RatingRepository {
     /// # Returns
     /// - `Ok(ratings)`: on successful connection and retrieval
     /// - `Err(_)`: otherwise
-    pub async fn get_user_book_rating<'a>(&self,
+    pub async fn get_user_book_rating<'a>(
+        &self,
         audiobook_id: &Id,
         user_id: &Id,
         transaction_handle: &mut Transaction<'a, Postgres>,
@@ -149,20 +159,22 @@ impl RatingRepository {
             audiobook_id,
             user_id,
         )
-            .fetch_optional(transaction_handle.as_mut())
-            .await?;
+        .fetch_optional(transaction_handle.as_mut())
+        .await?;
 
         Ok(rating)
     }
 
-    pub async fn get_rating_count(&self, book_id: &Id) -> DbResultSingle<i64>{
+    pub async fn get_rating_count(&self, book_id: &Id) -> DbResultSingle<i64> {
         let record = sqlx::query!(
             r#"
             SELECT COUNT(*) as count FROM "Rating"
             WHERE audiobook_id = $1 AND deleted_at IS NULL
             "#,
             book_id,
-        ).fetch_one(&self.pool_handler.pool).await?;
+        )
+        .fetch_one(&self.pool_handler.pool)
+        .await?;
 
         Ok(record.count.unwrap_or(0))
     }
@@ -211,7 +223,10 @@ impl RatingRepository {
         Ok(ratings)
     }
 
-    async fn create_transactional<'a>(params: &RatingCreate, transaction_handle: &mut Transaction<'a, Postgres>,) -> DbResultSingle<Rating> {
+    async fn create_transactional<'a>(
+        params: &RatingCreate,
+        transaction_handle: &mut Transaction<'a, Postgres>,
+    ) -> DbResultSingle<Rating> {
         let rating = sqlx::query_as!(
             Rating,
             r#"
@@ -224,8 +239,8 @@ impl RatingRepository {
             params.rating,
             params.review
         )
-            .fetch_one(transaction_handle.as_mut())
-            .await?;
+        .fetch_one(transaction_handle.as_mut())
+        .await?;
 
         Ok(rating)
     }
@@ -239,13 +254,22 @@ impl RatingRepository {
     /// - `Ok(user)`: when the rating exists and is not deleted
     /// - `Err(DbError)`: with appropriate error description otherwise
     pub fn rating_is_correct(rating: Option<Rating>) -> DbResultSingle<Rating> {
-        entity_is_correct(rating, EntityError::new(RatingDeleted, RatingDoesNotExist), false)
+        entity_is_correct(
+            rating,
+            EntityError::new(RatingDeleted, RatingDoesNotExist),
+            false,
+        )
     }
 
-    pub async fn create_or_update_displayed_rating(&self, params: &RatingCreate) -> DbResultSingle<UserRatingDisplay> {
+    pub async fn create_or_update_displayed_rating(
+        &self,
+        params: &RatingCreate,
+    ) -> DbResultSingle<UserRatingDisplay> {
         let mut transaction = self.pool_handler.pool.begin().await?;
-        let existing_rating = self.get_user_book_rating(&params.audiobook_id, &params.user_id, &mut transaction).await?;
-        let rating_id : Id;
+        let existing_rating = self
+            .get_user_book_rating(&params.audiobook_id, &params.user_id, &mut transaction)
+            .await?;
+        let rating_id: Id;
         if let Some(review) = existing_rating {
             let rating_params = RatingUpdate {
                 id: review.id,
@@ -253,12 +277,14 @@ impl RatingRepository {
                 review: params.review.to_owned(),
             };
             rating_id = RatingRepository::update(&rating_params, &mut transaction).await?[0].id;
-
         } else {
-            rating_id = RatingRepository::create_transactional(params, &mut transaction).await?.id;
+            rating_id = RatingRepository::create_transactional(params, &mut transaction)
+                .await?
+                .id;
         }
 
-        RatingRepository::update_overall_book_rating(&params.audiobook_id, &mut transaction).await?;
+        RatingRepository::update_overall_book_rating(&params.audiobook_id, &mut transaction)
+            .await?;
 
         let displayed_rating = sqlx::query_as!(
             UserRatingDisplay,
@@ -273,13 +299,15 @@ impl RatingRepository {
         ).fetch_one(transaction.as_mut())
             .await?;
 
-
         transaction.commit().await?;
 
         Ok(displayed_rating)
     }
 
-    pub async fn get_ratings_display(&self, params: &RatingSearch) -> DbResultMultiple<UserRatingDisplay> {
+    pub async fn get_ratings_display(
+        &self,
+        params: &RatingSearch,
+    ) -> DbResultMultiple<UserRatingDisplay> {
         let ratings = sqlx::query_as!(
             UserRatingDisplay,
             r#"
@@ -311,7 +339,7 @@ impl RatingRepository {
 
     /// Returns data for displaying overall ratings of given book. Star count vector contains number of
     /// ratings with that many stars for given index -> star_count[0] = number of ratings with 0 stars ...
-    pub async fn get_rating_summary(&self, book_id: &Id) -> DbResultSingle<RatingSummaryDisplay>{
+    pub async fn get_rating_summary(&self, book_id: &Id) -> DbResultSingle<RatingSummaryDisplay> {
         let summary = sqlx::query!(
             r#"
             SELECT rating AS stars, COUNT(*) AS star_count
@@ -321,7 +349,9 @@ impl RatingRepository {
             ORDER BY rating
             "#,
             book_id
-        ).fetch_all(&self.pool_handler.pool).await?;
+        )
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
 
         let count_row = sqlx::query!(
             r#"
@@ -330,10 +360,11 @@ impl RatingRepository {
             WHERE id=$1 AND deleted_at IS NULL
             "#,
             book_id
-        ).fetch_one(&self.pool_handler.pool).await?;
+        )
+        .fetch_one(&self.pool_handler.pool)
+        .await?;
 
-
-        let mut star_count : Vec<i64> = vec![];
+        let mut star_count: Vec<i64> = vec![];
         let mut all_ratings_count = 0;
         for i in 0..6 {
             let count = summary.iter().find(|rec| rec.stars == i);
@@ -342,12 +373,12 @@ impl RatingRepository {
                     let count = count.star_count.unwrap_or(0);
                     all_ratings_count += count;
                     star_count.push(count);
-                },
-                None => star_count.push(0)
+                }
+                None => star_count.push(0),
             }
         }
 
-        let rating_summary_display = RatingSummaryDisplay{
+        let rating_summary_display = RatingSummaryDisplay {
             all_ratings_count,
             star_count,
             overall_rating: count_row.overall_rating,
@@ -356,7 +387,8 @@ impl RatingRepository {
         Ok(rating_summary_display)
     }
 
-    pub async fn delete_rating_for_book(&self,
+    pub async fn delete_rating_for_book(
+        &self,
         book_id: &Id,
         user_id: &Id,
     ) -> DbResultSingle<Rating> {
@@ -374,8 +406,8 @@ impl RatingRepository {
             book_id,
             user_id
         )
-            .fetch_one(transaction.as_mut())
-            .await?;
+        .fetch_one(transaction.as_mut())
+        .await?;
 
         RatingRepository::update_overall_book_rating(book_id, &mut transaction).await?;
         transaction.commit().await?;

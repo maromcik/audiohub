@@ -1,6 +1,6 @@
-use askama::Template;
-use crate::database::models::Id;
 use crate::database::models::rating::{RatingSummaryDisplay, UserRatingDisplay};
+use crate::database::models::Id;
+use askama::Template;
 
 #[derive(Template)]
 #[template(path = "rating/book-ratings.html")]
@@ -8,11 +8,9 @@ pub struct AudiobookRatingsTemplate {
     pub ratings: Vec<UserRatingDisplay>,
 }
 
-
 #[derive(Template)]
 #[template(path = "rating/deleted-rating.html")]
-pub struct DeletedRatingTemplate {
-}
+pub struct DeletedRatingTemplate {}
 
 #[derive(Template)]
 #[template(path = "rating/my-rating.html")]

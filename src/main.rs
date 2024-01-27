@@ -3,6 +3,7 @@ use crate::init::configure_webapp;
 use actix_cors::Cors;
 use actix_identity::IdentityMiddleware;
 use actix_multipart::form::MultipartFormConfig;
+use actix_session::config::PersistentSession;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::http::header;
 use actix_web::middleware::Logger;
@@ -11,8 +12,6 @@ use actix_web::{cookie::Key, App, HttpServer};
 use env_logger::Env;
 use log::{info, warn};
 use std::env;
-use actix_session::config::PersistentSession;
-
 
 mod database;
 mod error;
@@ -74,7 +73,9 @@ async fn main() -> anyhow::Result<()> {
                 SessionMiddleware::builder(CookieSessionStore::default(), key.clone())
                     .cookie_secure(use_secure_cookie)
                     .session_lifecycle(
-                        PersistentSession::default().session_ttl(actix_web::cookie::time::Duration::seconds(SECS_IN_WEEK)))
+                        PersistentSession::default()
+                            .session_ttl(actix_web::cookie::time::Duration::seconds(SECS_IN_WEEK)),
+                    )
                     .build(),
             )
             .wrap(

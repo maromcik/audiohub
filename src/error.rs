@@ -1,6 +1,7 @@
 use crate::database::common::error::{BackendError, BackendErrorKind, DbError, DbErrorKind};
 use crate::templates::error::GenericError;
 use actix_identity;
+use actix_web::http::header::ContentType;
 use actix_web::http::StatusCode;
 use actix_web::{HttpResponse, ResponseError};
 use askama::Template;
@@ -8,8 +9,6 @@ use serde::Serialize;
 use std::fmt::{Debug, Display, Formatter};
 use std::io::Error;
 use std::num::ParseIntError;
-use actix_web::http::header::ContentType;
-
 
 use thiserror::Error;
 
@@ -174,7 +173,7 @@ impl ResponseError for AppError {
             | AppErrorKind::InternalServerError
             | AppErrorKind::IdentityError
             | AppErrorKind::SessionError
-            | AppErrorKind::FileError => StatusCode::INTERNAL_SERVER_ERROR
+            | AppErrorKind::FileError => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
