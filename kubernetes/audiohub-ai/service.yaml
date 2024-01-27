@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: audiohub-ai-svc
+spec:
+  type: ClusterIP
+  ports:
+  - name: audiohub-ai-port
+    port: 80
+    targetPort: 50051
+  selector:
+    app: audiohub-ai

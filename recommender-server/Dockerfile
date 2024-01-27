@@ -1,11 +1,11 @@
 # Use a lightweight Python image
 FROM python:3.8-slim
 
-RUN apt-get update && apt-get install -y zip
+RUN apt-get update && apt-get install -y zip build-essential autoconf libtool pkg-config protobuf-compiler libprotobuf-dev
 
 WORKDIR /app
 
-COPY recommender-server/recommender_ai_grpc-master.zip /app
+COPY ./recommender_ai_grpc-master.zip /app
 
 RUN unzip recommender_ai_grpc-master.zip && mv recommender_ai_grpc-master/* . && rm -r recommender_ai_grpc-master
 

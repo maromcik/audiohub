@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audiohub-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: audiohub-ai
+  template:
+    metadata:
+      labels:
+        app: audiohub-ai
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: audiohub-ai
+        image: cerit.io/roman_alexander_mariancik/audiohub-recommender-image
+        imagePullPolicy: Always
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        ports:
+        - containerPort: 50051
+        resources:
+          requests:
+            memory: "3Gi"
+            cpu: "2"
+          limits:
+            memory: "4Gi"
+            cpu: "2"
