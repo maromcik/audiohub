@@ -15,6 +15,7 @@ use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::database::common::utilities::entity_is_correct;
+use crate::database::models::audiobook::AudiobookQuickSearch;
 
 
 use crate::database::models::bookmark::{Bookmark, BookmarkOperation};
@@ -199,6 +200,28 @@ impl UserRepository {
         transaction.commit().await?;
 
         Ok(users)
+    }
+
+    pub async fn quick_search(&self, query: &str) -> DbResultMultiple<AudiobookQuickSearch> {
+        let mut comparison_string: String = "%".to_owned();
+        comparison_string.push_str(query);
+        comparison_string.push('%');
+
+        let results = sqlx::query!(
+            r#"
+            SELECT id, (name || ' ' || surname) AS name FROM "User"
+            WHERE name || surname ILIKE $1
+            LIMIT 5
+            "#,
+            comparison_string
+        )
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
+
+        let results = results.into_iter()
+            .map(|record| AudiobookQuickSearch{id: record.id, name: record.name.unwrap_or(String::new())})
+            .collect();
+        Ok(results)
     }
 }
 

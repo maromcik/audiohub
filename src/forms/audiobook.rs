@@ -36,6 +36,7 @@ pub struct AudiobookEditForm {
 #[derive(Deserialize)]
 pub struct AudiobookQuickSearchQuery {
     pub query: String,
+    pub search_type: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]

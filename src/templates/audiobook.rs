@@ -143,6 +143,9 @@ pub struct PlayerTemplate {
 #[template(path = "components/search-results.html")]
 pub struct QuickSearchResults {
     pub results: Vec<AudiobookQuickSearch>,
+    pub root_path: String,
+    pub end_path: String,
+    pub end_push_url: String
 }
 
 pub struct AudiobookDetailBase {

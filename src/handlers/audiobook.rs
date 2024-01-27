@@ -10,7 +10,7 @@ use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
-use crate::error::AppError;
+use crate::error::{AppError, AppErrorKind};
 use crate::forms::audiobook::{
     AudiobookCreateForm, AudiobookEditForm, AudiobookQuickSearchQuery, AudiobookThumbnailEditForm,
     AudiobookUploadForm,
@@ -39,6 +39,7 @@ use actix_web::{delete, get, patch, post, put, web, HttpRequest, HttpResponse, R
 use askama::Template;
 use lofty::AudioFile;
 use serde::Deserialize;
+use sqlx::query;
 
 use crate::authorized;
 use crate::database::models::active_audiobook::SetActiveAudiobook;
@@ -48,6 +49,7 @@ use crate::handlers::helpers::{
     get_audiobook_detail_base, get_audiobook_edit, get_chapters_by_book, get_releases,
 };
 use uuid::Uuid;
+use crate::handlers::user_register_page;
 
 #[get("/create")]
 pub async fn create_audiobook_page(
@@ -506,13 +508,35 @@ pub async fn search(
     request: HttpRequest,
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
+    user_repo: web::Data<UserRepository>,
     query: web::Query<AudiobookQuickSearchQuery>,
 ) -> Result<HttpResponse, AppError> {
     authorized!(identity, request.path());
-    let quicksearch = audiobook_repo.quick_search(&query.query).await?;
-    let template = QuickSearchResults {
-        results: quicksearch,
-    };
+
+    let query_string = query.query.as_str();
+
+    let template = match query.search_type.as_str() {
+        "book" => {
+            let results = audiobook_repo.quick_search(query_string).await?;
+            Ok(QuickSearchResults {
+                results,
+                root_path: String::from("audiobook"),
+                end_path: String::from("/detail-content"),
+                end_push_url: String::from("/detail")
+            })
+        },
+        "author" => {
+            let results = user_repo.quick_search(query_string).await?;
+            Ok(QuickSearchResults {
+                results,
+                root_path: String::from("user"),
+                end_path: String::from("/author-content"),
+                end_push_url: String::from("")
+            })
+        },
+        _ => Err(AppError{app_error_kind: AppErrorKind::BadRequest, message: String::from("No other quicksearch types supported")})
+    }?;
+
     Ok(HttpResponse::Ok()
         .content_type("text/html")
         .body(template.render()?))
