@@ -58,10 +58,7 @@
         </div>
     </div>
     <div class="flex flex-row justify-between">
-        <div class="flex flex-col justify-between pt-4">
-            <h2 class="text-2xl font-bold mb-4">Description</h2>
-            <p class="mb-4"> {{audiobook.description}}</p>
-        </div>
+        <h2 class="text-2xl font-bold pt-4 mb-4">Description</h2>
         <div class="mr-4 mt-8">
             <button id="play-from-detail-btn" hx-get="/audiobook/{{audiobook.id}}/player"
                     hx-target="#player-container"
@@ -93,6 +90,6 @@
             {% endif %}
         </div>
     </div>
-
+    <p class="mb-4"> {{audiobook.description}}</p>
     {% include "chapter/chapter_create.html" %}
 </div>

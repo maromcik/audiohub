@@ -14,7 +14,6 @@ use actix_web::http::StatusCode;
 use actix_web::web::Redirect;
 use actix_web::{get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use askama::Template;
-use hmac::Mac;
 use uuid::Uuid;
 
 use crate::database::common::{DbCreate, DbReadOne, DbUpdate};
@@ -24,10 +23,10 @@ use crate::database::models::Id;
 use crate::database::models::user::{UserCreate, UserDisplay, UserGetById, UserLogin, UserUpdate, UserUpdatePassword};
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::forms::user::{UserLoginReturnURL, ProfilePictureUploadForm, UserCreateForm, UserUpdateForm, UserUpdatePasswordForm, UserLoginForm};
-use crate::handlers::helpers::{get_studio, get_author_profile};
+use crate::handlers::helpers::{get_author_profile};
 
 use crate::handlers::utilities::{get_user_from_identity, parse_user_id, remove_file, save_file, validate_file, validate_password};
-use crate::templates::studio::StudioPageTemplate;
+
 
 #[get("/register")]
 pub async fn register() -> Result<HttpResponse, AppError> {
