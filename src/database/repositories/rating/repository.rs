@@ -240,7 +240,7 @@ impl RatingRepository {
     /// - `Ok(user)`: when the rating exists and is not deleted
     /// - `Err(DbError)`: with appropriate error description otherwise
     pub fn rating_is_correct(rating: Option<Rating>) -> DbResultSingle<Rating> {
-        entity_is_correct(rating, EntityError::new(RatingDeleted, RatingDoesNotExist))
+        entity_is_correct(rating, EntityError::new(RatingDeleted, RatingDoesNotExist), false)
     }
 
     pub async fn create_or_update_displayed_rating(&self, params: &RatingCreate) -> DbResultSingle<UserRatingDisplay> {

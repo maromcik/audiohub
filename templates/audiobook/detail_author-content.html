@@ -73,11 +73,19 @@
             <button hx-get="/audiobook/{{ audiobook.id }}/edit-content" hx-target-error="#content-area" hx-push-url="/audiobook/{{ audiobook.id }}/edit" hx-target="#content-area" class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300 mr-2">
                 <i class="fa-solid fa-pencil"></i>
             </button>
+            {% if audiobook.deleted %}
+            <button class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300 mr-2"
+                    hx-target-error="#content-area"
+                    hx-put="/audiobook/{{ audiobook.id }}/restore" hx-target="#content-area">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+            {% else %}
             <button class="bg-cyan-950 rounded-md p-3 text-xl hover:bg-blue-300 mr-2"
                     hx-target-error="#content-area"
                     hx-delete="/audiobook/{{ audiobook.id }}/delete" hx-target="#content-area">
                 <i class="fa-solid fa-trash"></i>
             </button>
+            {% endif %}
         </div>
     </div>
 
