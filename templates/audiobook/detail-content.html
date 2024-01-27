@@ -76,12 +76,6 @@
     <div id="my-rating-container" class="pl-10"
          hx-get="/rating/audiobook/{{audiobook.id}}/my-rating" hx-trigger="load" hx-target="#my-rating-container" hx-swap="beforeend"></div>
     <div class="pl-10 pt-10 pb-3 mb-3 text-2xl font-bold">All ratings</div>
-    <div id="ratings-summary-container" class="flex flex-row justify-center"
-         hx-get="/rating/audiobook/{{audiobook.id}}/rating-summary" hx-trigger="load" hx-target="#ratings-summary-container" hx-target-error="#content-area"
-         hx-swap="outerHTML"
-    >
-
-    </div>
     <div id="ratings-container"
          hx-get="/rating/audiobook/{{ audiobook.id }}?page=1"
          hx-trigger="load" hx-target-error="#content-area" hx-swap="beforeend" class="flex flex-col pl-10">

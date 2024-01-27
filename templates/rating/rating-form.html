@@ -1,4 +1,4 @@
-<div class="flex flex-row pl-10 justify-center pb-8">
+<div class="flex flex-row pl-10 justify-between pb-8">
     <div class="flex flex-col w-1/2">
         <h1 class="text-2xl mb-3">Tell us what you think</h1>
         <form id="rating-form" class="bg-gray-700 rounded-md p-3 shadow-inner shadow-md"
@@ -25,5 +25,9 @@
             </div>
 
         </form>
+    </div>
+    <div id="ratings-summary-container" class="flex flex-row justify-center"
+         hx-get="/rating/audiobook/{{audiobook.id}}/rating-summary" hx-trigger="load" hx-target="#ratings-summary-container" hx-target-error="#content-area"
+         hx-swap="outerHTML">
     </div>
 </div>
