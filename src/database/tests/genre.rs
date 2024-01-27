@@ -1,6 +1,5 @@
 #[cfg(test)]
 pub mod genre_repo_tests {
-    use std::sync::Arc;
 
     use sqlx::PgPool;
 
@@ -23,7 +22,7 @@ pub mod genre_repo_tests {
     async fn update_genre(pool: PgPool) {
         let genre_repository = GenreRepository::new(PoolHandler::new(pool));
         let genres = genre_repository
-            .update(&GenreUpdate::new(&10, Some("audio")))
+            .update(&GenreUpdate::new(&29, Some("audio"), None))
             .await
             .unwrap();
         let u = &genres[0];

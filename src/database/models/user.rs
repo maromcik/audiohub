@@ -1,9 +1,33 @@
+use crate::database::common::HasDeletedAt;
+use crate::database::models::utilities::get_default_profile_picture;
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
-use sqlx::postgres::types::PgInterval;
+use serde::Deserialize;
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
 pub struct User {
+    pub id: Id,
+    // --------------
+    pub username: String,
+    pub email: String,
+    pub name: String,
+    pub surname: String,
+    pub bio: String,
+    pub profile_picture: Option<String>,
+    pub password_hash: String,
+    pub password_salt: String,
+    pub created_at: DateTime<Utc>,
+    pub edited_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
+}
+
+impl HasDeletedAt for User {
+    fn is_deleted(&self) -> bool {
+        self.deleted_at.is_some()
+    }
+}
+
+pub struct UserDisplay {
     pub id: Id,
     // --------------
     pub username: String,
@@ -16,7 +40,24 @@ pub struct User {
     pub password_salt: String,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
-    pub deleted_at: Option<DateTime<Utc>>,
+}
+
+impl From<User> for UserDisplay {
+    fn from(value: User) -> Self {
+        Self {
+            profile_picture: get_default_profile_picture(&value.profile_picture),
+            id: value.id,
+            username: value.username,
+            email: value.email,
+            name: value.name,
+            surname: value.surname,
+            bio: value.bio,
+            password_hash: value.password_hash,
+            password_salt: value.password_salt,
+            created_at: value.created_at,
+            edited_at: value.edited_at,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -26,13 +67,11 @@ pub struct UserCreate {
     pub name: String,
     pub surname: String,
     pub bio: String,
-    pub profile_picture: String,
-    pub password_hash: String,
-    pub password_salt: String,
+    pub profile_picture: Option<String>,
+    pub password: String,
 }
 
 impl UserCreate {
-    #[must_use]
     #[inline]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
@@ -40,25 +79,24 @@ impl UserCreate {
         email: &str,
         name: &str,
         surname: &str,
+        password: &str,
         bio: &str,
-        profile_picture: &str,
-        password_hash: &str,
-        password_salt: &str,
+        profile_picture: Option<&str>,
     ) -> Self {
+        let change_to_owned = |value: &str| Some(value.to_owned());
         Self {
             username: username.to_owned(),
             email: email.to_owned(),
             name: name.to_owned(),
             surname: surname.to_owned(),
+            password: password.to_owned(),
             bio: bio.to_owned(),
-            profile_picture: profile_picture.to_owned(),
-            password_hash: password_hash.to_owned(),
-            password_salt: password_salt.to_owned(),
+            profile_picture: profile_picture.and_then(change_to_owned),
         }
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct UserSearch {
     pub username: Option<String>,
     pub email: Option<String>,
@@ -67,7 +105,7 @@ pub struct UserSearch {
 }
 
 impl UserSearch {
-    #[must_use]
+    #[allow(dead_code)]
     #[inline]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
@@ -84,13 +122,6 @@ impl UserSearch {
             surname: surname.and_then(change_to_owned),
         }
     }
-    #[must_use]
-    pub const fn search_fields_none(&self) -> bool {
-        self.username.is_none()
-            && self.email.is_none()
-            && self.name.is_none()
-            && self.surname.is_none()
-    }
 }
 
 /// Structure passed to the repository when trying to update a user
@@ -103,8 +134,7 @@ pub struct UserUpdate {
     pub surname: Option<String>,
     pub bio: Option<String>,
     pub profile_picture: Option<String>,
-    pub password_hash: Option<String>,
-    pub password_salt: Option<String>,
+    pub password: Option<String>,
 }
 
 impl UserUpdate {
@@ -120,7 +150,6 @@ impl UserUpdate {
         bio: Option<&str>,
         profile_picture: Option<&str>,
         password_hash: Option<&str>,
-        password_salt: Option<&str>,
     ) -> Self {
         let change_to_owned = |value: &str| Some(value.to_owned());
         Self {
@@ -131,8 +160,7 @@ impl UserUpdate {
             surname: surname.and_then(change_to_owned),
             bio: bio.and_then(change_to_owned),
             profile_picture: profile_picture.and_then(change_to_owned),
-            password_hash: password_hash.and_then(change_to_owned),
-            password_salt: password_salt.and_then(change_to_owned),
+            password: password_hash.and_then(change_to_owned),
         }
     }
 
@@ -144,8 +172,7 @@ impl UserUpdate {
             && self.surname.is_none()
             && self.bio.is_none()
             && self.profile_picture.is_none()
-            && self.password_hash.is_none()
-            && self.password_salt.is_none()
+            && self.password.is_none()
     }
 }
 
@@ -156,7 +183,7 @@ pub struct UserDelete {
 }
 
 impl UserDelete {
-    #[must_use]
+    #[allow(dead_code)]
     #[inline]
     pub const fn new(id: &Id) -> Self {
         Self { id: *id }
@@ -164,10 +191,10 @@ impl UserDelete {
 }
 
 /// Structure passed to the repository when trying to log in (read one == login)
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct UserLogin {
-    pub email: String,
-    pub password_hash: String,
+    pub email_or_username: String,
+    pub password: String,
 }
 
 impl UserLogin {
@@ -175,8 +202,8 @@ impl UserLogin {
     #[inline]
     pub fn new(email: &str, password_hash: &str) -> Self {
         Self {
-            email: email.to_owned(),
-            password_hash: password_hash.to_owned(),
+            email_or_username: email.to_owned(),
+            password: password_hash.to_owned(),
         }
     }
 }
@@ -188,6 +215,21 @@ pub struct UserGetById {
     pub id: Id,
 }
 
+#[derive(Debug, Clone)]
+pub struct UserGetByUsername {
+    pub username: String,
+}
+
+impl UserGetByUsername {
+    #[allow(dead_code)]
+    #[inline]
+    pub fn new(username: &str) -> Self {
+        Self {
+            username: username.to_owned(),
+        }
+    }
+}
+
 impl UserGetById {
     #[must_use]
     #[inline]
@@ -197,89 +239,18 @@ impl UserGetById {
 }
 
 #[derive(Debug, Clone)]
-pub struct AddActiveAudiobook {
-    pub user_id: Id,
-    pub audiobook_id: Id,
-    pub playback_chapter_id: Id,
-    pub playback_position_in_chapter: Option<PgInterval>,
+pub struct UserUpdatePassword {
+    pub id: Id,
+    pub old_password: String,
+    pub new_password: String,
 }
 
-impl AddActiveAudiobook {
-    #[must_use]
-    #[inline]
-    pub const fn new(
-        user_id: Id,
-        audiobook_id: Id,
-        playback_chapter_id: Id,
-        playback_position_in_chapter: Option<PgInterval>,
-    ) -> Self {
+impl UserUpdatePassword {
+    pub fn new(id: &Id, old_password: &str, new_password: &str) -> Self {
         Self {
-            user_id,
-            audiobook_id,
-            playback_chapter_id,
-            playback_position_in_chapter,
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct RemoveActiveAudiobook {
-    pub user_id: Id,
-    pub audiobook_id: Id,
-    pub playback_chapter_id: Id,
-}
-
-impl RemoveActiveAudiobook {
-    #[must_use]
-    #[inline]
-    pub const fn new(user_id: Id, audiobook_id: Id, playback_chapter_id: Id) -> Self {
-        Self {
-            user_id,
-            audiobook_id,
-            playback_chapter_id,
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct UpdateActiveAudiobook {
-    pub user_id: Id,
-    pub audiobook_id: Id,
-    pub playback_chapter_id: Id,
-    pub playback_position_in_chapter: PgInterval,
-}
-
-impl UpdateActiveAudiobook {
-    #[must_use]
-    #[inline]
-    pub const fn new(
-        user_id: Id,
-        audiobook_id: Id,
-        playback_chapter_id: Id,
-        playback_position_in_chapter: PgInterval,
-    ) -> Self {
-        Self {
-            user_id,
-            audiobook_id,
-            playback_chapter_id,
-            playback_position_in_chapter,
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct BookmarkOperation {
-    pub user_id: Id,
-    pub audiobook_id: Id,
-}
-
-impl BookmarkOperation {
-    #[must_use]
-    #[inline]
-    pub const fn new(user_id: Id, audiobook_id: Id) -> Self {
-        Self {
-            user_id,
-            audiobook_id,
+            id: *id,
+            old_password: old_password.to_owned(),
+            new_password: new_password.to_owned(),
         }
     }
 }

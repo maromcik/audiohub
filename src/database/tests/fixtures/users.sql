@@ -2,7 +2,7 @@ INSERT INTO "User" (id, username, email, name, surname, bio, profile_picture, pa
 
 VALUES
 (
- 10,
+ 8,
  'hafo',
  'h@h.com',
  'Hafan',
@@ -15,9 +15,9 @@ VALUES
  '2023-12-28 11:17:35+01'
 ),
 (
-    11,
+    9,
     'pes',
-    'p@p.com',
+    'pe@pe.com',
     'Hafan',
     'Hafski',
     'Som pes',
@@ -26,4 +26,6 @@ VALUES
     '3dwqf',
     '2023-12-28 18:54:23+01',
     '2023-12-28 11:17:35+01'
-)
+);
+
+ALTER SEQUENCE "User_id_seq" RESTART WITH 10;

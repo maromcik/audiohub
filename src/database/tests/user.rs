@@ -1,6 +1,5 @@
 #[cfg(test)]
 pub mod user_repo_tests {
-    use std::sync::Arc;
 
     use sqlx::PgPool;
 
@@ -14,7 +13,15 @@ pub mod user_repo_tests {
     async fn create_user(pool: PgPool) {
         let user_repository = UserRepository::new(PoolHandler::new(pool));
         let u = user_repository
-            .create(&UserCreate::new("cokel", "c@c.com", "", "", "", "", "", ""))
+            .create(&UserCreate::new(
+                "cokel",
+                "cok@cok.com",
+                "",
+                "",
+                "",
+                "",
+                None,
+            ))
             .await
             .unwrap();
         assert_eq!(u.username, "cokel");
@@ -26,10 +33,9 @@ pub mod user_repo_tests {
         let user_repository = UserRepository::new(PoolHandler::new(pool));
         let users = user_repository
             .update(&UserUpdate::new(
-                &10,
+                &9,
                 Some("doggo"),
                 Some("d@d.com"),
-                None,
                 None,
                 None,
                 None,
@@ -51,7 +57,7 @@ pub mod user_repo_tests {
             .read_many(&UserSearch::new(None, None, None, None))
             .await
             .unwrap();
-        assert_eq!(users.len(), 2);
+        assert_eq!(users.len(), 9);
 
         let users = user_repository
             .read_many(&UserSearch::new(Some("pes"), None, None, Some("Hafski")))
@@ -61,7 +67,7 @@ pub mod user_repo_tests {
 
         let u = &users[0];
         assert_eq!(u.username, "pes");
-        assert_eq!(u.email, "p@p.com");
+        assert_eq!(u.email, "pe@pe.com");
         user_repository.disconnect().await;
     }
 }

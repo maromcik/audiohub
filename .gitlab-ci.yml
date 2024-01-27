@@ -3,13 +3,14 @@ workflow:
     - when: always
 
 default:
-  image: rust:1.73-bullseye
+  image: rust:1.75-bullseye
   before_script:
     - apt-get update
-    - apt-get install postgresql-client --yes
+    - apt-get install -y postgresql-client
     - rustc --version
     - cargo --version
-    - echo 'DATABASE_URL="postgres://${PG_USER}:${PG_PASS}@${PG_HOST}/${PG_DB}"' > .env
+    - echo 'DATABASE_URL="postgres://${PG_USER}:${PG_PASS}@${PG_HOST}/${PG_DB}"' >> .env
+    - echo 'COOKIE_SESSION_KEY=${COOKIE_CI_SESSION_KEY}' >> .env
 
   tags:
     - shared-fi

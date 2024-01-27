@@ -1,15 +1,17 @@
-use crate::database::common::error::BusinessLogicErrorKind::{
-    ChapterDeleted, ChapterDoesNotExist, RatingUpdateParametersEmpty,
+use crate::database::common::error::BackendErrorKind::{
+    ChapterDeleted, ChapterDoesNotExist, ChapterUpdateParametersEmpty,
 };
 use crate::database::common::error::{
-    BusinessLogicError, DbError, DbResultMultiple, DbResultSingle,
+    BackendError, DbError, DbResultMultiple, DbResultSingle, EntityError,
 };
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
-use crate::database::models::audiobook::AudiobookGetById;
+
+use crate::database::common::utilities::entity_is_correct;
 use crate::database::models::chapter::{
-    Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate,
+    Chapter, ChapterCreate, ChapterDetail, ChapterGetById, ChapterSearch, ChapterUpdate,
+    ChaptersGetByBookId, ChaptersGetByBookIdJoin,
 };
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
@@ -37,7 +39,7 @@ impl ChapterRepository {
             Chapter,
             r#"
             SELECT * FROM "Chapter"
-            WHERE id = $1
+            WHERE id = $1 AND deleted_at IS NULL
             "#,
             params.id
         )
@@ -48,10 +50,10 @@ impl ChapterRepository {
             return Ok(Some(chapter));
         }
 
-        Err(DbError::from(BusinessLogicError::new(ChapterDoesNotExist)))
+        Err(DbError::from(BackendError::new(ChapterDoesNotExist)))
     }
 
-    /// Function which retrieves all chapters for book with given id, usable within a transaction
+    /// Function which retrieves all chapters in displayable form for book with given id
     ///
     /// # Params
     /// - `params`: structure containing the id of the book
@@ -60,24 +62,6 @@ impl ChapterRepository {
     /// # Returns
     /// - `Ok(chapters)`: on successful connection and retrieval
     /// - `Err(_)`: otherwise
-    pub async fn get_book_chapters<'a>(
-        params: AudiobookGetById,
-        transaction_handle: &mut Transaction<'a, Postgres>,
-    ) -> DbResultMultiple<Chapter> {
-        let chapters = sqlx::query_as!(
-            Chapter,
-            r#"
-                SELECT * FROM "Chapter"
-                WHERE audiobook_id = $1
-                "#,
-            params.id
-        )
-        .fetch_all(transaction_handle.as_mut())
-        .await?;
-
-        Ok(chapters)
-    }
-
     pub async fn delete_chapter<'a>(
         params: &ChapterGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
@@ -85,10 +69,7 @@ impl ChapterRepository {
         let chapter = sqlx::query_as!(
             Chapter,
             r#"
-            UPDATE "Chapter"
-            SET
-                deleted_at = current_timestamp,
-                edited_at = current_timestamp
+            DELETE FROM "Chapter"
             WHERE id = $1
             RETURNING *"#,
             params.id
@@ -131,14 +112,11 @@ impl ChapterRepository {
     /// - `Ok(chapter)`: when the chapter exists and is not deleted
     /// - `Err(DbError)`: with appropriate error description otherwise
     pub fn is_correct(chapter: Option<Chapter>) -> DbResultSingle<Chapter> {
-        if let Some(chapter) = chapter {
-            if chapter.deleted_at.is_none() {
-                return Ok(chapter);
-            }
-            return Err(DbError::from(BusinessLogicError::new(ChapterDeleted)));
-        }
-
-        Err(DbError::from(BusinessLogicError::new(ChapterDoesNotExist)))
+        entity_is_correct(
+            chapter,
+            EntityError::new(ChapterDeleted, ChapterDoesNotExist),
+            false,
+        )
     }
 }
 
@@ -161,14 +139,13 @@ impl DbCreate<ChapterCreate, Chapter> for ChapterRepository {
         let chapter = sqlx::query_as!(
             Chapter,
             r#"
-            INSERT INTO "Chapter" (name, audiobook_id, length, sequential_number)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO "Chapter" (name, audiobook_id, position)
+            VALUES ($1, $2, $3)
             RETURNING *
             "#,
             params.name,
             params.audiobook_id,
-            params.length,
-            params.sequential_number,
+            params.position
         )
         .fetch_one(&self.pool_handler.pool)
         .await?;
@@ -197,17 +174,69 @@ impl DbReadMany<ChapterSearch, Chapter> for ChapterRepository {
             SELECT * FROM "Chapter"
             WHERE
                 (name = $1 OR $1 IS NULL)
-                AND (name = $1 OR $1 IS NULL)
                 AND (audiobook_id = $2 OR $2 IS NULL)
-                AND (length >= $3 OR $3 IS NULL)
-                AND (length <= $4 OR $4 IS NULL)
-                AND (sequential_number = $5 OR $5 IS NULL)
+                AND deleted_at IS NULL
             "#,
             params.name,
+            params.audiobook_id
+        )
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
+        Ok(chapters)
+    }
+}
+
+#[async_trait]
+impl DbReadMany<ChaptersGetByBookId, Chapter> for ChapterRepository {
+    async fn read_many(&self, params: &ChaptersGetByBookId) -> DbResultMultiple<Chapter> {
+        let chapters = sqlx::query_as!(
+            Chapter,
+            r#"
+            SELECT
+                *
+            FROM
+                "Chapter"
+            WHERE
+                deleted_at IS NULL
+                AND audiobook_id = $1
+            ORDER BY
+                position
+            "#,
             params.audiobook_id,
-            params.min_length,
-            params.max_length,
-            params.sequential_number,
+        )
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
+        Ok(chapters)
+    }
+}
+
+#[async_trait]
+impl DbReadMany<ChaptersGetByBookIdJoin, ChapterDetail> for ChapterRepository {
+    async fn read_many(&self, params: &ChaptersGetByBookIdJoin) -> DbResultMultiple<ChapterDetail> {
+        let chapters = sqlx::query_as!(
+            ChapterDetail,
+            r#"
+            SELECT
+                c.id,
+                c.name,
+                c.audiobook_id,
+                c.position,
+                c.created_at,
+                c.edited_at,
+                c.deleted_at,
+                a.name AS audiobook_name,
+                a.author_id
+            FROM
+                "Chapter" AS c
+                    INNER JOIN
+                "Audiobook" AS a ON c.audiobook_id = a.id
+            WHERE
+                c.deleted_at IS NULL
+                AND c.audiobook_id = $1
+            ORDER BY
+                c.position
+            "#,
+            params.audiobook_id,
         )
         .fetch_all(&self.pool_handler.pool)
         .await?;
@@ -221,10 +250,10 @@ impl DbDelete<ChapterGetById, Chapter> for ChapterRepository {
         let mut transaction = self.pool_handler.pool.begin().await?;
         let chapter = ChapterRepository::get(params, &mut transaction).await?;
         ChapterRepository::is_correct(chapter)?;
-
-        let chapter = ChapterRepository::delete_chapter(params, &mut transaction).await?;
+        let chapter =
+            ChapterRepository::delete_chapter(&ChapterGetById::new(params.id), &mut transaction)
+                .await?;
         transaction.commit().await?;
-
         Ok(vec![chapter])
     }
 }
@@ -233,8 +262,8 @@ impl DbDelete<ChapterGetById, Chapter> for ChapterRepository {
 impl DbUpdate<ChapterUpdate, Chapter> for ChapterRepository {
     async fn update(&self, params: &ChapterUpdate) -> DbResultMultiple<Chapter> {
         if params.name.is_none() {
-            return Err(DbError::from(BusinessLogicError::new(
-                RatingUpdateParametersEmpty,
+            return Err(DbError::from(BackendError::new(
+                ChapterUpdateParametersEmpty,
             )));
         }
 

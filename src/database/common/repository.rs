@@ -146,3 +146,7 @@ pub async fn setup_pool(max_conn: u32) -> anyhow::Result<PgPool> {
     sqlx::migrate!("./migrations").run(&pool).await?;
     Ok(pool)
 }
+
+pub trait HasDeletedAt {
+    fn is_deleted(&self) -> bool;
+}

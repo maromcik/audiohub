@@ -1,15 +1,16 @@
-use sqlx::Error;
+use pbkdf2;
 use std::fmt::{Debug, Display, Formatter};
 
-use BusinessLogicErrorKind::*;
+use BackendErrorKind::*;
 
 #[derive(Debug, Clone)]
-pub enum BusinessLogicErrorKind {
+pub enum BackendErrorKind {
     // User errors
     UserDoesNotExist,
     UserDeleted,
     UserPasswordDoesNotMatch,
     UserUpdateParametersEmpty,
+    UserPasswordVerificationFailed,
 
     // Audiobook errors
     AudiobookDoesNotExist,
@@ -32,14 +33,10 @@ pub enum BusinessLogicErrorKind {
     GenreDoesNotExist,
     GenreUpdateParametersEmpty,
 
-    DatabaseError,
-    MigrationError,
-    UniqueConstraintError,
-    NotNullError,
-    ForeignKeyError,
+    UnauthorizedOperation,
 }
 
-impl Display for BusinessLogicErrorKind {
+impl Display for BackendErrorKind {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let does_not_exist = |name: &str| format!("The specified {name} does not exist!");
         let deleted = |name: &str| format!("The specified {name} has been deleted!");
@@ -52,6 +49,9 @@ impl Display for BusinessLogicErrorKind {
                     f,
                     "The provided email and password combination is incorrect."
                 )
+            }
+            UserPasswordVerificationFailed => {
+                write!(f, "Password verification failed.")
             }
             RatingDoesNotExist => f.write_str(does_not_exist("rating").as_str()),
             RatingDeleted => f.write_str(deleted("rating").as_str()),
@@ -106,11 +106,12 @@ impl Display for BusinessLogicErrorKind {
                     )
                 )
             }
-            DatabaseError => write!(f, "Unknown database error occured"),
-            MigrationError => write!(f, "Unknown migration-related error occured"),
-            UniqueConstraintError => write!(f, "Duplicate value"),
-            NotNullError => write!(f, "Field cannot be null"),
-            ForeignKeyError => write!(f, "Related field error"),
+            UnauthorizedOperation => {
+                write!(
+                    f,
+                    concat!("You are not permitted to execute this operation!")
+                )
+            }
         }
     }
 }
@@ -118,39 +119,60 @@ impl Display for BusinessLogicErrorKind {
 /// Error type representing a Business Logic Error in the database layer ->
 /// usually a problem with missing records, insufficient rights for operation, and so on.
 #[derive(Clone)]
-pub struct BusinessLogicError {
-    pub error_kind: BusinessLogicErrorKind,
+pub struct BackendError {
+    pub error_kind: BackendErrorKind,
 }
 
-impl BusinessLogicError {
+impl BackendError {
     /// Business Logic Error constructor
     #[must_use]
     #[inline]
-    pub const fn new(error: BusinessLogicErrorKind) -> Self {
+    pub const fn new(error: BackendErrorKind) -> Self {
         Self { error_kind: error }
     }
 
     /// Formatted business logic error
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Business logic error: {}", self.error_kind)
+        write!(f, "Backend Error: {}", self.error_kind)
+    }
+
+    pub fn is_login_error(&self) -> bool {
+        matches!(
+            &self.error_kind,
+            UserDoesNotExist
+                | UserDeleted
+                | UserPasswordDoesNotMatch
+                | UserUpdateParametersEmpty
+                | UserPasswordVerificationFailed
+        )
     }
 }
 
-impl Display for BusinessLogicError {
+impl Display for BackendError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         self.fmt(f)
     }
 }
 
-impl Debug for BusinessLogicError {
+impl Debug for BackendError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         self.fmt(f)
     }
+}
+
+#[derive(Debug, Clone)]
+pub enum DbErrorKind {
+    BackendError(BackendError),
+    DatabaseError,
+    MigrationError,
+    UniqueConstraintError,
+    NotNullError,
+    ForeignKeyError,
 }
 
 #[derive(Clone)]
 pub struct DbError {
-    pub business_error: BusinessLogicError,
+    pub db_error_kind: DbErrorKind,
     description: String,
 }
 
@@ -160,15 +182,22 @@ impl DbError {
     /// Database Error constructor
     #[must_use]
     #[inline]
-    pub fn new(error: BusinessLogicError, description: &str) -> Self {
+    pub fn new(error: DbErrorKind, description: &str) -> Self {
         Self {
-            business_error: error,
+            db_error_kind: error,
             description: description.to_owned(),
         }
     }
     /// Formatted database error
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "[Database Error] {}", self.description)
+    }
+
+    pub fn get_backend_error(&self) -> Option<BackendError> {
+        match &self.db_error_kind {
+            DbErrorKind::BackendError(e) => Some(e.clone()),
+            _ => None,
+        }
     }
 }
 
@@ -202,27 +231,19 @@ impl From<sqlx::Error> for DbError {
     fn from(value: sqlx::Error) -> Self {
         match value {
             sqlx::Error::Database(err) => match err.kind() {
-                sqlx::error::ErrorKind::ForeignKeyViolation => Self::new(
-                    BusinessLogicError::new(ForeignKeyError),
-                    &format!("sqlx error: {err}"),
-                ),
+                sqlx::error::ErrorKind::ForeignKeyViolation => {
+                    Self::new(DbErrorKind::ForeignKeyError, &format!("sqlx error: {err}"))
+                }
                 sqlx::error::ErrorKind::UniqueViolation => Self::new(
-                    BusinessLogicError::new(UniqueConstraintError),
+                    DbErrorKind::UniqueConstraintError,
                     &format!("sqlx error: {err}"),
                 ),
-                sqlx::error::ErrorKind::NotNullViolation => Self::new(
-                    BusinessLogicError::new(NotNullError),
-                    &format!("sqlx error: {err}"),
-                ),
-                _ => Self::new(
-                    BusinessLogicError::new(DatabaseError),
-                    &format!("sqlx error: {err}"),
-                ),
+                sqlx::error::ErrorKind::NotNullViolation => {
+                    Self::new(DbErrorKind::NotNullError, &format!("sqlx error: {err}"))
+                }
+                _ => Self::new(DbErrorKind::DatabaseError, &format!("sqlx error: {err}")),
             },
-            _ => Self::new(
-                BusinessLogicError::new(DatabaseError),
-                &format!("sqlx error: {value}"),
-            ),
+            _ => Self::new(DbErrorKind::DatabaseError, &format!("sqlx error: {value}")),
         }
     }
 }
@@ -231,16 +252,42 @@ impl From<sqlx::Error> for DbError {
 impl From<sqlx::migrate::MigrateError> for DbError {
     fn from(value: sqlx::migrate::MigrateError) -> Self {
         Self::new(
-            BusinessLogicError::new(MigrationError),
+            DbErrorKind::MigrationError,
             &format!("Migration error: {value}"),
         )
     }
 }
 
 /// Conversion from business logic error
-impl From<BusinessLogicError> for DbError {
-    fn from(value: BusinessLogicError) -> Self {
-        Self::new(value.clone(), value.to_string().as_str())
+impl From<BackendError> for DbError {
+    fn from(value: BackendError) -> Self {
+        Self::new(
+            DbErrorKind::BackendError(value.clone()),
+            value.to_string().as_str(),
+        )
+    }
+}
+
+impl From<pbkdf2::password_hash::Error> for DbError {
+    fn from(value: pbkdf2::password_hash::Error) -> Self {
+        Self::new(
+            DbErrorKind::BackendError(BackendError::new(UserPasswordVerificationFailed)),
+            value.to_string().as_str(),
+        )
+    }
+}
+
+pub struct EntityError {
+    pub deleted: BackendErrorKind,
+    pub does_not_exist: BackendErrorKind,
+}
+
+impl EntityError {
+    pub fn new(deleted: BackendErrorKind, does_not_exist: BackendErrorKind) -> Self {
+        Self {
+            deleted,
+            does_not_exist,
+        }
     }
 }
 

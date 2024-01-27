@@ -1,3 +1,4 @@
+use crate::database::common::HasDeletedAt;
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 
@@ -5,9 +6,16 @@ use chrono::{DateTime, Utc};
 pub struct Genre {
     pub id: Id,
     pub name: String,
+    pub color: String,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
+}
+
+impl HasDeletedAt for Genre {
+    fn is_deleted(&self) -> bool {
+        self.deleted_at.is_some()
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -16,8 +24,8 @@ pub struct GenreCreate {
 }
 
 impl GenreCreate {
-    #[must_use]
     #[inline]
+    #[allow(dead_code)]
     pub fn new(name: &str) -> Self {
         Self {
             name: name.to_owned(),
@@ -25,17 +33,17 @@ impl GenreCreate {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct GenreSearch {
-    pub name: String,
+    pub name: Option<String>,
 }
 
 impl GenreSearch {
     #[must_use]
     #[inline]
-    pub fn new(name: &str) -> Self {
+    pub fn new(name: Option<&str>) -> Self {
         Self {
-            name: name.to_owned(),
+            name: name.map(|n| n.to_owned()),
         }
     }
 }
@@ -44,21 +52,24 @@ impl GenreSearch {
 pub struct GenreUpdate {
     pub id: Id,
     pub name: Option<String>,
+    pub color: Option<String>,
 }
 
 impl GenreUpdate {
-    pub fn new(id: &Id, name: Option<&str>) -> Self {
+    #[allow(dead_code)]
+    pub fn new(id: &Id, name: Option<&str>, color: Option<&str>) -> Self {
         let change_to_owned = |value: &str| Some(value.to_owned());
         Self {
             id: *id,
             name: name.and_then(change_to_owned),
+            color: color.and_then(change_to_owned),
         }
     }
 
     #[inline]
     #[must_use]
     pub const fn update_fields_none(&self) -> bool {
-        self.name.is_none()
+        self.name.is_none() && self.color.is_none()
     }
 }
 
@@ -68,7 +79,7 @@ pub struct GenreDelete {
 }
 
 impl GenreDelete {
-    #[must_use]
+    #[allow(dead_code)]
     #[inline]
     pub fn new(id: &Id) -> Self {
         Self { id: *id }
