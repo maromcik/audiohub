@@ -3,7 +3,7 @@ use crate::recommender_grpc_api::{
     AddBookRequest, BooksCollection, DeleteBookRequest, SimilarRequest,
 };
 
-pub async fn init_recommandation_system(
+pub async fn init_recommendation_system(
     book_bios: Vec<&str>,
     book_ids: Vec<i64>,
     book_genres: Vec<&str>,
@@ -20,7 +20,7 @@ pub async fn init_recommandation_system(
     Ok(())
 }
 
-pub async fn add_book_to_recommandation_system(
+pub async fn add_book_to_recommendation_system(
     book_bio: &str,
     book_id: i64,
     book_genre: &str,
@@ -37,7 +37,7 @@ pub async fn add_book_to_recommandation_system(
     Ok(())
 }
 
-pub async fn delete_book_from_recommandation(
+pub async fn delete_book_from_recommendation(
     book_id: i64,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut client = ModelAiClient::connect("http://[::1]:50051").await?;

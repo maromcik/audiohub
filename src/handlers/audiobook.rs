@@ -53,7 +53,7 @@ use crate::handlers::helpers::{
 use uuid::Uuid;
 
 
-use crate::recommender::recommandation_system::{delete_book_from_recommandation, recommend_books};
+use crate::recommender::recommandation_system::{delete_book_from_recommendation, recommend_books};
 use crate::recommender::recommender::{add_book_recommender};
 #[get("/create")]
 pub async fn create_audiobook_page(
@@ -463,7 +463,7 @@ pub async fn remove_audiobook(
         .delete(&AudiobookDelete::new(&audiobook.id))
         .await?;
 
-    if let Err(e) = delete_book_from_recommandation(audiobook.id).await {
+    if let Err(e) = delete_book_from_recommendation(audiobook.id).await {
         warn!("Recommender was not able to delete book: {e}")
     } else {
         info!("Book was deleted from recommender system")
