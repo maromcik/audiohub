@@ -1,0 +1,29 @@
+<style>
+    .image-container {
+        width: 100%; /* Set the width of the container */
+        max-width: 320px;
+        margin-left: 0;
+    }
+
+    .responsive-image {
+        width: 100%; /* Make the image fill the container */
+        height: 100%; /* Make the image fill the container */
+        object-fit: cover; /* Maintain aspect ratio and cover the container */
+    }
+</style>
+
+<div class="container pl-10 pt-10 pb-10">
+    <div id="thumbnail-box" class="mb-4 sm:mb-0 xl:col-span-1">
+        <div class="mx-auto text-center group">
+            <div id="profile-picture-box" class="relative inline-block group mx-auto p-5">
+                {% include "user/profile_picture.html"%}
+            </div>
+        </div>
+    </div>
+    <h1 class="text-2xl font-bold mt-4">Explore more from this author...</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {% for audiobook in audiobooks %}
+        {% include "audiobook/audiobook_card.html" %}
+        {% endfor %}
+    </div>
+</div>

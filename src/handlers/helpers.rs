@@ -136,6 +136,15 @@ pub async fn get_studio(
         .await?)
 }
 
+pub async fn get_author_profile(
+    user_id: Id,
+    book_repo: web::Data<AudiobookRepository>,
+) -> Result<Vec<AudiobookDisplay>, AppError> {
+    Ok(book_repo
+        .read_many(&AudiobookSearch::search_by_author_id(user_id, user_id))
+        .await?)
+}
+
 pub async fn get_audiobook_edit(
     u: Identity,
     audiobook_repo: web::Data<AudiobookRepository>,
