@@ -554,7 +554,7 @@ pub struct AudiobookMetadataForm {
 }
 
 #[derive(Debug, Clone)]
-pub struct AudiobookQuickSearch {
+pub struct QuickSearch {
     pub id: Id,
     pub name: String,
 }

@@ -18,7 +18,7 @@ use sqlx::{Postgres, Transaction};
 use crate::database::common::utilities::entity_is_correct;
 use crate::database::models::audiobook::{
     Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookDisplay,
-    AudiobookGetById, AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookSearch, AudiobookUpdate,
+    AudiobookGetById, AudiobookGetByIdJoin, QuickSearch, AudiobookSearch, AudiobookUpdate,
 };
 use crate::database::models::Id;
 
@@ -92,13 +92,13 @@ impl AudiobookRepository {
         Ok(())
     }
 
-    pub async fn quick_search(&self, query: &str) -> DbResultMultiple<AudiobookQuickSearch> {
+    pub async fn quick_search(&self, query: &str) -> DbResultMultiple<QuickSearch> {
         let mut comparison_string: String = "%".to_owned();
         comparison_string.push_str(query);
         comparison_string.push('%');
 
         let results = sqlx::query_as!(
-            AudiobookQuickSearch,
+            QuickSearch,
             r#"
             SELECT id, name FROM "Audiobook"
             WHERE name ILIKE $1
