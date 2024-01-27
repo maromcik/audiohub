@@ -3,17 +3,18 @@ kind: Cluster
 metadata:
   name: audiohub-db
 spec:
-  instances: 2         # single instance
-  imageName: 'cerit.io/cloudnative-pg/postgresql:15.0' #image to use
+  instances: 1
+  imageName: 'cerit.io/cloudnative-pg/postgresql:15.0'
   primaryUpdateStrategy: unsupervised
   enableSuperuserAccess: true
 
   bootstrap:
    initdb:
-     database: audiohub        # db to create
-     owner: audiohub        # user to create
+     database: audiohub
+     owner: audiohub
 
   postgresql:
+    enableAlterSystem: true
     parameters:
       wal_keep_size: 8GB
       ssl_min_protocol_version: TLSv1.2
