@@ -1,4 +1,8 @@
 {% let max_init_page = crate::templates::utilities::get_max_init_page(max_page) %}
+
+{% if max_page == 0 %}
+<div></div>
+{% else %}
 <div id="rating-pagination" class="pl-10 flex flex-row justify-end items-center">
     <button id="load-previous-page-btn" hx-target="#ratings-container"
             hx-target-error="#content-area" hx-swap="innerHTML"
@@ -18,9 +22,6 @@
         <i class="fa-solid fa-angle-right"></i>
     </button>
 </div>
+{% endif %}
 
-<script>
-
-
-</script>
 
