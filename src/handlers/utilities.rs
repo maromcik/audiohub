@@ -8,6 +8,7 @@ use actix_identity::Identity;
 use actix_multipart::form::tempfile::TempFile;
 use actix_session::Session;
 use actix_web::web;
+use askama::filters::format;
 use uuid::{Uuid};
 use crate::database::common::error::{BackendError, BackendErrorKind};
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
@@ -122,8 +123,9 @@ pub fn save_file(file: TempFile, path: &str) -> Result<(), AppError> {
 }
 
 pub fn remove_file(path: &str) -> Result<(), AppError> {
-    if !path.is_empty() && std::path::Path::new(path).exists() {
-        std::fs::remove_file(path)?;
+    let fs_path = format!(".{path}");
+    if !path.is_empty() && std::path::Path::new(&fs_path).exists() {
+        std::fs::remove_file(&fs_path)?;
     }
     Ok(())
 }
