@@ -40,8 +40,6 @@ impl HasDeletedAt for ChapterDetail {
     }
 }
 
-
-
 #[derive(Debug, Clone, Deserialize, Default)]
 pub struct ChapterSearch {
     pub name: Option<String>,

@@ -24,13 +24,6 @@ pub struct AudiobookUploadFormTemplate {
 }
 
 #[derive(Template)]
-#[template(path = "audiobook/book_cover_thumbnail.html")]
-pub struct AudiobookThumbnail {
-    pub message: String,
-    pub audiobook: AudiobookDisplay,
-}
-
-#[derive(Template)]
 #[template(path = "audiobook/book_cover_update.html")]
 pub struct AudiobookCoverUpload {
     pub message: String,
@@ -56,12 +49,6 @@ pub struct DetailLikesTemplate {
     pub is_liked: bool,
 }
 
-#[derive(Template)]
-#[template(path = "components/card_likes.html")]
-pub struct CardLikesTemplate {
-    pub likes: i64,
-    pub is_liked: bool,
-}
 
 #[derive(Template)]
 #[template(path = "audiobook/audiobooks_by_genre.html")]

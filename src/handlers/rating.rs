@@ -58,7 +58,7 @@ pub async fn get_ratings_by_audiobook(
     let page = query.page;
     let book_id = path.into_inner().0;
 
-    let search_params = RatingSearch::new(Some(book_id.clone()),None,None,None,None,Some((page - 1) * DISPLAYED_RATINGS_COUNT));
+    let search_params = RatingSearch::new(Some(book_id),None,None,None,None,Some((page - 1) * DISPLAYED_RATINGS_COUNT));
     let ratings : Vec<UserRatingDisplay> = rating_repo
         .get_ratings_display(&search_params)
         .await?;

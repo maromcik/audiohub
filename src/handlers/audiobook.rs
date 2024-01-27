@@ -39,17 +39,13 @@ use actix_web::{delete, get, patch, post, put, web, HttpRequest, HttpResponse, R
 use askama::Template;
 use lofty::AudioFile;
 use serde::Deserialize;
-use sqlx::query;
-
 use crate::authorized;
 use crate::database::models::active_audiobook::SetActiveAudiobook;
 use crate::database::models::bookmark::BookmarkOperation;
-
 use crate::handlers::helpers::{
     get_audiobook_detail_base, get_audiobook_edit, get_chapters_by_book, get_releases,
 };
 use uuid::Uuid;
-use crate::handlers::user_register_page;
 
 #[get("/create")]
 pub async fn create_audiobook_page(

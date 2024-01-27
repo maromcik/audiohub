@@ -137,14 +137,11 @@ impl BackendError {
     }
 
     pub fn is_login_error(&self) -> bool {
-        match &self.error_kind {
-            UserDoesNotExist
+        matches!(&self.error_kind, UserDoesNotExist
             | UserDeleted
             | UserPasswordDoesNotMatch
             | UserUpdateParametersEmpty
-            | UserPasswordVerificationFailed => true,
-            _ => false,
-        }
+            | UserPasswordVerificationFailed)
     }
 }
 

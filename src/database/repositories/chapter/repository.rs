@@ -237,7 +237,7 @@ impl DbReadMany<ChaptersGetByBookIdJoin, ChapterDetail> for ChapterRepository {
 impl DbDelete<ChapterGetById, Chapter> for ChapterRepository {
     async fn delete(&self, params: &ChapterGetById) -> DbResultMultiple<Chapter> {
         let mut transaction = self.pool_handler.pool.begin().await?;
-        let chapter = ChapterRepository::get(&params, &mut transaction).await?;
+        let chapter = ChapterRepository::get(params, &mut transaction).await?;
         ChapterRepository::is_correct(chapter)?;
         let chapter = ChapterRepository::delete_chapter(&ChapterGetById::new(params.id), &mut transaction).await?;
         transaction.commit().await?;

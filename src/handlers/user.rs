@@ -341,7 +341,7 @@ pub async fn author_index(
     book_repo: web::Data<AudiobookRepository>,
     path: web::Path<(Id, )>,
 ) -> Result<HttpResponse, AppError> {
-    let u = authorized!(identity, request.path());
+    authorized!(identity, request.path());
     let user_id = path.into_inner().0;
     let user_by_id = UserGetById::new(
         &user_id
@@ -361,7 +361,7 @@ pub async fn author_content(
     book_repo: web::Data<AudiobookRepository>,
     path: web::Path<(Id, )>,
 ) -> Result<HttpResponse, AppError> {
-    let u = authorized!(identity, request.path());
+    authorized!(identity, request.path());
     let user_id = path.into_inner().0;
     let user_by_id = UserGetById::new(
         &user_id

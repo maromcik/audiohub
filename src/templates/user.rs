@@ -71,14 +71,6 @@ pub struct UserManageProfilePictureTemplate {
     pub user: UserDisplay,
 }
 
-#[derive(Template, Default)]
-#[template(path = "user/simple_responses/success_update.html")]
-pub struct UserManageProfileSuccessfulUpdate {}
-
-#[derive(Template, Default)]
-#[template(path = "user/simple_responses/success_update_password.html")]
-pub struct UserManageProfileSuccessfulUpdatePassword {}
-
 #[derive(Template)]
 #[template(path = "user/profile_user_form.html")]
 pub struct UserManageProfileUserFormTemplate {

@@ -38,9 +38,3 @@ pub struct AudiobookQuickSearchQuery {
     pub query: String,
     pub search_type: String,
 }
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct AudiobookSetActiveForm {
-    pub audiobook_id: Id,
-    pub position: f64,
-}

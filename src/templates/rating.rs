@@ -3,13 +3,6 @@ use crate::database::models::Id;
 use crate::database::models::rating::{RatingSummaryDisplay, UserRatingDisplay};
 
 #[derive(Template)]
-#[template(path = "rating/rating.html")]
-pub struct UserRatingTemplate {
-    pub rating: UserRatingDisplay
-}
-
-
-#[derive(Template)]
 #[template(path = "rating/book-ratings.html")]
 pub struct AudiobookRatingsTemplate {
     pub ratings: Vec<UserRatingDisplay>,

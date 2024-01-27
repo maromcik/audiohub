@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use std::cmp::{min};
 use chrono::{DateTime, Utc};
 
