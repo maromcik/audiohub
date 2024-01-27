@@ -1,3 +1,4 @@
+use std::cmp::{min};
 use chrono::{DateTime, Utc};
 
 pub fn format_date(timestamp: &DateTime<Utc>) -> String {
@@ -30,4 +31,29 @@ pub fn get_percentage_from_int(part: &i64, whole: &i64) -> i64{
 
 pub fn format_overall_rating(rating: &f64) -> String {
     format!("{:.2}", rating)
+}
+
+pub fn hex_color_to_rgba(hex_color: &str, opacity: &i64) -> String {
+    let mut rgba_color = String::from("rgba(");
+    let red = &hex_color[1..3];
+    let green = &hex_color[3..5];
+    let blue = &hex_color[5..7];
+    rgba_color.push_str(get_color_from_hex_number(red).to_string().as_str());
+    rgba_color.push_str(", ");
+    rgba_color.push_str(get_color_from_hex_number(green).to_string().as_str());
+    rgba_color.push_str(", ");
+    rgba_color.push_str(get_color_from_hex_number(blue).to_string().as_str());
+    rgba_color.push_str(", ");
+    rgba_color.push_str(opacity.to_string().as_str());
+    rgba_color.push_str(")");
+
+    rgba_color
+}
+
+pub fn get_color_from_hex_number(hex_number: &str) -> i64 {
+    i64::from_str_radix(hex_number, 16).unwrap_or(0)
+}
+
+pub fn get_max_init_page(max_page: &i64) -> i64 {
+    min(*max_page, 2)
 }

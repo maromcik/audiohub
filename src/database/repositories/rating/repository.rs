@@ -152,6 +152,18 @@ impl RatingRepository {
         Ok(rating)
     }
 
+    pub async fn get_rating_count(&self, book_id: &Id) -> DbResultSingle<i64>{
+        let record = sqlx::query!(
+            r#"
+            SELECT COUNT(*) as count FROM "Rating"
+            WHERE audiobook_id = $1 AND deleted_at IS NULL
+            "#,
+            book_id,
+        ).fetch_one(&self.pool_handler.pool).await?;
+
+        Ok(record.count.unwrap_or(0))
+    }
+
     pub async fn delete_rating<'a>(
         params: &RatingGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
@@ -297,7 +309,7 @@ impl RatingRepository {
             params.min_rating,
             params.max_rating,
             params.review,
-            DISPLAYED_RATINGS_COUNT,
+            DISPLAYED_RATINGS_COUNT as i64,
             params.offset
         ).fetch_all(&self.pool_handler.pool).await?;
 

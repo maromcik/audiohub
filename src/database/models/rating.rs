@@ -2,7 +2,7 @@ use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
-pub const DISPLAYED_RATINGS_COUNT: i64 = 5;
+pub const DISPLAYED_RATINGS_COUNT: i32 = 5;
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]
 pub struct Rating {

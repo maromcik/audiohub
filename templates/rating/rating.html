@@ -3,7 +3,7 @@
 {% let filled_stars = rating.rating %}
 {% let empty_stars = 5 - rating.rating %}
 {% let profile_picture = crate::templates::utilities::display_optional(rating.user_thumbnail) %}
-<div id="my-review" class="flex flex-col rounded-xl bg-gray-700 p-4 mb-4">
+<div class="flex flex-col rounded-xl bg-gray-700 p-4 mb-4">
     <div class="flex flex-row mb-4 center-items ">
         {% if profile_picture == "" %}
             <img class="w-24 h-24 object-cover rounded-full bg-red-500">
