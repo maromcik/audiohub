@@ -1,5 +1,5 @@
 use crate::database::models::active_audiobook::PlayedAudiobook;
-use crate::database::models::audiobook::{Audiobook, AudiobookDisplay, AudiobookQuickSearch};
+use crate::database::models::audiobook::{Audiobook, AudiobookDisplay, AudiobookQuickSearch, AudiobookRecommenderCard, AudiobookRecommenderDisplay};
 use crate::database::models::chapter::ChapterDisplay;
 use crate::database::models::genre::Genre;
 use askama::Template;
@@ -40,7 +40,7 @@ pub struct AudiobookCoverUpload {
 #[derive(Template)]
 #[template(path = "audiobook/recommendations.html")]
 pub struct AudiobookRecommendationTemplate {
-    pub books: Vec<AudiobookDisplay>
+    pub books: Vec<AudiobookRecommenderDisplay>
 }
 
 #[derive(Template)]

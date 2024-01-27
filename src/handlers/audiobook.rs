@@ -1,5 +1,5 @@
 use crate::database::common::{DbCreate, DbDelete, DbReadMany, DbReadOne, DbUpdate};
-use crate::database::models::audiobook::{AudiobookCreate, AudiobookDelete, AudiobookDisplay, AudiobookGetById, AudiobookGetByIdJoin, AudiobookUpdate};
+use crate::database::models::audiobook::{AudiobookCreate, AudiobookDelete, AudiobookDisplay, AudiobookGetById, AudiobookGetByIdJoin, AudiobookRecommenderDisplay, AudiobookUpdate};
 use crate::database::models::genre::{GenreGetById, GenreSearch};
 
 use crate::database::models::Id;
@@ -372,7 +372,7 @@ pub async fn recommend_audiobooks(
     let audiobooks = audiobook_repo.get_books_by_ids(recommendations).await?;
 
     let template = AudiobookRecommendationTemplate {
-        books: audiobooks.iter().map(|b| AudiobookDisplay::from(b.clone())).collect()
+        books: audiobooks.iter().map(|b| AudiobookRecommenderDisplay::from(b.clone())).collect(),
     };
 
     let body = template.render()?;

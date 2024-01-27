@@ -11,7 +11,7 @@ use crate::database::models::active_audiobook::{
 };
 use sqlx::{Postgres, Transaction};
 
-use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookDisplay, AudiobookGetById, AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookRecommenderForm, AudiobookSearch, AudiobookUpdate};
+use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookDisplay, AudiobookGetById, AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookRecommenderCard, AudiobookRecommenderForm, AudiobookSearch, AudiobookUpdate};
 use crate::database::models::Id;
 use crate::database::common::utilities::entity_is_correct;
 
@@ -317,12 +317,25 @@ impl AudiobookRepository {
         Ok(results)
     }
 
-    pub async fn get_books_by_ids(&self, book_ids: Vec<i64>) -> DbResultMultiple<Audiobook> {
+    pub async fn get_books_by_ids(&self, book_ids: Vec<i64>) -> DbResultMultiple<AudiobookRecommenderCard> {
         let results = sqlx::query_as!(
-            Audiobook,
+            AudiobookRecommenderCard,
             r#"
-            SELECT * FROM "Audiobook"
-            WHERE deleted_at IS NULL AND id = ANY($1)
+            SELECT
+                a.id,
+                a.name,
+                a.thumbnail,
+                u.username AS author_name,
+                g.name AS genre_name,
+                g.color AS genre_color
+            FROM
+                "Audiobook" AS a
+                    INNER JOIN
+                "User" AS u ON u.id = a.author_id
+                    INNER JOIN
+                "Genre" AS g ON a.genre_id = g.id
+            WHERE
+                a.deleted_at IS NULL AND a.id = ANY($1)
             "#,
             &book_ids
         )

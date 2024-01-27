@@ -1,15 +1,25 @@
 {% if books.len() > 0 %}
 <div class="pl-10 pt-10 pb-3 mb-3 text-4xl font-bold">Maybe you would like</div>
 {% endif %}
-<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-
-    {% for book in books %}
-    <div class="group">
-        <div class="relative aspect-w-2 aspect-h-3 overflow-hidden cursor-pointer w-48 h-48" hx-get="/audiobook/{{ book.id }}/detail-content" hx-target="#content-area">
-            <img class="object-cover w-full h-full transition-transform transform scale-100 group-hover:scale-110" src="{{ book.thumbnail }}" alt="{{ book.name }} Cover">
+<div id="recommandation-container" class="flex flex-row justify-center">
+    <div class="grid grid-cols-2 lg:grid-cols-2 gap-12">
+        {% for book in books %}
+        <div class="container h-full w-full  p-4 bg-black">
+            <div class="text-center">
+                <div class="relative aspect-w-2 aspect-h-3 overflow-hidden cursor-pointer mx-auto w-48 h-48" hx-get="/audiobook/{{ book.id }}/detail-content" hx-target="#content-area">
+                    <img class="w-full h-full transition-transform transform scale-100 group-hover:scale-110" src="{{ book.thumbnail }}" alt="Audiobook Image">
+    <!--                <img class="object-cover w-full h-full transition-transform transform scale-100 group-hover:scale-110" src="{{ book.thumbnail }}" alt="{{ book.name }} Cover">-->
+                </div>
+                <div class="font-bold text-lg text-white mb-2">
+                    {{ book.name }}
+                </div>
+                <p class="text-gray-300 text-sm">
+                    by {{ book.author_name }}
+                </p>
+<!--            <p class="text-center mt-2 text-white font-bold">{{ book.name }}</p>-->
+            </div>
         </div>
-        <p class="text-center mt-2 text-white font-bold">{{ book.name }}</p>
-    </div>
-    {% endfor %}
+        {% endfor %}
 
+    </div>
 </div>

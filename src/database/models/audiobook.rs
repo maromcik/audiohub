@@ -203,36 +203,25 @@ impl From<AudiobookDetail> for AudiobookDisplay {
     }
 }
 
-impl From<Audiobook> for AudiobookDisplay {
-    fn from(audiobook: Audiobook) -> Self {
-        Self {
-            profile_picture: get_default_profile_picture(&None),
-            genre_name: "".to_string(),
-            genre_color: "".to_string(),
-            playback_position: 0.0,
-            id: audiobook.id,
-            name: audiobook.name,
-            author_id: audiobook.author_id,
-            genre_id: audiobook.genre_id,
-            file_path: audiobook.file_path,
-            length: audiobook.length,
-            thumbnail: get_default_thumbnail(&audiobook.thumbnail),
-            description: audiobook.description,
-            stream_count: audiobook.stream_count,
-            like_count: audiobook.like_count,
-            overall_rating: audiobook.overall_rating,
-            created_at: audiobook.created_at,
-            edited_at: audiobook.edited_at,
+#[derive(Debug, Clone)]
+pub struct AudiobookRecommenderDisplay {
+    pub id: Id,
+    pub name: String,
+    pub thumbnail: String,
+    pub author_name: String,
+    pub genre_name: String,
+    pub genre_color: String,
+}
 
-            username: "".to_string(),
-            email: "".to_string(),
-            author_name: "".to_string(),
-            surname: "".to_string(),
-            bio: "".to_string(),
-            progress: 0.0,
-            is_liked: false,
-            is_finished: false,
-            is_started: false,
+impl From<AudiobookRecommenderCard> for AudiobookRecommenderDisplay {
+    fn from(audiobook_recommendation_card: AudiobookRecommenderCard) -> Self {
+        Self {
+            id: audiobook_recommendation_card.id,
+            name: audiobook_recommendation_card.name,
+            thumbnail: get_default_thumbnail(&audiobook_recommendation_card.thumbnail),
+            author_name: audiobook_recommendation_card.author_name,
+            genre_name: audiobook_recommendation_card.genre_name,
+            genre_color: audiobook_recommendation_card.genre_color,
         }
     }
 }
@@ -587,4 +576,14 @@ pub struct AudiobookRecommenderForm {
     pub id: Id,
     pub description: String,
     pub genre_id: Id,
+}
+
+#[derive(Debug, Clone)]
+pub struct AudiobookRecommenderCard {
+    pub id: Id,
+    pub name: String,
+    pub thumbnail: Option<String>,
+    pub author_name: String,
+    pub genre_name: String,
+    pub genre_color: String,
 }
