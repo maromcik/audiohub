@@ -132,7 +132,7 @@ pub async fn get_studio(
 ) -> Result<Vec<AudiobookDisplay>, AppError> {
     let user_id = parse_user_id(u)?;
     Ok(book_repo
-        .read_many(&AudiobookSearch::search_by_author_id(user_id, user_id))
+        .read_many(&AudiobookSearch::search_by_author_id(user_id, user_id, DbQueryParams::deleted()))
         .await?)
 }
 
