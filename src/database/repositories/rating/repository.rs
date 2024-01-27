@@ -172,10 +172,7 @@ impl RatingRepository {
         let rating = sqlx::query_as!(
             Rating,
             r#"
-            UPDATE "Rating"
-            SET
-                deleted_at = current_timestamp,
-                edited_at = current_timestamp
+            DELETE FROM "Rating"
             WHERE id = $1
             RETURNING *
             "#,
