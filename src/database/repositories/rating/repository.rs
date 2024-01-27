@@ -61,6 +61,7 @@ impl RatingRepository {
     /// # Returns
     /// - `Ok(ratings)`: on successful connection and retrieval
     /// - `Err(_)`: otherwise
+    #[allow(dead_code)]
     pub async fn get_user_ratings<'a>(
         params: UserGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
@@ -88,6 +89,7 @@ impl RatingRepository {
     /// # Returns
     /// - `Ok(ratings)`: on successful connection and retrieval
     /// - `Err(_)`: otherwise
+    #[allow(dead_code)]
     pub async fn get_book_ratings<'a>(
         params: AudiobookGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,

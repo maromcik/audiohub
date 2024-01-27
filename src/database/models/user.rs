@@ -72,7 +72,6 @@ pub struct UserCreate {
 }
 
 impl UserCreate {
-    #[must_use]
     #[inline]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
@@ -106,7 +105,7 @@ pub struct UserSearch {
 }
 
 impl UserSearch {
-    #[must_use]
+    #[allow(dead_code)]
     #[inline]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
@@ -122,13 +121,6 @@ impl UserSearch {
             name: name.and_then(change_to_owned),
             surname: surname.and_then(change_to_owned),
         }
-    }
-    #[must_use]
-    pub const fn search_fields_none(&self) -> bool {
-        self.username.is_none()
-            && self.email.is_none()
-            && self.name.is_none()
-            && self.surname.is_none()
     }
 }
 
@@ -191,7 +183,7 @@ pub struct UserDelete {
 }
 
 impl UserDelete {
-    #[must_use]
+    #[allow(dead_code)]
     #[inline]
     pub const fn new(id: &Id) -> Self {
         Self { id: *id }
@@ -229,7 +221,7 @@ pub struct UserGetByUsername {
 }
 
 impl UserGetByUsername {
-    #[must_use]
+    #[allow(dead_code)]
     #[inline]
     pub fn new(username: &str) -> Self {
         Self {

@@ -5,7 +5,7 @@ use crate::error::AppError;
 use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{get, post, web, HttpResponse, HttpRequest, delete};
-use actix_web::cookie::time::macros::offset;
+
 use askama::Template;
 use serde::Deserialize;
 

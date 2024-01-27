@@ -57,7 +57,7 @@ pub async fn get_audiobook_detail_base(
 }
 
 pub async fn get_displayable_chapters(chapter_repo: web::Data<ChapterRepository>, audiobook_id: Id) -> Result<Vec<ChapterDisplay>, AppError> {
-    let chapters = chapter_repo.read_many(&ChaptersGetByBookId { audiobook_id }).await?;
+    let chapters = chapter_repo.read_many(&ChaptersGetByBookId::new(audiobook_id)).await?;
     Ok(chapters
         .into_iter()
         .enumerate()

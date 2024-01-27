@@ -70,15 +70,15 @@ pub async fn register_user(
         return Ok(HttpResponse::Ok().content_type("text/html").body(body));
     }
 
-    let new_user = UserCreate {
-        username: form.username.to_string(),
-        email: form.email.to_string(),
-        name: form.name.to_string(),
-        surname: form.surname.to_string(),
-        bio: String::new(),
-        profile_picture: None,
-        password: form.password.clone(),
-    };
+    let new_user = UserCreate::new(
+     &form.username.to_string(),
+     &form.email.to_string(),
+     &form.name.to_string(),
+     &form.surname.to_string(),
+     &form.password.clone(),
+     "",
+     None,
+    );
 
     user_repo.create(&new_user).await?;
     Ok(HttpResponse::SeeOther()

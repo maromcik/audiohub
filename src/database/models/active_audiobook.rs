@@ -18,7 +18,7 @@ pub struct RemoveActiveAudiobook {
 }
 
 impl RemoveActiveAudiobook {
-    #[must_use]
+    #[allow(dead_code)]
     #[inline]
     pub const fn new(user_id: Id, audiobook_id: Id) -> Self {
         Self {

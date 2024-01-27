@@ -87,6 +87,7 @@ impl ChapterCreate {
 }
 
 impl ChapterSearch {
+    #[allow(dead_code)]
     pub fn new(name: Option<&str>, audiobook_id: Option<&Id>) -> Self {
         Self {
             name: name.map(|n| n.to_owned()),

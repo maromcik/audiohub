@@ -82,6 +82,7 @@ impl AudiobookDetail {
         self.playback_position.is_some()
     }
 
+    #[allow(dead_code)]
     pub fn is_active(&self) -> bool {
         match self.playback_position {
             None => false,
@@ -136,6 +137,7 @@ pub struct AudiobookDisplay {
 }
 
 impl AudiobookDisplay {
+    #[allow(dead_code)]
     pub fn from_reference(audiobook: &AudiobookDetail) -> Self {
         Self {
             id: audiobook.id,
@@ -151,7 +153,7 @@ impl AudiobookDisplay {
             overall_rating: audiobook.overall_rating,
             created_at: audiobook.created_at,
             edited_at: audiobook.edited_at,
-            deleted: audiobook.deleted_at.map_or_else(|| false, |v| true),
+            deleted: audiobook.deleted_at.map_or_else(|| false, |_v| true),
 
             username: audiobook.username.to_owned(),
             email: audiobook.email.to_owned(),
@@ -190,7 +192,7 @@ impl From<AudiobookDetail> for AudiobookDisplay {
             overall_rating: audiobook.overall_rating,
             created_at: audiobook.created_at,
             edited_at: audiobook.edited_at,
-            deleted: audiobook.deleted_at.map_or_else(|| false, |v| true),
+            deleted: audiobook.deleted_at.map_or_else(|| false, |_v| true),
 
             username: audiobook.username,
             email: audiobook.email,
@@ -225,8 +227,8 @@ pub struct AudiobookSearch {
 }
 
 impl AudiobookSearch {
-    #[must_use]
     #[inline]
+    #[allow(dead_code)]
     pub fn new(
         user_id: Id,
         name: Option<&str>,
@@ -258,6 +260,7 @@ impl AudiobookSearch {
             query_params,
         }
     }
+    #[allow(dead_code)]
     pub fn default(user_id: Id) -> Self {
         Self {
             user_id,
@@ -329,6 +332,7 @@ impl AudiobookSearch {
         }
     }
 
+    #[allow(dead_code)]
     pub fn search_by_book_name(name: &str, user_id: Id) -> Self {
         Self {
             user_id,
@@ -346,6 +350,7 @@ impl AudiobookSearch {
             query_params: DbQueryParams::default(),
         }
     }
+    #[allow(dead_code)]
     pub fn search_by_genre_name(name: &str, user_id: Id) -> Self {
         Self {
             user_id,
@@ -363,6 +368,7 @@ impl AudiobookSearch {
             query_params: DbQueryParams::default(),
         }
     }
+    #[allow(dead_code)]
     pub fn search_by_author_name(name: &str, user_id: Id) -> Self {
         Self {
             user_id,

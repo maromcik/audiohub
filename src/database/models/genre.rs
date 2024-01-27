@@ -24,8 +24,8 @@ pub struct GenreCreate {
 }
 
 impl GenreCreate {
-    #[must_use]
     #[inline]
+    #[allow(dead_code)]
     pub fn new(name: &str) -> Self {
         Self {
             name: name.to_owned(),
@@ -56,6 +56,7 @@ pub struct GenreUpdate {
 }
 
 impl GenreUpdate {
+    #[allow(dead_code)]
     pub fn new(id: &Id, name: Option<&str>, color: Option<&str>) -> Self {
         let change_to_owned = |value: &str| Some(value.to_owned());
         Self {
@@ -79,7 +80,7 @@ pub struct GenreDelete {
 }
 
 impl GenreDelete {
-    #[must_use]
+    #[allow(dead_code)]
     #[inline]
     pub fn new(id: &Id) -> Self {
         Self { id: *id }

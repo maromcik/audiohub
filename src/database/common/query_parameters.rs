@@ -18,6 +18,7 @@ pub struct DbQueryParams {
 }
 
 impl DbQueryParams {
+    #[allow(dead_code)]
     pub fn new(order: Option<DbOrderColumn>, limit: Option<i64>, offset: Option<i64>, book_state: Option<BookState>, fetch_deleted: bool) -> Self {
         Self {
             order,
@@ -28,6 +29,7 @@ impl DbQueryParams {
         }
     }
 
+    #[allow(dead_code)]
     pub fn limit(limit: i64, offset: i64, book_state: Option<BookState>) -> Self {
         Self {
             order: Some(DbOrderColumn::default()),
@@ -103,6 +105,7 @@ impl Default for DbOrderColumn {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Clone)]
 pub enum DbOrder {
     Asc,

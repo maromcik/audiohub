@@ -28,8 +28,6 @@ pub enum AppErrorKind {
     IdentityError,
     #[error("session error")]
     SessionError,
-    #[error("password hasher error")]
-    PasswordHasherError,
     #[error("conflict")]
     Conflict,
     #[error("file error")]
@@ -174,7 +172,6 @@ impl ResponseError for AppError {
             AppErrorKind::Unauthorized => StatusCode::UNAUTHORIZED,
             AppErrorKind::TemplatingError
             | AppErrorKind::InternalServerError
-            | AppErrorKind::PasswordHasherError
             | AppErrorKind::IdentityError
             | AppErrorKind::SessionError
             | AppErrorKind::FileError => StatusCode::INTERNAL_SERVER_ERROR

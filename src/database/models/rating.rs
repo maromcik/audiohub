@@ -63,6 +63,7 @@ pub struct RatingsGetByBookId {
 }
 
 impl RatingsGetByBookId {
+    #[allow(dead_code)]
     pub fn new(id: Id) -> Self {
         Self { audiobook_id: id }
     }
