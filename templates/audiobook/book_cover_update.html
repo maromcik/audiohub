@@ -4,7 +4,7 @@
         {{ message }}
     </div>
     <div class="w-25 h-25 md:w-45 md:h-45 lg:w-80 lg:h-80 bg-gray-800 flex items-center justify-center mb-4">
-        <label for="book-cover-input" class="w-25 h-25 md:w-45 md:h-45 lg:w-80 lg:h-80 flex items-center justify-center cursor-pointer">
+        <label for="book-cover-input" class="w-full h-full flex items-center justify-center cursor-pointer">
             <input type="file" id="book-cover-input" class="hidden" accept="image/*" multiple name="thumbnail" onchange="handleProfilePictureUpload(this)">
             <span id="book-cover-label-for-file" class="text-white font-bold">Click to Upload</span>
         </label>
@@ -27,12 +27,17 @@
             reader.onload = function (e) {
                 const circle = input.parentElement;
                 circle.style.backgroundImage = `url('${e.target.result}')`;
-                circle.style.backgroundSize = 'cover';
                 circle.style.backgroundPosition = 'center';
                 circle.style.backgroundRepeat = 'no-repeat';
+                const screenSize = window.innerWidth;
 
-                circle.style.width = "100%";
-                circle.style.height = "100%";
+                let backgroundSize = '100px 100px';
+                if (screenSize >= 1024) {
+                    backgroundSize = '320px 320px';
+                } else if (screenSize >= 768) {
+                    backgroundSize = '180px 180px';
+                }
+                circle.style.backgroundSize = backgroundSize
 
 
                 const label = circle.querySelector('span');
