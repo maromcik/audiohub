@@ -62,10 +62,7 @@ impl ChapterRepository {
         let chapter = sqlx::query_as!(
             Chapter,
             r#"
-            UPDATE "Chapter"
-            SET
-                deleted_at = current_timestamp,
-                edited_at = current_timestamp
+            DELETE FROM "Chapter"
             WHERE id = $1
             RETURNING *"#,
             params.id
