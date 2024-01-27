@@ -604,12 +604,12 @@ COPY public."Active_Audiobook" (user_id, audiobook_id, playback_position, edited
 1	3	50	2024-01-26 18:43:13.002446+00
 2	1	456	2024-01-26 18:43:13.002446+00
 3	1	200	2024-01-26 18:43:13.002446+00
+5	45	11628.174154	2024-01-27 21:59:43.874566+00
 3	4	407	2024-01-26 20:19:31.960273+00
 5	1	201.885195	2024-01-27 19:14:21.889024+00
 5	10	20469.610586	2024-01-27 20:45:36.621436+00
 1	2	4467.573696	2024-01-27 20:49:09.33824+00
 5	4	409.756371	2024-01-27 19:24:28.315995+00
-5	45	11628.174154	2024-01-27 21:40:26.266954+00
 5	37	15437.285897	2024-01-27 19:27:44.992226+00
 4	10	0	2024-01-27 20:30:08.387679+00
 2	3	461.744799	2024-01-27 18:17:11.968344+00
@@ -856,7 +856,7 @@ COPY public._sqlx_migrations (version, description, installed_on, success, check
 -- Name: database_ids; Type: SEQUENCE SET; Schema: _sqlx_test; Owner: postgres
 --
 
-SELECT pg_catalog.setval('_sqlx_test.database_ids', 355, true);
+SELECT pg_catalog.setval('_sqlx_test.database_ids', 365, true);
 
 
 --
