@@ -23,7 +23,7 @@ impl AudiobookRepository {
     pub async fn get_audiobook<'a>(
         params: AudiobookGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
-    ) -> DbResultSingle<Option<Audiobook>> {
+    ) -> DbResultSingle<Audiobook> {
         let query = sqlx::query_as!(
             Audiobook,
             r#"
@@ -34,12 +34,7 @@ impl AudiobookRepository {
         )
         .fetch_optional(transaction_handle.as_mut())
         .await?;
-
-        if let Some(book) = query {
-            return Ok(Option::from(book));
-        }
-
-        Err(DbError::from(BackendError::new(AudiobookDoesNotExist)))
+        AudiobookRepository::audiobook_is_correct(query)
     }
 
     pub fn audiobook_is_correct<T: HasDeletedAt>(audiobook: Option<T>) -> DbResultSingle<T> {
@@ -533,7 +528,6 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
             &mut transaction,
         )
         .await?;
-        let validated_audiobook = AudiobookRepository::audiobook_is_correct(audiobook)?;
         let updated_audio_books = sqlx::query_as!(
             Audiobook,
             r#"
@@ -563,7 +557,7 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
             params.overall_rating,
             params.thumbnail,
             params.description,
-            validated_audiobook.id
+            audiobook.id
         )
         .fetch_all(transaction.as_mut())
         .await?;
@@ -577,13 +571,11 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
 impl DbDelete<AudiobookDelete, Audiobook> for AudiobookRepository {
     async fn delete(&self, params: &AudiobookDelete) -> DbResultMultiple<Audiobook> {
         let mut transaction = self.pool_handler.pool.begin().await?;
-        let book_query = AudiobookRepository::get_audiobook(
+        let book = AudiobookRepository::get_audiobook(
             AudiobookGetById { id: params.id },
             &mut transaction,
         )
         .await?;
-
-        let _ = AudiobookRepository::audiobook_is_correct(book_query.clone())?;
 
         let books = sqlx::query_as!(
             Audiobook,
