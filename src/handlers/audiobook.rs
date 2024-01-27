@@ -1,7 +1,7 @@
 use crate::database::common::{DbCreate, DbDelete, DbReadMany, DbReadOne, DbUpdate};
 use crate::database::models::audiobook::{
     AudiobookCreate, AudiobookDelete, AudiobookDisplay, AudiobookGetById, AudiobookGetByIdJoin,
-    AudiobookUpdate,
+    AudiobookRecommenderDisplay, AudiobookUpdate,
 };
 use crate::database::models::genre::{GenreGetById, GenreSearch};
 
@@ -10,6 +10,7 @@ use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
+
 use crate::error::{AppError, AppErrorKind};
 use crate::forms::audiobook::{
     AudiobookCreateForm, AudiobookEditForm, AudiobookQuickSearchQuery, AudiobookThumbnailEditForm,
@@ -23,8 +24,8 @@ use crate::handlers::utilities::{
 use crate::templates::audiobook::{
     AudiobookCoverUpload, AudiobookCreateContentTemplate, AudiobookCreatePageTemplate,
     AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookEditContentTemplate,
-    AudiobookEditPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate,
-    NewReleasesPageTemplate, PlayerTemplate, QuickSearchResults,
+    AudiobookEditPageTemplate, AudiobookRecommendationTemplate, AudiobookUploadFormTemplate,
+    NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate, QuickSearchResults,
 };
 use crate::templates::audiobook::{
     AudiobookDetailAuthorContentTemplate, AudiobookDetailAuthorPageTemplate, DetailLikesTemplate,
@@ -36,17 +37,24 @@ use actix_session::Session;
 use actix_web::http::header::LOCATION;
 use actix_web::{delete, get, patch, post, put, web, HttpRequest, HttpResponse, Responder};
 
-use crate::authorized;
+use askama::Template;
+use lofty::AudioFile;
+use log::{info, warn};
+use serde::Deserialize;
+use sqlx::query;
+
+use crate::{authorized, RECOMMEND_BOOKS_CNT};
 use crate::database::models::active_audiobook::SetActiveAudiobook;
 use crate::database::models::bookmark::BookmarkOperation;
+
 use crate::handlers::helpers::{
     get_audiobook_detail_base, get_audiobook_edit, get_chapters_by_book, get_releases,
 };
-use askama::Template;
-use lofty::AudioFile;
-use serde::Deserialize;
 use uuid::Uuid;
 
+
+use crate::recommender::recommandation_system::{delete_book_from_recommandation, recommend_books};
+use crate::recommender::recommender::{add_book_recommender};
 #[get("/create")]
 pub async fn create_audiobook_page(
     request: HttpRequest,
@@ -171,6 +179,7 @@ pub async fn upload_audiobook(
     identity: Option<Identity>,
     session: Session,
     user_repo: web::Data<UserRepository>,
+    genre_repo: web::Data<GenreRepository>,
     audiobook_repo: web::Data<AudiobookRepository>,
     MultipartForm(mut form): MultipartForm<AudiobookUploadForm>,
 ) -> Result<HttpResponse, AppError> {
@@ -212,6 +221,16 @@ pub async fn upload_audiobook(
         &metadata.description,
     );
     let book = audiobook_repo.create(&book_crate).await?;
+
+    let genre = genre_repo
+        .read_one(&GenreGetById::new(&book.genre_id))
+        .await?;
+
+    if let Err(err) = add_book_recommender(&book, &*genre.name).await {
+        warn!("failed add book too grpc recommender system, check if server is running: {err}");
+    } else {
+        info!("book added to the grpc repository!");
+    };
 
     save_file(form.audio_file, &audiobook_path)?;
 
@@ -348,6 +367,39 @@ pub async fn get_audiobook(
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
+#[get("/{id}/similar")]
+pub async fn recommend_audiobooks(
+    request: HttpRequest,
+    identity: Option<Identity>,
+    audiobook_repo: web::Data<AudiobookRepository>,
+    genre_repo: web::Data<GenreRepository>,
+    path: web::Path<(Id,)>,
+) -> Result<HttpResponse, AppError> {
+    let identity = authorized!(identity, request.path());
+    let book = audiobook_repo.read_one(&AudiobookGetById { id: path.into_inner().0, fetch_deleted: false, })
+        .await?;
+
+    let genre = genre_repo
+        .read_one(&GenreGetById::new(&book.genre_id))
+        .await?;
+
+    let recommendations = match recommend_books(&book.description, book.id, &genre.name, RECOMMEND_BOOKS_CNT).await{
+        Ok(books) => {books}
+        Err(e) => {
+            warn!("Book recommendation failed! {e}");
+            vec![]
+        }
+    };
+    let audiobooks = audiobook_repo.get_books_by_ids(recommendations).await?;
+
+    let template = AudiobookRecommendationTemplate {
+        books: audiobooks.iter().map(|b| AudiobookRecommenderDisplay::from(b.clone())).collect(),
+    };
+
+    let body = template.render()?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+}
+
 #[get("/{id}/detail-content")]
 pub async fn get_audiobook_detail_content(
     request: HttpRequest,
@@ -410,6 +462,13 @@ pub async fn remove_audiobook(
     audiobook_repo
         .delete(&AudiobookDelete::new(&audiobook.id))
         .await?;
+
+    if let Err(e) = delete_book_from_recommandation(audiobook.id).await {
+        warn!("Recommender was not able to delete book: {e}")
+    } else {
+        info!("Book was deleted from recommender system")
+    }
+
     let path = format!("/audiobook/{}/manage-content", audiobook.id);
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, path))
@@ -433,6 +492,7 @@ pub async fn hard_remove_audiobook(
     audiobook_repo
         .hard_delete(&AudiobookDelete::new(&audiobook.id))
         .await?;
+
     Ok(HttpResponse::SeeOther()
         .insert_header((LOCATION, "/studio-content"))
         .finish())

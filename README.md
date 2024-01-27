@@ -93,3 +93,34 @@ WantedBy=multi-user.target default.target
 ```
 
 ***
+
+### Language based recommender system - gRPC
+
+To utilize the AI Audiobook Recommender, powered by a language model 
+that analyzes genres and book descriptions, you need to follow these steps:
+
+#### build.rs Configuration
+
+The `build.rs` file houses the build target configuration necessary for compilation. 
+To generate the required libraries, execute the command:
+```
+cargo build
+```
+This command triggers the compilation process, ensuring the creation of the relevant
+libraries for your project.
+
+#### Running the gRPC Server
+
+If you want to have book recommanded by Artificial intelligence language model based on 
+genre and book description analysis you have to run docker with gRPC server first.
+
+Run these commands in project root directory:
+
+```
+docker build -t ai-audiobook-recommander -f Dockerfile.recommender-server .
+docker run -p 50051:50051 ai-audiobook-recommander
+```
+
+Once the Recommender Server is up and running, you can run audiobook application 
+to receive AI-based audiobook recommendations.
+

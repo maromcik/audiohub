@@ -209,6 +209,29 @@ impl From<AudiobookDetail> for AudiobookDisplay {
 }
 
 #[derive(Debug, Clone)]
+pub struct AudiobookRecommenderDisplay {
+    pub id: Id,
+    pub name: String,
+    pub thumbnail: String,
+    pub author_name: String,
+    pub genre_name: String,
+    pub genre_color: String,
+}
+
+impl From<AudiobookRecommenderCard> for AudiobookRecommenderDisplay {
+    fn from(audiobook_recommendation_card: AudiobookRecommenderCard) -> Self {
+        Self {
+            id: audiobook_recommendation_card.id,
+            name: audiobook_recommendation_card.name,
+            thumbnail: get_default_thumbnail(&audiobook_recommendation_card.thumbnail),
+            author_name: audiobook_recommendation_card.author_name,
+            genre_name: audiobook_recommendation_card.genre_name,
+            genre_color: audiobook_recommendation_card.genre_color,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct AudiobookSearch {
     pub user_id: Id,
     pub name: Option<String>,
@@ -561,4 +584,21 @@ pub struct AudiobookMetadataForm {
 pub struct QuickSearch {
     pub id: Id,
     pub name: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct AudiobookRecommenderForm {
+    pub id: Id,
+    pub description: String,
+    pub genre_id: Id,
+}
+
+#[derive(Debug, Clone)]
+pub struct AudiobookRecommenderCard {
+    pub id: Id,
+    pub name: String,
+    pub thumbnail: Option<String>,
+    pub author_name: String,
+    pub genre_name: String,
+    pub genre_color: String,
 }

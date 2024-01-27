@@ -1,0 +1,65 @@
+// Copyright 2015 gRPC authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.helloworld";
+option java_outer_classname = "HelloWorldProto";
+option objc_class_prefix = "HLW";
+
+package recommender;
+
+import "google/protobuf/empty.proto";
+
+// The greeting service definition.
+service ModelAI {
+  // Create embedding of every bio in db
+  rpc Init (BooksCollection) returns (google.protobuf.Empty) {}
+  // Add new book
+  rpc AddBook (AddBookRequest) returns (google.protobuf.Empty) {}
+  // Delete request
+  rpc DeleteBook (DeleteBookRequest) returns (google.protobuf.Empty) {}
+  rpc RecommendBooks (SimilarRequest) returns (SimilarReply) {}
+}
+
+// The request collection of book bios with ids also with their genres
+message BooksCollection {
+  repeated string bios = 1;
+  repeated int64 ids = 2;
+  repeated string genres = 3;
+}
+
+message AddBookRequest {
+  string bio = 1;
+  int64 id = 2;
+  string genre = 3;
+}
+
+message DeleteBookRequest {
+  int64 id = 1;
+}
+
+// Get x similar books to this bio
+message SimilarRequest {
+  int64 id = 1;
+  string bio = 2;
+  string genre = 3;
+  int32 count = 4;
+}
+
+// getting similar books ids
+message SimilarReply {
+  repeated int64 ids = 1;
+}

@@ -8,6 +8,7 @@ pub struct AudiobookRatingsTemplate {
     pub ratings: Vec<UserRatingDisplay>,
 }
 
+
 #[derive(Template)]
 #[template(path = "rating/deleted-rating.html")]
 pub struct DeletedRatingTemplate {}

@@ -18,7 +18,8 @@ use sqlx::{Postgres, Transaction};
 use crate::database::common::utilities::entity_is_correct;
 use crate::database::models::audiobook::{
     Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookDisplay,
-    AudiobookGetById, AudiobookGetByIdJoin, AudiobookSearch, AudiobookUpdate, QuickSearch,
+    AudiobookGetById, AudiobookGetByIdJoin, AudiobookRecommenderCard, AudiobookRecommenderForm,
+    QuickSearch, AudiobookSearch, AudiobookUpdate,
 };
 use crate::database::models::Id;
 
@@ -315,6 +316,46 @@ impl AudiobookRepository {
         Ok(bookmarked.into_iter().map(AudiobookDisplay::from).collect())
     }
 
+    pub async fn get_all_books(&self) -> DbResultMultiple<AudiobookRecommenderForm> {
+        let results = sqlx::query_as!(
+            AudiobookRecommenderForm,
+            r#"
+            SELECT  id, description, genre_id FROM "Audiobook"
+            WHERE deleted_at IS NULL
+            "#
+        )
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
+        Ok(results)
+    }
+
+    pub async fn get_books_by_ids(&self, book_ids: Vec<i64>) -> DbResultMultiple<AudiobookRecommenderCard> {
+        let results = sqlx::query_as!(
+            AudiobookRecommenderCard,
+            r#"
+            SELECT
+                a.id,
+                a.name,
+                a.thumbnail,
+                u.username AS author_name,
+                g.name AS genre_name,
+                g.color AS genre_color
+            FROM
+                "Audiobook" AS a
+                    INNER JOIN
+                "User" AS u ON u.id = a.author_id
+                    INNER JOIN
+                "Genre" AS g ON a.genre_id = g.id
+            WHERE
+                a.deleted_at IS NULL AND a.id = ANY($1)
+            "#,
+            &book_ids
+        )
+            .fetch_all(&self.pool_handler.pool)
+            .await?;
+
+        Ok(results)
+    }
     pub async fn restore(&self, params: &AudiobookGetById) -> DbResultMultiple<Audiobook> {
         let mut transaction = self.pool_handler.pool.begin().await?;
         let books = sqlx::query_as!(
