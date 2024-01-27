@@ -277,6 +277,20 @@ impl From<pbkdf2::password_hash::Error> for DbError {
     }
 }
 
+pub struct EntityError {
+    pub deleted: BackendErrorKind,
+    pub does_not_exist: BackendErrorKind
+}
+
+impl EntityError {
+    pub fn new(deleted: BackendErrorKind, does_not_exist: BackendErrorKind) -> Self {
+        Self {
+            deleted,
+            does_not_exist
+        }
+    }
+}
+
 /// generic database result
 pub type DbResult<T> = Result<T, DbError>;
 

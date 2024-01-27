@@ -1,8 +1,8 @@
 use crate::database::common::error::BackendErrorKind::{
     AudiobookDeleted, AudiobookDoesNotExist, AudiobookUpdateParametersEmpty,
 };
-use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle};
-use crate::database::common::{DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, HasDeletedAt, PoolHandler};
+use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle, EntityError};
+use crate::database::common::{DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler};
 use async_trait::async_trait;
 
 use crate::database::common::utilities::generate_query_param_string;
@@ -13,6 +13,7 @@ use sqlx::{Postgres, Transaction};
 
 use crate::database::models::audiobook::{Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookDisplay, AudiobookGetById, AudiobookGetByIdJoin, AudiobookQuickSearch, AudiobookSearch, AudiobookUpdate};
 use crate::database::models::Id;
+use crate::database::common::utilities::entity_is_correct;
 
 #[derive(Clone)]
 pub struct AudiobookRepository {
@@ -21,7 +22,7 @@ pub struct AudiobookRepository {
 
 impl AudiobookRepository {
     pub async fn get_audiobook<'a>(
-        params: AudiobookGetById,
+        params: &AudiobookGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultSingle<Audiobook> {
         let query = sqlx::query_as!(
@@ -34,18 +35,7 @@ impl AudiobookRepository {
         )
         .fetch_optional(transaction_handle.as_mut())
         .await?;
-        AudiobookRepository::audiobook_is_correct(query)
-    }
-
-    pub fn audiobook_is_correct<T: HasDeletedAt>(audiobook: Option<T>) -> DbResultSingle<T> {
-        if let Some(audiobook) = audiobook {
-            if audiobook.is_deleted() {
-                return Err(DbError::from(BackendError::new(AudiobookDeleted)));
-            }
-            return Ok(audiobook);
-        }
-
-        Err(DbError::from(BackendError::new(AudiobookDoesNotExist)))
+        entity_is_correct(query, EntityError::new(AudiobookDeleted, AudiobookDoesNotExist))
     }
 
     pub async fn increment_stream_count<'a>(book_id: &Id, transaction_handle: &mut Transaction<'a, Postgres>) -> DbResultSingle<()> {
@@ -330,18 +320,10 @@ impl DbRepository for AudiobookRepository {
 #[async_trait]
 impl DbReadOne<AudiobookGetById, Audiobook> for AudiobookRepository {
     async fn read_one(&self, params: &AudiobookGetById) -> DbResultSingle<Audiobook> {
-        let maybe_audiobook = sqlx::query_as!(
-            Audiobook,
-            r#"
-            SELECT * FROM "Audiobook"
-            WHERE id = $1
-            "#,
-            params.id
-        )
-        .fetch_optional(&self.pool_handler.pool)
-        .await?;
-
-        let audiobook = AudiobookRepository::audiobook_is_correct(maybe_audiobook)?;
+        let mut transaction = self.pool_handler.pool.begin().await?;
+        let audiobook = AudiobookRepository::get_audiobook(
+            params, &mut transaction)
+            .await?;
         Ok(audiobook)
     }
 }
@@ -400,7 +382,7 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
         .fetch_optional(&self.pool_handler.pool)
         .await?;
 
-        let audiobook = AudiobookRepository::audiobook_is_correct(maybe_audiobook)?;
+        let audiobook = entity_is_correct(maybe_audiobook, EntityError::new(AudiobookDeleted, AudiobookDoesNotExist))?;
         Ok(audiobook)
     }
 }
@@ -524,7 +506,7 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
 
         let mut transaction = self.pool_handler.pool.begin().await?;
         let audiobook = AudiobookRepository::get_audiobook(
-            AudiobookGetById { id: params.id },
+            &AudiobookGetById { id: params.id },
             &mut transaction,
         )
         .await?;
@@ -571,8 +553,8 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
 impl DbDelete<AudiobookDelete, Audiobook> for AudiobookRepository {
     async fn delete(&self, params: &AudiobookDelete) -> DbResultMultiple<Audiobook> {
         let mut transaction = self.pool_handler.pool.begin().await?;
-        let book = AudiobookRepository::get_audiobook(
-            AudiobookGetById { id: params.id },
+        let audiobook = AudiobookRepository::get_audiobook(
+            &AudiobookGetById { id: params.id },
             &mut transaction,
         )
         .await?;
