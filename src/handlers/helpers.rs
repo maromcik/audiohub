@@ -150,7 +150,7 @@ pub async fn get_author_profile(
     book_repo: web::Data<AudiobookRepository>,
 ) -> Result<Vec<AudiobookDisplay>, AppError> {
     Ok(book_repo
-        .read_many(&AudiobookSearch::search_by_author_id(user_id, user_id))
+        .read_many(&AudiobookSearch::search_by_author_id(user_id, user_id, DbQueryParams::default()))
         .await?)
 }
 
