@@ -5,7 +5,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
         <div></div>
         {% for book in books %}
-        <div class="book-info-link cursor-pointer" hx-get="/audiobook/{{ book.id }}/detail-content" hx-target="#content-area">
+        <div class="book-info-link cursor-pointer" hx-get="/audiobook/{{ book.id }}/detail-content" hx-push-url="/audiobook/{{ book.id }}/detail" hx-target="#content-area">
             {% include "audiobook/audiobook_recommend.html" %}
         </div>
         {% endfor %}
