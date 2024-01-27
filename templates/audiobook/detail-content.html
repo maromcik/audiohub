@@ -63,13 +63,6 @@
     </div>
 
 
-    <div class="pl-10 pt-10 pb-3 mb-3 text-4xl font-bold">Maybe you would like</div>
-    <div id="recommandation-container" class="flex flex-row justify-center"
-         hx-get="/audiobook/{{audiobook.id}}/similar" hx-trigger="load" hx-target="#recommandation-container"
-         hx-swap="outerHTML"
-    >
-    </div>
-
     <div class="flex flex-col justify-between pt-4 overflow-hidden">
         <h2 class="text-2xl font-bold mb-4">Description</h2>
         <p class="mb-4"> {{audiobook.description}}</p>
@@ -77,6 +70,12 @@
         <!--                <p class="mb-4">-->
         <!--                    {{audiobook.bio}}-->
         <!--                </p>-->
+    </div>
+
+    <div id="recommandation-container" class="flex flex-row justify-center"
+         hx-get="/audiobook/{{audiobook.id}}/similar" hx-trigger="load" hx-target="#recommandation-container"
+         hx-swap="outerHTML"
+    >
     </div>
 
     <div class="pl-10 pt-10 pb-3 mb-3 text-4xl font-bold">Ratings</div>
