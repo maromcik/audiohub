@@ -8,7 +8,7 @@ use serde::Serialize;
 use std::fmt::{Debug, Display, Formatter};
 use std::io::Error;
 use std::num::ParseIntError;
-
+use actix_web::http::header::ContentType;
 
 
 use thiserror::Error;
@@ -192,9 +192,7 @@ fn render_generic(error: &AppError) -> HttpResponse {
         description: error.message.clone(),
     };
     let body = template.render().unwrap_or_default();
-    HttpResponse::build(error.status_code()).body(body)
-}
-
-fn render_custom(body: String) -> HttpResponse {
-    HttpResponse::Ok().body(body)
+    HttpResponse::build(error.status_code())
+        .insert_header(ContentType::html())
+        .body(body)
 }
