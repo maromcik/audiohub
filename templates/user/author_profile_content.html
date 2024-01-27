@@ -13,9 +13,15 @@
 </style>
 
 <div class="container pl-10 pt-10 pb-10">
-    <div id="thumbnail-box" class="mb-4 sm:mb-0 xl:col-span-1">
-        <div class="mx-auto text-center group">
-            <img class="w-48 h-48 md:w-72 md:h-72 lg:w-108 lg:h-108 object-cover rounded-full mb-4" src="{{ user.profile_picture }}" alt="Profile Picture">
+    <div class="flex flex-row" >
+        {% if user.profile_picture == "" %}
+        <img class="w-48 h-48 md:w-72 md:h-72 lg:w-108 lg:h-108 object-cover rounded-full mb-4" style="background-color: #cccccc" src="./media/user_icon.png" />
+        {% else %}
+        <img class="w-48 h-48 md:w-72 md:h-72 lg:w-108 lg:h-108 object-cover rounded-full mb-4" style="background-color: #cccccc" src="{{ user.profile_picture }}" />
+        {% endif %}
+        <div class="ml-12 flex flex-col">
+            <h1 class="text-4xl font-bold mt-4 mb-4">{{user.name}} {{user.surname}}</h1>
+            <p>{{user.bio}}</p>
         </div>
     </div>
     <h1 class="text-2xl font-bold mt-4">Explore more from this author...</h1>
