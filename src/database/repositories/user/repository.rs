@@ -9,11 +9,12 @@ use sqlx::{Postgres, Transaction};
 use crate::database::common::error::BackendErrorKind::{
     UserDeleted, UserDoesNotExist, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
 };
-use crate::database::common::error::{BackendError, DbError};
+use crate::database::common::error::{BackendError, DbError, EntityError};
 use crate::database::common::error::{DbResultMultiple, DbResultSingle};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
+use crate::database::common::utilities::entity_is_correct;
 
 use crate::database::models::bookmark::{Bookmark, BookmarkOperation};
 use crate::database::models::user::{
@@ -86,14 +87,7 @@ impl UserRepository {
     /// - `Ok(user)`: when the user exists and is not deleted
     /// - `Err(DbError)`: with appropriate error description otherwise
     pub fn user_is_correct(user: Option<User>) -> DbResultSingle<User> {
-        if let Some(user) = user {
-            if user.deleted_at.is_none() {
-                return Ok(user);
-            }
-            return Err(DbError::from(BackendError::new(UserDeleted)));
-        }
-
-        Err(DbError::from(BackendError::new(UserDoesNotExist)))
+        entity_is_correct(user, EntityError::new(UserDeleted, UserDoesNotExist))
     }
 
     pub fn verify_password(user: User, given_password: &str) -> DbResultSingle<User> {
@@ -313,30 +307,6 @@ impl DbReadOne<UserGetByUsername, User> for UserRepository {
 
 #[async_trait]
 impl DbReadMany<UserSearch, User> for UserRepository {
-    // ALTERNATIVE
-    // async fn read_many(&self, params: &UserSearch) -> DbResultMultiple<User> {
-    //     let mut query: QueryBuilder<Postgres> = QueryBuilder::new(r#" SELECT * FROM "User""#);
-    //     if !params.search_fields_none() {
-    //         query.push(" WHERE ");
-    //     }
-    //
-    //     let mut query_pairs: Vec<String> = Vec::new();
-    //     parse_value("username", &params.username, &mut query_pairs, None);
-    //     parse_value("name", &params.name, &mut query_pairs, None);
-    //     parse_value("surname", &params.surname, &mut query_pairs, None);
-    //     parse_value("email", &params.email, &mut query_pairs, None);
-    //
-    //     add_sql_to_query(&mut query, &query_pairs, Some(" AND "));
-    //
-    //     println!("query: {}", query.sql());
-    //     let mut transaction = self.pool_handler.pool.begin().await?;
-    //
-    //     let users = query
-    //         .build_query_as()
-    //         .fetch_all(transaction.as_mut())
-    //         .await?;
-    //     Ok(users)
-    // }
     async fn read_many(&self, params: &UserSearch) -> DbResultMultiple<User> {
         let users = sqlx::query_as!(
             User,

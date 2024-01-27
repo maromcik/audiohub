@@ -8,9 +8,9 @@ use serde::Serialize;
 use std::fmt::{Debug, Display, Formatter};
 use std::io::Error;
 use std::num::ParseIntError;
+use actix_web::http::header::ContentType;
 
-use crate::templates::audiobook::AudiobookUploadFormTemplate;
-use crate::templates::user::UserManageProfilePictureFormTemplate;
+
 use thiserror::Error;
 
 /// User facing error type
@@ -34,10 +34,6 @@ pub enum AppErrorKind {
     Conflict,
     #[error("file error")]
     FileError,
-    #[error("audiobook error")]
-    AudiobookUploadError,
-    #[error("audiobook error")]
-    ProfilePictureUploadError,
     #[error("unauthorized")]
     Unauthorized,
 }
@@ -181,31 +177,12 @@ impl ResponseError for AppError {
             | AppErrorKind::PasswordHasherError
             | AppErrorKind::IdentityError
             | AppErrorKind::SessionError
-            | AppErrorKind::FileError => StatusCode::INTERNAL_SERVER_ERROR,
-            AppErrorKind::AudiobookUploadError | AppErrorKind::ProfilePictureUploadError => {
-                StatusCode::OK
-            }
+            | AppErrorKind::FileError => StatusCode::INTERNAL_SERVER_ERROR
         }
     }
 
     fn error_response(&self) -> HttpResponse {
-        match self.app_error_kind {
-            AppErrorKind::AudiobookUploadError => {
-                let template = AudiobookUploadFormTemplate {
-                    message: self.message.to_string(),
-                };
-                let body = template.render().unwrap_or_default();
-                render_custom(body)
-            }
-            AppErrorKind::ProfilePictureUploadError => {
-                let template = UserManageProfilePictureFormTemplate {
-                    message: self.message.to_string(),
-                };
-                let body = template.render().unwrap_or_default();
-                render_custom(body)
-            }
-            _ => render_generic(self),
-        }
+        render_generic(self)
     }
 }
 
@@ -215,9 +192,7 @@ fn render_generic(error: &AppError) -> HttpResponse {
         description: error.message.clone(),
     };
     let body = template.render().unwrap_or_default();
-    HttpResponse::build(error.status_code()).body(body)
-}
-
-fn render_custom(body: String) -> HttpResponse {
-    HttpResponse::Ok().body(body)
+    HttpResponse::build(error.status_code())
+        .insert_header(ContentType::html())
+        .body(body)
 }

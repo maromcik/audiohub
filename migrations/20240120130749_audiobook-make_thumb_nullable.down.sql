@@ -1,1 +1,0 @@
-ALTER TABLE "Audiobook" ALTER COLUMN thumbnail SET NOT NULL;

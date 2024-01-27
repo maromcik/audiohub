@@ -1,1 +1,0 @@
-ALTER TABLE "Bookmark" ADD COLUMN IF NOT EXISTS edited_at timestamptz NOT NULL DEFAULT now();

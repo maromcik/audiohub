@@ -21,7 +21,6 @@ pub use crate::handlers::user::user_manage_password;
 pub use crate::handlers::user::user_manage_password_form;
 pub use crate::handlers::user::user_manage_picture;
 pub use crate::handlers::user::user_manage_picture_form;
-pub use crate::handlers::user::user_manage_profile_form;
 
 pub use crate::handlers::audiobook::*;
 pub use crate::handlers::chapter::*;

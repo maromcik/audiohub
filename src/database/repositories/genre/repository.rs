@@ -1,12 +1,11 @@
-use crate::database::common::error::BackendErrorKind::{
-    GenreDeleted, GenreDoesNotExist, GenreUpdateParametersEmpty,
-};
-use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle};
+use crate::database::common::error::BackendErrorKind::{GenreDeleted, GenreDoesNotExist, GenreUpdateParametersEmpty};
+use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle, EntityError};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
+use crate::database::common::utilities::entity_is_correct;
 
 use crate::database::models::genre::{
     Genre, GenreCreate, GenreDelete, GenreGetById, GenreSearch, GenreUpdate,
@@ -26,7 +25,7 @@ impl GenreRepository {
             Genre,
             r#"
             SELECT * FROM "Genre"
-            WHERE id = $1
+            WHERE id = $1 AND deleted_at IS NULL
             "#,
             params.id
         )
@@ -41,14 +40,7 @@ impl GenreRepository {
     }
 
     pub fn genre_is_correct(genre: Option<Genre>) -> DbResultSingle<Genre> {
-        if let Some(genre) = genre {
-            if genre.deleted_at.is_none() {
-                return Ok(genre);
-            }
-            return Err(DbError::from(BackendError::new(GenreDeleted)));
-        }
-
-        Err(DbError::from(BackendError::new(GenreDoesNotExist)))
+        entity_is_correct(genre, EntityError::new(GenreDeleted, GenreDoesNotExist))
     }
 }
 
@@ -74,7 +66,7 @@ impl DbReadOne<GenreGetById, Genre> for GenreRepository {
             Genre,
             r#"
             SELECT * FROM "Genre"
-            WHERE id = $1
+            WHERE id = $1 AND deleted_at IS NULL
             "#,
             params.id
         )
@@ -95,6 +87,7 @@ impl DbReadMany<GenreSearch, Genre> for GenreRepository {
             SELECT * FROM "Genre"
             WHERE
                 (name = $1 OR $1 IS NULL)
+                 AND deleted_at IS NULL
             ORDER BY name"#,
             params.name
         )
@@ -115,7 +108,7 @@ impl DbCreate<GenreCreate, Genre> for GenreRepository {
             VALUES ($1)
             RETURNING *
             "#,
-            params.name
+            params.name,
         )
         .fetch_one(&self.pool_handler.pool)
         .await?;
@@ -143,11 +136,13 @@ impl DbUpdate<GenreUpdate, Genre> for GenreRepository {
             UPDATE "Genre"
             SET
                 name = COALESCE($1, name),
+                color = COALESCE($2, color),
                 edited_at = current_timestamp
-            WHERE id = $2
+            WHERE id = $3
             RETURNING *
             "#,
             params.name,
+            params.color,
             params.id
         )
         .fetch_all(transaction.as_mut())

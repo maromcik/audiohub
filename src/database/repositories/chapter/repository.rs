@@ -1,5 +1,5 @@
 use crate::database::common::error::BackendErrorKind::{ChapterDeleted, ChapterDoesNotExist, ChapterUpdateParametersEmpty};
-use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle};
+use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle, EntityError};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
@@ -7,6 +7,7 @@ use crate::database::common::{
 use crate::database::models::chapter::{Chapter, ChapterCreate, ChapterGetById, ChapterSearch, ChapterUpdate, ChaptersGetByBookId, ChapterDetail, ChaptersGetByBookIdJoin};
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
+use crate::database::common::utilities::entity_is_correct;
 
 #[derive(Clone)]
 pub struct ChapterRepository {
@@ -107,14 +108,7 @@ impl ChapterRepository {
     /// - `Ok(chapter)`: when the chapter exists and is not deleted
     /// - `Err(DbError)`: with appropriate error description otherwise
     pub fn is_correct(chapter: Option<Chapter>) -> DbResultSingle<Chapter> {
-        if let Some(chapter) = chapter {
-            if chapter.deleted_at.is_none() {
-                return Ok(chapter);
-            }
-            return Err(DbError::from(BackendError::new(ChapterDeleted)));
-        }
-
-        Err(DbError::from(BackendError::new(ChapterDoesNotExist)))
+        entity_is_correct(chapter, EntityError::new(ChapterDeleted, ChapterDoesNotExist))
     }
 }
 

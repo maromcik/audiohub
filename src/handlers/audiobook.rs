@@ -1,4 +1,3 @@
-use std::error::Error;
 use crate::database::common::{DbCreate, DbDelete, DbReadMany, DbReadOne, DbUpdate};
 use crate::database::models::audiobook::{AudiobookCreate, AudiobookDelete, AudiobookDisplay, AudiobookGetById, AudiobookGetByIdJoin, AudiobookUpdate};
 use crate::database::models::genre::{GenreGetById, GenreSearch};
@@ -8,7 +7,7 @@ use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::chapter::repository::ChapterRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
 use crate::database::repositories::user::repository::UserRepository;
-use crate::error::{AppError, AppErrorKind};
+use crate::error::{AppError};
 use crate::forms::audiobook::{AudiobookCreateForm, AudiobookQuickSearchQuery, AudiobookUploadForm, AudiobookEditForm, AudiobookThumbnailEditForm};
 use crate::handlers::utilities::{get_metadata_from_session, get_user_from_identity, parse_user_id, save_file, validate_file, AudiobookCreateSessionKeys, authorized_to_modify, authorized_to_modify_join};
 use crate::templates::audiobook::{AudiobookCreateContentTemplate, AudiobookCreatePageTemplate, AudiobookDetailContentTemplate, AudiobookDetailPageTemplate, AudiobookUploadFormTemplate, NewReleasesContentTemplate, NewReleasesPageTemplate, PlayerTemplate, QuickSearchResults, AudiobookEditContentTemplate, AudiobookEditPageTemplate, AudiobookCoverUpload, AudiobookRecommendationTemplate};
@@ -73,12 +72,12 @@ pub async fn upload_audiobook_form(
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
-#[get("/book_cover/{id}/upload")]
+#[get("/cover/{id}/upload")]
 pub async fn upload_book_cover(
     request: HttpRequest,
     audiobook_repo: web::Data<AudiobookRepository>,
     identity: Option<Identity>,
-    path: web::Path<(Id,)>,
+    path: web::Path<(Id, )>,
 ) -> Result<impl Responder, AppError> {
     let u = authorized!(identity, request.path());
     let user_id = parse_user_id(u)?;
@@ -92,51 +91,36 @@ pub async fn upload_book_cover(
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
-#[post("/book_cover/upload")]
+#[post("/cover/upload")]
 pub async fn upload_book_cover_post(
     request: HttpRequest,
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
     MultipartForm(form): MultipartForm<AudiobookThumbnailEditForm>,
-    // path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
     let uuid = Uuid::new_v4();
     let u = authorized!(identity, request.path());
-    let book_path_id = form.audiobook_id.into_inner();
-    authorized_to_modify(&audiobook_repo, parse_user_id(u)?, book_path_id).await?;
+    let audiobook_id = form.audiobook_id.into_inner();
+    authorized_to_modify(&audiobook_repo, parse_user_id(u)?, audiobook_id).await?;
 
-    let thumbnail_path = match &form.thumbnail {
-        None => None,
-        Some(thumb) => Some(validate_file(
-            thumb,
-            uuid,
-            "image",
-            "audiobook",
-            AppErrorKind::AudiobookUploadError,
-        )?),
-    };
-
-    let book_id = book_path_id;
+    let thumbnail_path = validate_file(
+        &form.thumbnail,
+        uuid,
+        "image",
+        "audiobook",
+    )?;
     let book_update = AudiobookUpdate::new(
-        &book_id, None, None,
+        &audiobook_id, None, None,
         None, None, None,
-        None, None, None, thumbnail_path.clone(),
+        None, None, None, Some(thumbnail_path.clone()),
         None);
-    let book_update = audiobook_repo.update(&book_update).await?;
-    if let (Some(thumb_path), Some(thumbnail)) = (&thumbnail_path, form.thumbnail) {
-        save_file(thumbnail, thumb_path, AppErrorKind::AudiobookUploadError)?;
-    }
+    audiobook_repo.update(&book_update).await?;
+    save_file(form.thumbnail, &thumbnail_path)?;
 
-    if let Some(audiobook) = book_update.into_iter().next() {
-        let handler = format!("/audiobook/{}/manage-content", audiobook.id);
-        return Ok(HttpResponse::SeeOther()
-            .insert_header((LOCATION, handler))
-            .finish());
-    }
-    // TEMPORARY SOLUTION
-    Ok(HttpResponse::SeeOther()
-        .insert_header((LOCATION, "/"))
-        .finish())
+    let handler = format!("/audiobook/{}/manage-content", audiobook_id);
+    return Ok(HttpResponse::SeeOther()
+        .insert_header((LOCATION, handler))
+        .finish());
 }
 
 #[post("/create")]
@@ -183,7 +167,6 @@ pub async fn upload_audiobook(
         uuid,
         "audio",
         "audiobook",
-        AppErrorKind::AudiobookUploadError,
     )?;
     let thumbnail_path = match &form.thumbnail {
         None => None,
@@ -192,17 +175,24 @@ pub async fn upload_audiobook(
             uuid,
             "image",
             "audiobook",
-            AppErrorKind::AudiobookUploadError,
         )?),
     };
     let metadata = get_metadata_from_session(&session, &session_keys)?;
 
     let audio_file = form.audio_file.file.as_file_mut();
-    let lofty_audio_file = lofty::read_from(audio_file)?;
+    let lofty_audio_file = match lofty::read_from(audio_file) {
+        Ok(f) => f,
+        Err(e) => {
+            let template = AudiobookUploadFormTemplate {
+                message: e.to_string(),
+            }.render()?;
+            return Ok(HttpResponse::Ok().content_type("text/html").body(template));
+        }
+    };
     let properties = lofty_audio_file.properties();
     let length = properties.duration().as_secs_f64();
     if let (Some(thumb_path), Some(thumbnail)) = (&thumbnail_path, form.thumbnail) {
-        save_file(thumbnail, thumb_path, AppErrorKind::AudiobookUploadError)?;
+        save_file(thumbnail, thumb_path)?;
     }
     let book_crate = AudiobookCreate::new(
         &metadata.name,
@@ -228,7 +218,6 @@ pub async fn upload_audiobook(
     save_file(
         form.audio_file,
         &audiobook_path,
-        AppErrorKind::AudiobookUploadError,
     )?;
 
     session.remove(session_keys.name.as_str());
@@ -247,7 +236,7 @@ pub async fn manage_audiobook(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
     chapter_repo: web::Data<ChapterRepository>,
-    path: web::Path<(Id,)>,
+    path: web::Path<(Id, )>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity, request.path());
     let user_id = parse_user_id(u)?;
@@ -258,7 +247,7 @@ pub async fn manage_audiobook(
         chapters: base.chapters,
         is_liked: audiobook.is_liked,
     }
-    .render()?;
+        .render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
@@ -268,7 +257,7 @@ pub async fn manage_audiobook_content(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
     chapter_repo: web::Data<ChapterRepository>,
-    path: web::Path<(Id,)>,
+    path: web::Path<(Id, )>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity, request.path());
     let user_id = parse_user_id(u)?;
@@ -279,7 +268,7 @@ pub async fn manage_audiobook_content(
         chapters: base.chapters,
         is_liked: audiobook.is_liked,
     }
-    .render()?;
+        .render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
@@ -289,7 +278,7 @@ pub async fn edit_audiobook_page(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
     genre_repo: web::Data<GenreRepository>,
-    path: web::Path<(Id,)>,
+    path: web::Path<(Id, )>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity, request.path());
     let base = get_audiobook_edit(u, audiobook_repo, genre_repo, path.into_inner().0).await?;
@@ -304,7 +293,7 @@ pub async fn edit_audiobook_content(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
     genre_repo: web::Data<GenreRepository>,
-    path: web::Path<(Id,)>,
+    path: web::Path<(Id, )>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity, request.path());
     let base = get_audiobook_edit(u, audiobook_repo, genre_repo, path.into_inner().0).await?;
@@ -342,14 +331,14 @@ pub async fn get_audiobook(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
     chapter_repo: web::Data<ChapterRepository>,
-    path: web::Path<(Id,)>,
+    path: web::Path<(Id, )>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity, request.path());
     let base = get_audiobook_detail_base(
         audiobook_repo,
         chapter_repo,
         parse_user_id(identity)?,
-        path.into_inner().0
+        path.into_inner().0,
     )
         .await?;
 
@@ -396,16 +385,16 @@ pub async fn get_audiobook_detail_content(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
     chapter_repo: web::Data<ChapterRepository>,
-    path: web::Path<(Id,)>,
+    path: web::Path<(Id, )>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity, request.path());
     let base = get_audiobook_detail_base(
         audiobook_repo,
         chapter_repo,
         parse_user_id(identity)?,
-        path.into_inner().0
+        path.into_inner().0,
     )
-    .await?;
+        .await?;
 
     let body = AudiobookDetailContentTemplate::from(base).render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -442,7 +431,7 @@ pub async fn remove_audiobook(
     request: HttpRequest,
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
-    path: web::Path<(Id,)>,
+    path: web::Path<(Id, )>,
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity, request.path());
     let audiobook = authorized_to_modify(&audiobook_repo, parse_user_id(u)?, path.into_inner().0).await?;
@@ -471,7 +460,7 @@ pub async fn change_like(
     identity: Option<Identity>,
     user_repo: web::Data<UserRepository>,
     audiobook_repo: web::Data<AudiobookRepository>,
-    path: web::Path<(Id,)>,
+    path: web::Path<(Id, )>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity, request.path());
 
@@ -487,7 +476,7 @@ pub async fn change_like(
         false => {
             user_repo.bookmark(&bookmark).await?;
             audiobook.like_count + 1
-        },
+        }
         true => {
             user_repo.unbookmark(&bookmark).await?;
             audiobook.like_count - 1
@@ -535,7 +524,7 @@ pub async fn set_active_audiobook(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
     query: web::Query<Position>,
-    path: web::Path<(Id,)>,
+    path: web::Path<(Id, )>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity, request.path());
 
@@ -574,9 +563,10 @@ pub async fn get_last_active_audiobook(
         .content_type("text/html")
         .body(template.render()?))
 }
+
 #[derive(Deserialize)]
 pub struct PositionQuery {
-    position: Option<f64>
+    position: Option<f64>,
 }
 
 #[get("/{id}/player")]
@@ -585,7 +575,7 @@ pub async fn get_audiobook_player(
     identity: Option<Identity>,
     audiobook_repo: web::Data<AudiobookRepository>,
     position_query: web::Query<PositionQuery>,
-    path: web::Path<(Id,)>,
+    path: web::Path<(Id, )>,
 ) -> Result<HttpResponse, AppError> {
     let identity = authorized!(identity, request.path());
     let user_id = parse_user_id(identity)?;

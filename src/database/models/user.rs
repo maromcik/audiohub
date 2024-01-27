@@ -2,6 +2,7 @@ use crate::database::models::utilities::get_default_profile_picture;
 use crate::database::models::Id;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
+use crate::database::common::HasDeletedAt;
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
 pub struct User {
@@ -18,6 +19,12 @@ pub struct User {
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
+}
+
+impl HasDeletedAt for User {
+    fn is_deleted(&self) -> bool {
+        self.deleted_at.is_some()
+    }
 }
 
 pub struct UserDisplay {

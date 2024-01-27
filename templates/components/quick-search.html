@@ -3,6 +3,7 @@
         <input name="query" id="quick-search-input" class="w-full bg-gray-800 focus:outline-none " hx-trigger="keydown delay:300ms" hx-get="/audiobook/search"
                hx-swap="outerHTML"
                hx-target="#search-result"
+               hx-target-error="#content-area"
                hx-include="[name='query']"
                type="text"
                onfocusin="attachHideQuickSearchListener()"

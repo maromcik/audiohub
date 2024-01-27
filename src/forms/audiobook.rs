@@ -21,7 +21,7 @@ pub struct AudiobookUploadForm {
 #[derive(Debug, MultipartForm)]
 pub struct AudiobookThumbnailEditForm {
     #[multipart(rename = "thumbnail")]
-    pub thumbnail: Option<TempFile>,
+    pub thumbnail: TempFile,
     pub audiobook_id: Text<Id>,
 }
 

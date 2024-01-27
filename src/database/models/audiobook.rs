@@ -2,9 +2,11 @@ use crate::database::models::Id;
 use crate::CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
+use crate::database::common::HasDeletedAt;
 
 use crate::database::common::query_parameters::DbQueryParams;
 use crate::database::models::utilities::{get_default_profile_picture, get_default_thumbnail};
+
 
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq)]
 pub struct Audiobook {
@@ -25,6 +27,11 @@ pub struct Audiobook {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
+impl HasDeletedAt for Audiobook {
+    fn is_deleted(&self) -> bool {
+        self.deleted_at.is_some()
+    }
+}
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq)]
 pub struct AudiobookDetail {
     pub id: Id,
@@ -41,6 +48,7 @@ pub struct AudiobookDetail {
     pub description: String,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 
     pub username: String,
     pub email: String,
@@ -50,6 +58,7 @@ pub struct AudiobookDetail {
     pub profile_picture: Option<String>,
 
     pub genre_name: String,
+    pub genre_color: String,
 
     pub playback_position: Option<f64>,
     pub active_audiobook_edited_at: Option<DateTime<Utc>>,
@@ -85,6 +94,12 @@ impl AudiobookDetail {
     }
 }
 
+impl HasDeletedAt for AudiobookDetail {
+    fn is_deleted(&self) -> bool {
+        self.deleted_at.is_some()
+    }
+}
+
 pub struct AudiobookDisplay {
     pub id: Id,
     // --------------
@@ -109,6 +124,7 @@ pub struct AudiobookDisplay {
     pub profile_picture: String,
 
     pub genre_name: String,
+    pub genre_color: String,
 
     pub playback_position: f64,
     pub progress: f64,
@@ -141,6 +157,7 @@ impl AudiobookDisplay {
             bio: audiobook.bio.to_owned(),
             profile_picture: get_default_profile_picture(&audiobook.profile_picture),
             genre_name: audiobook.genre_name.to_owned(),
+            genre_color: audiobook.genre_color.to_owned(),
 
             playback_position: audiobook.playback_position.unwrap_or_default(),
             progress: audiobook.playback_position.unwrap_or_default() / audiobook.length * 100f64,
@@ -177,6 +194,7 @@ impl From<AudiobookDetail> for AudiobookDisplay {
             surname: audiobook.surname,
             bio: audiobook.bio,
             genre_name: audiobook.genre_name,
+            genre_color: audiobook.genre_color,
 
             playback_position: audiobook.playback_position.unwrap_or_default(),
             progress: audiobook.playback_position.unwrap_or_default() / audiobook.length * 100f64,
@@ -190,6 +208,7 @@ impl From<Audiobook> for AudiobookDisplay {
         Self {
             profile_picture: get_default_profile_picture(&None),
             genre_name: "".to_string(),
+            genre_color: "".to_string(),
             playback_position: 0.0,
             id: audiobook.id,
             name: audiobook.name,
@@ -230,8 +249,8 @@ pub struct AudiobookSearch {
     pub max_stream_count: Option<i64>,
     pub min_like_count: Option<i64>,
     pub max_like_count: Option<i64>,
-    pub min_overall_rating: Option<i16>,
-    pub max_overall_rating: Option<i16>,
+    pub min_overall_rating: Option<f64>,
+    pub max_overall_rating: Option<f64>,
     pub query_params: DbQueryParams,
 }
 
@@ -249,8 +268,8 @@ impl AudiobookSearch {
         max_stream_count: Option<i64>,
         min_like_count: Option<i64>,
         max_like_count: Option<i64>,
-        min_overall_rating: Option<i16>,
-        max_overall_rating: Option<i16>,
+        min_overall_rating: Option<f64>,
+        max_overall_rating: Option<f64>,
         query_params: DbQueryParams,
     ) -> Self {
         Self {

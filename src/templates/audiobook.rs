@@ -73,8 +73,39 @@ pub struct CardLikesTemplate {
 #[template(path = "audiobook/audiobooks_by_genre.html")]
 pub struct AudiobooksByGenreTemplate {
     pub audiobooks: Vec<AudiobookDisplay>,
-    pub genre_name: String,
+    pub genre: Genre,
 }
+
+#[derive(Template)]
+#[template(path = "audiobook/audiobooks_by_genre_content.html")]
+pub struct AudiobooksByGenreContentTemplate {
+    pub audiobooks: Vec<AudiobookDisplay>,
+    pub genre: Genre,
+}
+
+pub struct AudiobooksByGenreBase {
+    pub audiobooks: Vec<AudiobookDisplay>,
+    pub genre: Genre,
+}
+
+impl From<AudiobooksByGenreBase> for AudiobooksByGenreTemplate {
+    fn from(value: AudiobooksByGenreBase) -> Self {
+        Self {
+            audiobooks: value.audiobooks,
+            genre: value.genre
+        }
+    }
+}
+
+impl From<AudiobooksByGenreBase> for AudiobooksByGenreContentTemplate {
+    fn from(value: AudiobooksByGenreBase) -> Self {
+        Self {
+            audiobooks: value.audiobooks,
+            genre: value.genre
+        }
+    }
+}
+
 
 #[derive(Template)]
 #[template(path = "detail.html")]

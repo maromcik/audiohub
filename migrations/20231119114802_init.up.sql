@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS "User"
     name            text        NOT NULL,
     surname         text        NOT NULL,
     bio             text        NOT NULL,
-    profile_picture text        NOT NULL,
+    profile_picture text,
     password_hash   text        NOT NULL,
     password_salt   text        NOT NULL,
     created_at      timestamptz NOT NULL DEFAULT now(),
@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS "Genre"
     id           bigserial PRIMARY KEY,
     ---------------------------------------------
     name         text        NOT NULL,
+    color        text        NOT NULL DEFAULT '#0000DC',
     created_at   timestamptz NOT NULL DEFAULT now(),
     edited_at    timestamptz NOT NULL DEFAULT now(),
     deleted_at   timestamptz
@@ -36,11 +37,12 @@ CREATE TABLE IF NOT EXISTS "Audiobook"
     author_id           bigserial       NOT NULL,
     name                text            NOT NULL,
     file_path           text            NOT NULL,
-    thumbnail           text            NOT NULL,
+    length              float8          NOT NULL DEFAULT 0,
+    thumbnail           text,
     description         text            NOT NULL,
     stream_count        bigint          NOT NULL DEFAULT 0,
     like_count          bigint          NOT NULL DEFAULT 0,
-    overall_rating      smallint        NOT NULL DEFAULT 0,
+    overall_rating      float8          NOT NULL DEFAULT 0,
     created_at   timestamptz NOT NULL DEFAULT now(),
     edited_at    timestamptz NOT NULL DEFAULT now(),
     deleted_at   timestamptz,
@@ -69,10 +71,10 @@ CREATE TABLE IF NOT EXISTS "Rating"
     ---------------------------------------------
     user_id         bigserial        NOT NULL,
     audiobook_id    bigserial        NOT NULL,
-    rating          smallint    NOT NULL,
+    rating          smallint         NOT NULL,
     review          text,
-    created_at      timestamptz NOT NULL DEFAULT now(),
-    edited_at       timestamptz NOT NULL DEFAULT now(),
+    created_at      timestamptz      NOT NULL DEFAULT now(),
+    edited_at       timestamptz      NOT NULL DEFAULT now(),
     deleted_at      timestamptz,
 
     FOREIGN KEY (user_id)       REFERENCES "User" (id) ON DELETE CASCADE,
@@ -83,6 +85,7 @@ CREATE TABLE IF NOT EXISTS "Bookmark"
 (
     user_id         bigserial        NOT NULL,
     audiobook_id    bigserial        NOT NULL,
+    edited_at       timestamptz      NOT NULL DEFAULT now(),
 
     PRIMARY KEY (user_id, audiobook_id),
     FOREIGN KEY (user_id)       REFERENCES "User" (id) ON DELETE CASCADE,
@@ -94,13 +97,12 @@ CREATE TABLE IF NOT EXISTS "Active_Audiobook"
 (
     user_id                         bigserial           NOT NULL,
     audiobook_id                    bigserial           NOT NULL,
-    playback_chapter_id             bigserial           NOT NULL,
     playback_position               float8              NOT NULL DEFAULT 0,
+    edited_at                       timestamptz         NOT NULL DEFAULT now(),
 
-    PRIMARY KEY (user_id, audiobook_id, playback_chapter_id),
+    PRIMARY KEY (user_id, audiobook_id),
     FOREIGN KEY (user_id)               REFERENCES "User" (id) ON DELETE CASCADE,
-    FOREIGN KEY (audiobook_id)          REFERENCES "Audiobook" (id) ON DELETE CASCADE,
-    FOREIGN KEY (playback_chapter_id)   REFERENCES "Chapter" (id) ON DELETE CASCADE
+    FOREIGN KEY (audiobook_id)          REFERENCES "Audiobook" (id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS "Audiobook_author_id_idx" ON "Audiobook" (author_id);

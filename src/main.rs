@@ -14,7 +14,6 @@ use env_logger::Env;
 use log::{info, warn};
 use std::env;
 
-const SECS_IN_WEEK: i64 = 60 * 60 * 24 * 7;
 
 mod database;
 mod error;
@@ -25,8 +24,12 @@ mod recommender;
 mod templates;
 const DEFAULT_HOSTNAME: &str = "localhost";
 const DEFAULT_PORT: &str = "8000";
+const SECS_IN_WEEK: i64 = 60 * 60 * 24 * 7;
+const PAYLOAD_LIMIT: usize = 16 * 1024 * 1024 * 1024; // 16GiB
 const CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE: f64 = 98.0;
 const RECOMMEND_BOOKS_CNT: i32 = 2;
+
+const MIN_PASS_LEN: usize = 6;
 
 pub mod recommender_grpc_api {
     tonic::include_proto!("recommender");
@@ -34,6 +37,13 @@ pub mod recommender_grpc_api {
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
+    // We are forced to change the TMP dir because TmpFile that is used in Actix multipart stores uploaded files in the /tmp dir.
+    // by default, and I was not able to alter the default configuration,
+    // then, after calling function persist, it uses the rename(2) syscall to unlink the file from /tmp and link
+    // it to another folder. However, this syscall fails on an attempt to move the file across file system boundaries.
+    // On many distros /tmp uses tmpfs and is mounted separately. Also, we are deploying in Kubernetes, and while the /tmp
+    // dir is not mounted separately, we use persistent volume claims to take advantage of the large NFS storage,
+    // so the target file path is on a different FS as well.
     env::set_var("TMPDIR", "./media");
     let _dir = env::temp_dir();
 
@@ -69,10 +79,10 @@ async fn main() -> anyhow::Result<()> {
         App::new()
             .app_data(
                 MultipartFormConfig::default()
-                    .total_limit(16 * 1024 * 1024 * 1024)
-                    .memory_limit(16 * 1024 * 1024 * 1024),
+                    .total_limit(PAYLOAD_LIMIT)
+                    .memory_limit(PAYLOAD_LIMIT),
             )
-            .app_data(PayloadConfig::new(16 * 1024 * 1024 * 1024))
+            .app_data(PayloadConfig::new(PAYLOAD_LIMIT))
             .wrap(IdentityMiddleware::default())
             .wrap(
                 SessionMiddleware::builder(CookieSessionStore::default(), key.clone())

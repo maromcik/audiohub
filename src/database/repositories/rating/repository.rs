@@ -1,7 +1,7 @@
 use crate::database::common::error::BackendErrorKind::{
     RatingDeleted, RatingDoesNotExist, RatingUpdateParametersEmpty,
 };
-use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle};
+use crate::database::common::error::{BackendError, DbError, DbResultMultiple, DbResultSingle, EntityError};
 use crate::database::common::{
     DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
@@ -11,6 +11,7 @@ use crate::database::models::user::UserGetById;
 
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
+use crate::database::common::utilities::entity_is_correct;
 use crate::database::models::Id;
 
 
@@ -111,7 +112,7 @@ impl RatingRepository {
             r#"
             UPDATE "Audiobook"
             SET overall_rating = COALESCE((
-                SELECT AVG(R.Rating)
+                SELECT round(AVG(R.Rating), 2)
                 FROM "Rating" R
                 WHERE R.audiobook_id = $1 AND R.deleted_at IS NULL
             ), 0)
@@ -227,20 +228,13 @@ impl RatingRepository {
     /// - `Ok(user)`: when the rating exists and is not deleted
     /// - `Err(DbError)`: with appropriate error description otherwise
     pub fn rating_is_correct(rating: Option<Rating>) -> DbResultSingle<Rating> {
-        if let Some(rating) = rating {
-            if rating.deleted_at.is_none() {
-                return Ok(rating);
-            }
-            return Err(DbError::from(BackendError::new(RatingDeleted)));
-        }
-
-        Err(DbError::from(BackendError::new(RatingDoesNotExist)))
+        entity_is_correct(rating, EntityError::new(RatingDeleted, RatingDoesNotExist))
     }
 
     pub async fn create_or_update_displayed_rating(&self, params: &RatingCreate) -> DbResultSingle<UserRatingDisplay> {
         let mut transaction = self.pool_handler.pool.begin().await?;
         let existing_rating = self.get_user_book_rating(&params.audiobook_id, &params.user_id, &mut transaction).await?;
-        let mut rating_id : Id;
+        let rating_id : Id;
         if let Some(review) = existing_rating {
             let rating_params = RatingUpdate {
                 id: review.id,
