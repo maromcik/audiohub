@@ -1,5 +1,5 @@
 <div class="container mx-auto p-6 bg-black max-w-4xl min-h-96">
-    <form  id="audio_book_upload_form" hx-post="/audiobook/upload" hx-target="#content-area" enctype="multipart/form-data"
+    <form id="audio_book_upload_form" hx-post="/audiobook/upload" hx-target="#content-area" hx-target-error="#error-area" enctype="multipart/form-data"
           class="bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4 h-full">
         <h2 class="block text-gray-300 text-xl font-bold mb-2 text-center">Upload Audiobook</h2>
         <div id="error-area" class="text-red-500 mb-3 text-center">
@@ -32,7 +32,7 @@
         </div>
 
         <div class="flex justify-end mt-10 mb-5">
-            <button hx-target="#content-area" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                     type="submit">
                 Create Audiobook
             </button>
