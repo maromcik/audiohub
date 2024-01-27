@@ -31,22 +31,26 @@
                     <div class="book-name  text-6xl font-bold">{{audiobook.name}}</div>
                 </div>
             </div>
-            <div class="pt-5 flex flex-row items-center" >
-                {% if audiobook.profile_picture == "" %}
-                <a class="cursor-pointer text-3xl pl-5" hx-get="/user/{{ audiobook.author_id }}/author-content" hx-target="#content-area"
-                   hx-push-url="/user/{{ audiobook.author_id }}">
-                    <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="./media/user_icon.png" />
-                </a>
-                {% else %}
-                <a class="cursor-pointer text-3xl pl-5" hx-get="/user/{{ audiobook.author_id }}/author-content" hx-target="#content-area"
-                   hx-push-url="/user/{{ audiobook.author_id }}">
-                    <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="{{ audiobook.profile_picture }}" />
-                </a>
-                {% endif %}
-                <a class="cursor-pointer text-3xl pl-5" hx-get="/user/{{ audiobook.author_id }}/author-content" hx-target="#content-area"
-                   hx-push-url="/user/{{ audiobook.author_id }}">
-                    {{ audiobook.author_name }}
-                </a>
+            <div class="pt-5 items-center">
+                <div class="w-10 h-10 md:w-12 md:h-12 lg:w-24 lg:h-24" style="float: left ">
+                    {% if audiobook.profile_picture == "" %}
+                    <a class="cursor-pointer text-3xl" hx-get="/user/{{ audiobook.author_id }}/author-content" hx-target="#content-area"
+                       hx-push-url="/user/{{ audiobook.author_id }}">
+                        <img class="w-full h-full rounded-full" style="background-color: #cccccc" src="./media/user_icon.png" />
+                    </a>
+                    {% else %}
+                    <a class="cursor-pointer text-3xl" hx-get="/user/{{ audiobook.author_id }}/author-content" hx-target="#content-area"
+                       hx-push-url="/user/{{ audiobook.author_id }}">
+                        <img class="w-full h-full rounded-full" style="background-color: #cccccc" src="{{ audiobook.profile_picture }}" />
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="w-auto h-10 md:h-12 lg:h-24 pt-1 md:pt-2 lg:pt-8">
+                    <a class="cursor-pointer text-3xl pl-5" hx-get="/user/{{ audiobook.author_id }}/author-content" hx-target="#content-area"
+                       hx-push-url="/user/{{ audiobook.author_id }}">
+                        {{ audiobook.author_name }}
+                    </a>
+                </div>
             </div>
             <div class="pt-5 like-count flex flex-row mt-11 justify-start">
                 <button id="play-from-detail-btn" hx-get="/audiobook/{{audiobook.id}}/player"
