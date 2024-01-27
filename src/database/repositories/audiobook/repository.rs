@@ -553,7 +553,7 @@ impl DbUpdate<AudiobookUpdate, Audiobook> for AudiobookRepository {
 impl DbDelete<AudiobookDelete, Audiobook> for AudiobookRepository {
     async fn delete(&self, params: &AudiobookDelete) -> DbResultMultiple<Audiobook> {
         let mut transaction = self.pool_handler.pool.begin().await?;
-        let audiobook = AudiobookRepository::get_audiobook(
+        AudiobookRepository::get_audiobook(
             &AudiobookGetById { id: params.id },
             &mut transaction,
         )
