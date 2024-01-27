@@ -33,9 +33,15 @@
             </div>
             <div class="pt-5 flex flex-row items-center" >
                 {% if audiobook.profile_picture == "" %}
-                <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="./media/user_icon.png" />
+                <a class="cursor-pointer text-3xl pl-5" hx-get="/user/{{ audiobook.author_id }}/author-content" hx-target="#content-area"
+                   hx-push-url="/user/{{ audiobook.author_id }}">
+                    <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="./media/user_icon.png" />
+                </a>
                 {% else %}
-                <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="{{ audiobook.profile_picture }}" />
+                <a class="cursor-pointer text-3xl pl-5" hx-get="/user/{{ audiobook.author_id }}/author-content" hx-target="#content-area"
+                   hx-push-url="/user/{{ audiobook.author_id }}">
+                    <img class="w-24 h-24 rounded-full" style="background-color: #cccccc" src="{{ audiobook.profile_picture }}" />
+                </a>
                 {% endif %}
                 <a class="cursor-pointer text-3xl pl-5" hx-get="/user/{{ audiobook.author_id }}/author-content" hx-target="#content-area"
                    hx-push-url="/user/{{ audiobook.author_id }}">
