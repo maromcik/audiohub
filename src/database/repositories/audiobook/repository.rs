@@ -379,9 +379,14 @@ impl DbReadOne<AudiobookGetByIdJoin, AudiobookDetail> for AudiobookRepository {
         )
             .fetch_optional(&self.pool_handler.pool)
             .await?;
-
-        let audiobook = entity_is_correct(maybe_audiobook, EntityError::new(AudiobookDeleted, AudiobookDoesNotExist))?;
-        Ok(audiobook)
+        if !params.fetch_deleted {
+            let audiobook = entity_is_correct(maybe_audiobook, EntityError::new(AudiobookDeleted, AudiobookDoesNotExist))?;
+            return Ok(audiobook);
+        }
+        if let Some(audiobook) = maybe_audiobook {
+            return Ok(audiobook);
+        }
+        Err(DbError::from(BackendError::new(AudiobookDoesNotExist)))
     }
 }
 
@@ -429,8 +434,7 @@ impl DbReadMany<AudiobookSearch, AudiobookDisplay> for AudiobookRepository {
                     LEFT JOIN
                 "Bookmark" as b ON a.id = b.audiobook_id AND b.user_id = $12
             WHERE
-                a.deleted_at IS NULL
-                AND u.deleted_at IS NULL
+                u.deleted_at IS NULL
                 AND g.deleted_at IS NULL
                 AND (a.name = $1 OR $1 IS NULL)
                 AND (author_id = $2 OR $2 IS NULL)
@@ -448,6 +452,7 @@ impl DbReadMany<AudiobookSearch, AudiobookDisplay> for AudiobookRepository {
 
         let query_params = generate_query_param_string(&params.query_params);
         query.push_str(query_params.as_str());
+
         let audiobooks = sqlx::query_as::<_, AudiobookDetail>(query.as_str())
             .bind(&params.name)
             .bind(params.author_id)

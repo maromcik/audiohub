@@ -115,6 +115,7 @@ pub struct AudiobookDisplay {
     pub description: String,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
+    pub deleted: bool,
 
     pub username: String,
     pub email: String,
@@ -149,6 +150,7 @@ impl AudiobookDisplay {
             overall_rating: audiobook.overall_rating,
             created_at: audiobook.created_at,
             edited_at: audiobook.edited_at,
+            deleted: audiobook.deleted_at.map_or_else(|| false, |v| true),
 
             username: audiobook.username.to_owned(),
             email: audiobook.email.to_owned(),
@@ -187,6 +189,7 @@ impl From<AudiobookDetail> for AudiobookDisplay {
             overall_rating: audiobook.overall_rating,
             created_at: audiobook.created_at,
             edited_at: audiobook.edited_at,
+            deleted: audiobook.deleted_at.map_or_else(|| false, |v| true),
 
             username: audiobook.username,
             email: audiobook.email,
@@ -307,7 +310,7 @@ impl AudiobookSearch {
         }
     }
 
-    pub fn search_by_author_id(author_id: Id, user_id: Id) -> Self {
+    pub fn search_by_author_id(author_id: Id, user_id: Id, query_params: DbQueryParams) -> Self {
         Self {
             user_id,
             name: None,
@@ -321,7 +324,7 @@ impl AudiobookSearch {
             max_like_count: None,
             min_overall_rating: None,
             max_overall_rating: None,
-            query_params: DbQueryParams::default(),
+            query_params,
         }
     }
 
@@ -522,6 +525,7 @@ impl AudiobookGetById {
 pub struct AudiobookGetByIdJoin {
     pub user_id: Id,
     pub audiobook_id: Id,
+    pub fetch_deleted: bool
 }
 
 impl AudiobookGetByIdJoin {
@@ -531,6 +535,15 @@ impl AudiobookGetByIdJoin {
         Self {
             user_id,
             audiobook_id,
+            fetch_deleted: false
+        }
+    }
+
+    pub const fn new_fetch_deleted(user_id: Id, audiobook_id: Id) -> Self {
+        Self {
+            user_id,
+            audiobook_id,
+            fetch_deleted: true
         }
     }
 }
