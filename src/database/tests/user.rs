@@ -23,7 +23,7 @@ pub mod user_repo_tests {
                 None,
             ))
             .await
-            .unwrap();
+            .expect("Create user should succeed");
         assert_eq!(u.username, "cokel");
         user_repository.disconnect().await;
     }
@@ -43,7 +43,7 @@ pub mod user_repo_tests {
                 None,
             ))
             .await
-            .unwrap();
+            .expect("Update user should succeed");
         let u = &users[0];
         assert_eq!(u.username, "doggo");
         assert_eq!(u.email, "d@d.com");
@@ -56,13 +56,13 @@ pub mod user_repo_tests {
         let users = user_repository
             .read_many(&UserSearch::new(None, None, None, None))
             .await
-            .unwrap();
+            .expect("Read many users should succeed");
         assert_eq!(users.len(), 9);
 
         let users = user_repository
             .read_many(&UserSearch::new(Some("pes"), None, None, Some("Hafski")))
             .await
-            .unwrap();
+            .expect("Read many users with filters should succeed");
         assert_eq!(users.len(), 1);
 
         let u = &users[0];
