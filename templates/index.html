@@ -174,4 +174,38 @@
         button.setAttribute('hx-get', `${parts[0]}=${nextPage}`)
         htmx.process(button)
     }
+
+    function parseTime(timeString) {
+        let parts = timeString.split(":");
+        let time = 0;
+        let modifier = 1;
+        for (let i = parts.length - 1; i >= 0; i--) {
+            time += parseInt(parts[i]) * modifier;
+            modifier *= 60;
+        }
+
+        return time;
+    }
+
+    const isValidTime = (timeString) => {
+        let parts = timeString.split(":");
+        let invalid = parts.length > 3;
+        let emptyString = timeString.length === 0;
+        return ! (parts.some((part) => isNaN(parseInt(part))) || invalid || emptyString);
+    }
+
+
+    const validateChapterBeginSelection = (element) => {
+        const timeString = element.value;
+        if (!isValidTime(timeString)) {
+            element.setCustomValidity('Invalid time format')
+        } else {
+            element.setCustomValidity('');
+            const time = parseTime(timeString);
+
+            document.getElementById('chapter-begin-selection').value = time;
+            document.getElementById('select-player-container').currentTime = time;
+        }
+
+    }
 </script>
