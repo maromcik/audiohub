@@ -5,7 +5,7 @@ services:
     container_name: audiohub-db
     command: postgres -c 'max_connections=2000'
     volumes:
-      - ./data/db:/var/lib/postgresql/data:z
+      - ./data/db:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=audiohub
       - POSTGRES_USER=postgres
@@ -28,8 +28,8 @@ services:
     depends_on:
       - audiohub
     volumes:
-      - ./static/:/var/www/static:z
-      - ./media/:/var/www/media:z
+      - ./static/:/var/www/static
+      - ./media/:/var/www/media
     ports:
       - "8080:80"
       - "9443:443"
