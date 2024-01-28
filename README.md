@@ -8,14 +8,7 @@ AudioHub is a comprehensive digital platform designed for content creators to sh
 
 The website is deployed and published in a Kubernetes cluster. 
 
-Use this link https://audiohub.dyn.cloud.e-infra.cz/ to evaluate the app without having to set up your own Postgres instance and clone this repo
-## Features
-    TODO EDIT
-- Book Management: Enables users to browse, purchase, and view books. Each book has properties like name, price, stock in storage, overall rating, genres, publisher, and authors.
-- Author and Publisher Management: Provides administrative privileges to view, add, update, and delete authors and publishers.
-- User Account Management: Allows customers to create accounts, review their purchase history, rate books, and create wishlists.
-- Rating Management: Facilitates users to rate books and leave comments. The rating value and comments can be updated.
-
+Use this link https://audiohub.dyn.cloud.e-infra.cz/ to evaluate the app without having to set up your own Postgres instance and clone this repo.
 ## Architecture
 The application is built using Actix, Askama and HTMX.
 
@@ -37,17 +30,10 @@ working poorly and requiring a lot off buffering on Firefox.
 ### Kubernetes
 The application is deployed using CERIT-SC's Kubernetes cluster: https://audiohub.dyn.cloud.e-infra.cz/ for your convenience.
 
-While we do not intend to modify our project after submission, we understand your need to check the project at the time of submission. Therefore, we provided other options to test the app locally.
-
-### Local app - Postgres in Kubernetes
-This project uses the Postgres database deployed in Kubernetes with the Cloudnative-PG operator. 
-
-Our `.env` file is obviously included in `.gitignore`, but since we will have given you the maintainer role in our Gitlab repository, you should be able to get all the data from the environment variables there https://gitlab.fi.muni.cz/xmarianc/pv281-project/-/settings/ci_cd
-
-Please use these secrets to modify the `example.env` file. 
+While we do not intend to modify our project after submission, we understand your need to check the project at the time of submission. Therefore, we provided another option to test the app locally.
 
 ### Local app - Local Postgres with our DB contents
-If you do not wish to use our database you can always restore the database by running migrations.
+If you do not wish to use our database you can always restore the database by running migrations or from dump `dump.sql`.
 
 ## Evaluation
 Use any of those credentials to log into to https://audiohub.dyn.cloud.e-infra.cz/ or your local instance (as long as migrations have been successfully applied).
