@@ -6,7 +6,7 @@
     <div class="shadow-md rounded pl-8 pr-2 pt-4 pb-4 mb-4">
         <div class="w-full flex flex-row justify-between">
             <div class="text-xl ml-4 mr-2 flex flex-row justify-between">
-                <p class="text-blue-300 mr-2">Chapter {{chapter.order}}: </p>
+                <p class="text-blue-300 mr-2">Chapter {{chapter.order}}{% if !chapter.name.is_empty() %}: {% endif %}</p>
                 <p class="text-white">{{ chapter.name }}</p>
             </div>
             <div class="flex flex-row justify-between items-center">
