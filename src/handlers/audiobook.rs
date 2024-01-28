@@ -639,20 +639,18 @@ pub async fn get_last_active_audiobook(
 
     return match latest {
         Some(book) => {
-            let template = PlayerTemplate {
-                played_book: book,
-            };
+            let template = PlayerTemplate { played_book: book };
             Ok(HttpResponse::Ok()
                 .content_type("text/html")
                 .body(template.render()?))
-        },
+        }
         None => {
             // return empty container
             Ok(HttpResponse::Ok()
                 .content_type("text/html")
                 .body("<div id='player-container'></div>"))
         }
-    }
+    };
 }
 
 #[derive(Deserialize)]
