@@ -20,6 +20,5 @@ RUN /bin/bash -c "source venv/bin/activate && pip install numpy"
 
 RUN /bin/bash -c "source venv/bin/activate && python -m grpc_tools.protoc -I./protos --python_out=. --pyi_out=. --grpc_python_out=. ./protos/recommender.proto"
 
-EXPOSE 50051
 
 CMD ["/bin/bash", "-c", "source venv/bin/activate && python server.py"]

@@ -6,7 +6,7 @@ spec:
   type: ClusterIP
   ports:
   - name: audiohub-ai-port
-    port: 80
+    port: 50051
     targetPort: 50051
   selector:
     app: audiohub-ai
