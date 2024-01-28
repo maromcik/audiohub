@@ -1,10 +1,12 @@
 use crate::database::common::{DbPoolHandler, DbReadMany, DbRepository, PoolHandler};
+use crate::database::models::audiobook::Audiobook;
 use crate::database::models::genre::GenreSearch;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::genre::repository::GenreRepository;
-use crate::recommender::recommandation_system::{add_book_to_recommendation_system, init_recommendation_system, recommend_books};
+use crate::recommender::recommandation_system::{
+    add_book_to_recommendation_system, init_recommendation_system,
+};
 use sqlx::PgPool;
-use crate::database::models::audiobook::Audiobook;
 
 pub async fn init_recommender(pool: &PgPool) -> Result<(), Box<dyn std::error::Error>> {
     let audiobook_repository = AudiobookRepository::new(PoolHandler::new(pool.clone()));
@@ -33,7 +35,10 @@ pub async fn init_recommender(pool: &PgPool) -> Result<(), Box<dyn std::error::E
     Ok(())
 }
 
-pub async fn add_book_recommender(audiobook: &Audiobook, genre_name: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn add_book_recommender(
+    audiobook: &Audiobook,
+    genre_name: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
     let bio = audiobook.description.as_str();
     let id = audiobook.id;
 

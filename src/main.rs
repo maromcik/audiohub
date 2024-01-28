@@ -1,4 +1,4 @@
-use crate::database::common::{setup_pool, DbPoolHandler, DbRepository};
+use crate::database::common::setup_pool;
 use crate::init::configure_webapp;
 use crate::recommender::recommender::init_recommender;
 use actix_cors::Cors;
@@ -13,7 +13,6 @@ use actix_web::{cookie::Key, App, HttpServer};
 use env_logger::Env;
 use log::{info, warn};
 use std::env;
-
 
 mod database;
 mod error;

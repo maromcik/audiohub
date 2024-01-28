@@ -41,20 +41,18 @@ use askama::Template;
 use lofty::AudioFile;
 use log::{info, warn};
 use serde::Deserialize;
-use sqlx::query;
 
-use crate::{authorized, RECOMMEND_BOOKS_CNT};
 use crate::database::models::active_audiobook::SetActiveAudiobook;
 use crate::database::models::bookmark::BookmarkOperation;
+use crate::{authorized, RECOMMEND_BOOKS_CNT};
 
 use crate::handlers::helpers::{
     get_audiobook_detail_base, get_audiobook_edit, get_chapters_by_book, get_releases,
 };
 use uuid::Uuid;
 
-
 use crate::recommender::recommandation_system::{delete_book_from_recommendation, recommend_books};
-use crate::recommender::recommender::{add_book_recommender};
+use crate::recommender::recommender::add_book_recommender;
 #[get("/create")]
 pub async fn create_audiobook_page(
     request: HttpRequest,
@@ -375,25 +373,33 @@ pub async fn recommend_audiobooks(
     genre_repo: web::Data<GenreRepository>,
     path: web::Path<(Id,)>,
 ) -> Result<HttpResponse, AppError> {
-    let identity = authorized!(identity, request.path());
-    let book = audiobook_repo.read_one(&AudiobookGetById { id: path.into_inner().0, fetch_deleted: false, })
+    let _identity = authorized!(identity, request.path());
+    let book = audiobook_repo
+        .read_one(&AudiobookGetById {
+            id: path.into_inner().0,
+            fetch_deleted: false,
+        })
         .await?;
 
     let genre = genre_repo
         .read_one(&GenreGetById::new(&book.genre_id))
         .await?;
 
-    let recommendations = match recommend_books(&book.description, book.id, &genre.name, RECOMMEND_BOOKS_CNT).await{
-        Ok(books) => {books}
-        Err(e) => {
-            warn!("Book recommendation failed! {e}");
-            vec![]
-        }
-    };
+    let recommendations =
+        match recommend_books(&book.description, book.id, &genre.name, RECOMMEND_BOOKS_CNT).await {
+            Ok(books) => books,
+            Err(e) => {
+                warn!("Book recommendation failed! {e}");
+                vec![]
+            }
+        };
     let audiobooks = audiobook_repo.get_books_by_ids(recommendations).await?;
 
     let template = AudiobookRecommendationTemplate {
-        books: audiobooks.iter().map(|b| AudiobookRecommenderDisplay::from(b.clone())).collect(),
+        books: audiobooks
+            .iter()
+            .map(|b| AudiobookRecommenderDisplay::from(b.clone()))
+            .collect(),
     };
 
     let body = template.render()?;

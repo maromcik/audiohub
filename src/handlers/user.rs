@@ -251,7 +251,6 @@ pub async fn user_manage(
     };
     let body = template.render()?;
     return Ok(HttpResponse::Ok().content_type("text/html").body(body));
-
 }
 
 #[post("/manage/password")]

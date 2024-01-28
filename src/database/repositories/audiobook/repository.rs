@@ -19,7 +19,7 @@ use crate::database::common::utilities::entity_is_correct;
 use crate::database::models::audiobook::{
     Audiobook, AudiobookCreate, AudiobookDelete, AudiobookDetail, AudiobookDisplay,
     AudiobookGetById, AudiobookGetByIdJoin, AudiobookRecommenderCard, AudiobookRecommenderForm,
-    QuickSearch, AudiobookSearch, AudiobookUpdate,
+    AudiobookSearch, AudiobookUpdate, QuickSearch,
 };
 use crate::database::models::Id;
 
@@ -324,12 +324,15 @@ impl AudiobookRepository {
             WHERE deleted_at IS NULL
             "#
         )
-            .fetch_all(&self.pool_handler.pool)
-            .await?;
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
         Ok(results)
     }
 
-    pub async fn get_books_by_ids(&self, book_ids: Vec<i64>) -> DbResultMultiple<AudiobookRecommenderCard> {
+    pub async fn get_books_by_ids(
+        &self,
+        book_ids: Vec<i64>,
+    ) -> DbResultMultiple<AudiobookRecommenderCard> {
         let results = sqlx::query_as!(
             AudiobookRecommenderCard,
             r#"
@@ -351,8 +354,8 @@ impl AudiobookRepository {
             "#,
             &book_ids
         )
-            .fetch_all(&self.pool_handler.pool)
-            .await?;
+        .fetch_all(&self.pool_handler.pool)
+        .await?;
 
         Ok(results)
     }

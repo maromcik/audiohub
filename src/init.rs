@@ -72,7 +72,6 @@ pub fn configure_webapp(pool: &PgPool) -> Box<dyn FnOnce(&mut ServiceConfig)> {
         .service(restore_audiobook)
         .service(hard_remove_audiobook);
 
-
     let chapter_scope = web::scope("chapter")
         .app_data(web::Data::new(chapter_repository.clone()))
         .service(audio_selection_for_chapter)
