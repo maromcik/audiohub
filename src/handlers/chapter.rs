@@ -6,7 +6,7 @@ use crate::database::models::audiobook::AudiobookGetById;
 use crate::database::models::Id;
 use crate::database::repositories::audiobook::repository::AudiobookRepository;
 use crate::database::repositories::chapter::repository::ChapterRepository;
-use crate::error::AppError;
+use crate::error::{AppError, AppErrorKind};
 use crate::forms::chapter::{ChapterCreateForm, ChapterDeleteForm};
 use crate::handlers::helpers::get_displayable_chapters;
 use crate::handlers::utilities::{authorized_to_modify, parse_user_id};
@@ -17,7 +17,6 @@ use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{delete, get, post, web, HttpRequest, HttpResponse};
 use askama::Template;
-use crate::error::AppErrorKind::BadRequest;
 
 #[post("/create")]
 pub async fn create_chapter(
@@ -30,10 +29,10 @@ pub async fn create_chapter(
     let u = authorized!(identity, request.path());
     authorized_to_modify(&audiobook_repo, parse_user_id(u)?, form.audiobook_id).await?;
     let audiobook_id = &form.audiobook_id;
-    let audiobook = audiobook_repo.read_one(&AudiobookGetById{id: audiobook_id.clone(), fetch_deleted: false}).await?;
+    let audiobook = audiobook_repo.read_one(&AudiobookGetById{id: *audiobook_id, fetch_deleted: false}).await?;
 
     if audiobook.length < form.position {
-        return Err(AppError{app_error_kind: BadRequest, message: String::from("Audiobook is shorter than desired chapter position")});
+        return Err(AppError::new(AppErrorKind::BadRequest, "Audiobook is shorter than desired chapter position"));
     }
 
     chapter_repo
