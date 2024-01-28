@@ -21,6 +21,13 @@
         </div>
 
         <div class="mb-4">
+            <label class="block text-gray-300 text-sm font-bold mb-2" for="chapter-name">
+                New chapter beginning (drag to chapter beginning or enter timestamp)
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                   id="chapter-begin-text" type="text" placeholder="(0):00:00">
+        </div>
+        <div class="mb-4">
             <div class="text-gray-300 text-sm font-bold mb-2">New chapter beginning (drag to chapter beginning)</div>
             <div id="select-player-container" hx-target="#chapter-creator-player" hx-target-error="#content-area" hx-get="/chapter/audiobook/{{ audiobook.id }}/creator-player" hx-trigger="load" hx-swap="outerHTML">
                 <audio id="chapter-creator-player" class="w-full" controls>
@@ -39,3 +46,23 @@
     </form>
 </div>
 <div class="hidden" id="trash"></div>
+
+<script>
+    function parseTime(timeString) {
+        let parts = timeString.split(":");
+        let time = 0;
+        let modifier = 1;
+        for (let i = parts.length - 1; i >= 0; i--) {
+            time += parseInt(parts[i]) * modifier;
+            modifier *= 60;
+        }
+
+        return time;
+    }
+
+    document.getElementById('chapter-begin-text').addEventListener('change', () => {
+        const time = parseTime(document.getElementById('chapter-begin-text').value);
+        document.getElementById('chapter-begin-selection').value = time;
+        document.getElementById('select-player-container').currentTime = time;
+    });
+</script>

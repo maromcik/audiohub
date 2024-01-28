@@ -637,19 +637,22 @@ pub async fn get_last_active_audiobook(
     let id = parse_user_id(identity)?;
     let latest = audiobook_repo.get_latest_active_audiobook(&id).await?;
 
-    if latest.is_none() {
-        // return empty container
-        return Ok(HttpResponse::Ok()
-            .content_type("text/html")
-            .body("<div id='player-container'></div>"));
+    return match latest {
+        Some(book) => {
+            let template = PlayerTemplate {
+                played_book: book,
+            };
+            Ok(HttpResponse::Ok()
+                .content_type("text/html")
+                .body(template.render()?))
+        },
+        None => {
+            // return empty container
+            Ok(HttpResponse::Ok()
+                .content_type("text/html")
+                .body("<div id='player-container'></div>"))
+        }
     }
-
-    let template = PlayerTemplate {
-        played_book: latest.unwrap(),
-    };
-    Ok(HttpResponse::Ok()
-        .content_type("text/html")
-        .body(template.render()?))
 }
 
 #[derive(Deserialize)]
@@ -672,9 +675,9 @@ pub async fn get_audiobook_player(
         .get_or_create_active_audiobook(&user_id, &path.into_inner().0)
         .await?;
 
-    if position_query.position.is_some() {
-        played.playback_position = position_query.position.unwrap();
-    }
+    if let Some(position) = position_query.position {
+        played.playback_position = position;
+    };
 
     let template = PlayerTemplate {
         played_book: played,
