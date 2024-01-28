@@ -337,7 +337,7 @@ impl AudiobookRepository {
                 a.id,
                 a.name,
                 a.thumbnail,
-                u.username AS author_name,
+                u.name AS author_name,
                 g.name AS genre_name,
                 g.color AS genre_color
             FROM

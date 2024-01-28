@@ -27,7 +27,7 @@ const DEFAULT_PORT: &str = "8000";
 const SECS_IN_WEEK: i64 = 60 * 60 * 24 * 7;
 const PAYLOAD_LIMIT: usize = 16 * 1024 * 1024 * 1024; // 16GiB
 const CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE: f64 = 98.0;
-const RECOMMEND_BOOKS_CNT: i32 = 2;
+const RECOMMEND_BOOKS_CNT: i32 = 3;
 
 const MIN_PASS_LEN: usize = 6;
 
