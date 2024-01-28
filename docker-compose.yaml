@@ -1,0 +1,42 @@
+version: "3.8"
+services:
+  audiohub-db:
+    image: postgres:latest
+    container_name: audiohub-db
+    command: postgres -c 'max_connections=2000'
+    volumes:
+      - ./data/db:/var/lib/postgresql/data:z
+    environment:
+      - POSTGRES_DB=audiohub
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  audiohub:
+    build: .
+    container_name: audiohub-app
+    volumes:
+      - ./media/:/usr/src/audiobooks/media
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env-docker
+    depends_on:
+      db:
+        condition: service_completed_successfully
+  nginx:
+    build: ./nginx
+    container_name: audiohub-nginx
+    depends_on:
+      - audiohub
+    volumes:
+      - ./static/:/var/www/static:z
+      - ./media/:/var/www/media:z
+    ports:
+      - "8080:80"
+      - "9443:443"
+  audiohub-ai-svc:
+    build: ./recommender-server
+    container_name: audiohub-ai
+    depends_on:
+      - audiohub
+    ports:
+      - "50051:50051"

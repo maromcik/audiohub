@@ -7,6 +7,7 @@ RUN apt-get install -y postgresql-client zip build-essential autoconf libtool pk
 
 COPY . .
 
+EXPOSE 8000
 
 RUN cargo install --path .
 

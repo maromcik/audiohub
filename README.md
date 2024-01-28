@@ -32,6 +32,11 @@ The application is deployed using CERIT-SC's Kubernetes cluster: https://audiohu
 
 While we do not intend to modify our project after submission, we understand your need to check the project at the time of submission. Therefore, we provided another option to test the app locally.
 
+### docker-compose
+Simply run `docker-compose up` to build and run all the necessary containers including Postgres and NGINX. 
+
+Note that the AI recommender might not work properly.
+
 ### Local app - Local Postgres with our DB contents
 If you do not wish to use our database you can always restore the database by running migrations or from dump `dump.sql`.
 
@@ -57,6 +62,7 @@ There are other options too, but you should secure the website with a reverse pr
 - for bare metal deployment you could run `cargo build` and then create a *systemd* unit to manage it.
 - for Docker deployment you should firstly run `docker build -t audiohub-image .` to build the image and then `docker run -p 80:8000 --name audiohub audiohub-image --restart=always`.
 - for Podman deployment the steps would be similar `podman build -t audiohub-image .` to build the image. But Podman containers are daemon-less, therefore it is recommended to use so called *Quadlets* to manage Podman containers with *systemd*.
+- use our docker-compose file that sets up the app, database and nginx equipped with a self-signed certificate.
 
 Something like this should work. Note that I did not test it, paths may be incorrect. I provide this example just as a curiosity.
 ```shell
