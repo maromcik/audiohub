@@ -29,10 +29,18 @@ pub async fn create_chapter(
     let u = authorized!(identity, request.path());
     authorized_to_modify(&audiobook_repo, parse_user_id(u)?, form.audiobook_id).await?;
     let audiobook_id = &form.audiobook_id;
-    let audiobook = audiobook_repo.read_one(&AudiobookGetById{id: *audiobook_id, fetch_deleted: false}).await?;
+    let audiobook = audiobook_repo
+        .read_one(&AudiobookGetById {
+            id: *audiobook_id,
+            fetch_deleted: false,
+        })
+        .await?;
 
     if audiobook.length < form.position {
-        return Err(AppError::new(AppErrorKind::BadRequest, "Audiobook is shorter than desired chapter position"));
+        return Err(AppError::new(
+            AppErrorKind::BadRequest,
+            "Audiobook is shorter than desired chapter position",
+        ));
     }
 
     chapter_repo

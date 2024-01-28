@@ -34,7 +34,6 @@ pub fn format_overall_rating(rating: &f64) -> String {
     format!("{:.2}", rating)
 }
 
-
 pub fn get_max_init_page(max_page: &i64) -> i64 {
     min(*max_page, 2)
 }
