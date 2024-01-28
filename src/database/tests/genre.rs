@@ -13,7 +13,7 @@ pub mod genre_repo_tests {
         let u = genre_repository
             .create(&GenreCreate::new("mexicky rap"))
             .await
-            .unwrap();
+            .expect("Create genre should succeed");
         assert_eq!(u.name, "mexicky rap");
         genre_repository.disconnect().await;
     }
@@ -24,7 +24,7 @@ pub mod genre_repo_tests {
         let genres = genre_repository
             .update(&GenreUpdate::new(&29, Some("audio"), None))
             .await
-            .unwrap();
+            .expect("Update genre should succeed");
         let u = &genres[0];
         assert_eq!(u.name, "audio");
         genre_repository.disconnect().await;
