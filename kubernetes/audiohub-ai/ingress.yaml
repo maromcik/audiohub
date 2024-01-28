@@ -27,7 +27,7 @@ spec:
         pathType: Prefix
         backend:
             service:
-              name: audiohub-svc
+              name: audiohub-ai-svc
               port:
                 number: 80
 

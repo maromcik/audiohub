@@ -4,6 +4,7 @@ use crate::recommender_grpc_api::{
 };
 
 const URL: &str = "audiohub-ai-svc:50051";
+const URL2: &str = "https://audiohub-recommender.dyn.cloud.e-infra.cz/";
 
 pub async fn init_recommendation_system(
     book_bios: Vec<&str>,
