@@ -17,6 +17,7 @@ use actix_identity::Identity;
 use actix_web::http::header::LOCATION;
 use actix_web::{delete, get, post, web, HttpRequest, HttpResponse};
 use askama::Template;
+use crate::error::AppErrorKind::BadRequest;
 
 #[post("/create")]
 pub async fn create_chapter(
@@ -28,6 +29,13 @@ pub async fn create_chapter(
 ) -> Result<HttpResponse, AppError> {
     let u = authorized!(identity, request.path());
     authorized_to_modify(&audiobook_repo, parse_user_id(u)?, form.audiobook_id).await?;
+    let audiobook_id = &form.audiobook_id;
+    let audiobook = audiobook_repo.read_one(&AudiobookGetById{id: audiobook_id.clone(), fetch_deleted: false}).await?;
+
+    if audiobook.length < form.position {
+        return Err(AppError{app_error_kind: BadRequest, message: String::from("Audiobook is shorter than desired chapter position")});
+    }
+
     chapter_repo
         .create(&ChapterCreate::new(
             &form.name,
