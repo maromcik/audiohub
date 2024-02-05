@@ -2,7 +2,9 @@ use crate::database::common::{DbReadMany, DbReadOne};
 use actix_identity::Identity;
 use actix_web::web;
 
-use crate::database::common::query_parameters::{BookState, DbColumn, DbOrder, DbOrderColumn, DbQueryParams, DbTable};
+use crate::database::common::query_parameters::{
+    BookState, DbColumn, DbOrder, DbOrderColumn, DbQueryParams, DbTable,
+};
 use crate::database::models::audiobook::{AudiobookDisplay, AudiobookGetByIdJoin, AudiobookSearch};
 use crate::database::models::chapter::{ChapterDisplay, ChaptersGetByBookId};
 use crate::database::models::genre::{GenreGetById, GenreSearch};

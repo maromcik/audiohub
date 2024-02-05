@@ -121,7 +121,6 @@ impl Default for DbOrderColumn {
     }
 }
 
-
 #[allow(dead_code)]
 #[derive(Clone)]
 pub enum DbTable {
@@ -131,7 +130,7 @@ pub enum DbTable {
     Bookmark,
     Chapter,
     Rating,
-    User
+    User,
 }
 
 impl DbTable {
@@ -159,8 +158,6 @@ impl Debug for DbTable {
         self.fmt(f)
     }
 }
-
-
 
 #[allow(dead_code)]
 #[derive(Clone)]
