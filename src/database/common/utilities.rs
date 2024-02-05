@@ -1,5 +1,5 @@
 use crate::database::common::error::{BackendError, DbError, DbResultSingle, EntityError};
-use crate::database::common::query_parameters::{BookState, DbOrder, DbQueryParams};
+use crate::database::common::query_parameters::{BookState, DbQueryParams};
 use crate::database::common::HasDeletedAt;
 use crate::CONSIDER_AUDIOBOOK_FINISHED_PERCENTAGE;
 
@@ -30,11 +30,13 @@ pub fn generate_query_param_string(params: &DbQueryParams) -> String {
 
     if let Some(order) = &params.order {
         qp_string.push_str("ORDER BY ");
-        qp_string.push_str(&order.column);
-        match order.order {
-            DbOrder::Asc => qp_string.push_str(" ASC"),
-            DbOrder::Desc => qp_string.push_str(" DESC"),
+        if let Some(table) = &order.table {
+            qp_string.push_str(table.to_string().as_str());
+            qp_string.push('.');
         }
+        qp_string.push_str(order.column.to_string().as_str());
+        qp_string.push(' ');
+        qp_string.push_str(order.order.to_string().as_str());
     }
     qp_string.push('\n');
     if let Some(l) = params.limit {

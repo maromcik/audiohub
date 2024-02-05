@@ -2,7 +2,7 @@ use crate::database::common::{DbReadMany, DbReadOne};
 use actix_identity::Identity;
 use actix_web::web;
 
-use crate::database::common::query_parameters::{BookState, DbOrder, DbOrderColumn, DbQueryParams};
+use crate::database::common::query_parameters::{BookState, DbColumn, DbOrder, DbOrderColumn, DbQueryParams, DbTable};
 use crate::database::models::audiobook::{AudiobookDisplay, AudiobookGetByIdJoin, AudiobookSearch};
 use crate::database::models::chapter::{ChapterDisplay, ChaptersGetByBookId};
 use crate::database::models::genre::{GenreGetById, GenreSearch};
@@ -87,7 +87,7 @@ pub async fn get_index_base(
     let audiobooks = book_repo
         .read_many(&AudiobookSearch::with_params(
             DbQueryParams::order(
-                DbOrderColumn::new("like_count", DbOrder::Desc),
+                DbOrderColumn::new_column_only(DbColumn::LikeCount, DbOrder::Desc),
                 Some(BookState::Fresh(true)),
             ),
             user.id,
@@ -96,7 +96,7 @@ pub async fn get_index_base(
     let active_audiobooks = book_repo
         .read_many(&AudiobookSearch::with_params(
             DbQueryParams::order(
-                DbOrderColumn::new("ab.edited_at", DbOrder::Desc),
+                DbOrderColumn::new(DbTable::ActiveAudiobook, DbColumn::EditedAt, DbOrder::Desc),
                 Some(BookState::Active(true)),
             ),
             user.id,
@@ -105,7 +105,7 @@ pub async fn get_index_base(
     let finished_audiobooks = book_repo
         .read_many(&AudiobookSearch::with_params(
             DbQueryParams::order(
-                DbOrderColumn::new("ab.edited_at", DbOrder::Desc),
+                DbOrderColumn::new(DbTable::ActiveAudiobook, DbColumn::EditedAt, DbOrder::Desc),
                 Some(BookState::Finished(true)),
             ),
             user.id,
