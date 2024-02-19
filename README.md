@@ -43,6 +43,8 @@ If you do not wish to use our database you can always restore the database by ru
 ## Evaluation
 Use any of those credentials to log into to https://audiohub.dyn.cloud.e-infra.cz/ or your local instance (as long as migrations have been successfully applied).
 
+Since we've published this project into the world, these credentials are no longer valid.
+
 | username | email | name | surname | password |
 | :--- | :--- | :--- | :--- | :--- |
 | charlie | c@c.com | Charles | Dickens | Aa123! |
