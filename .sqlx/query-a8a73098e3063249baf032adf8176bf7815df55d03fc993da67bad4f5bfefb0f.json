@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT R.audiobook_id AS book_id, U.name AS user_name, U.surname AS user_surname, R.rating AS rating,\n                R.review AS review, R.created_at AS created_at, U.profile_picture AS user_thumbnail, U.id AS user_id\n            FROM \"User\" U JOIN \"Rating\" R ON R.user_id = U.id\n            WHERE\n                (R.audiobook_id = $1 OR $1 IS NULL)\n                AND (R.user_id = $2 OR $2 IS NULL)\n                AND (R.rating >= $3 OR $3 IS NULL)\n                AND (R.rating <= $4 OR $4 IS NULL)\n                AND (R.review = $5 OR $5 IS NULL)\n                AND R.deleted_at IS NULL\n            ORDER BY R.created_at DESC\n            LIMIT $6\n            OFFSET COALESCE($7, 0)\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "book_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "user_surname",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "rating",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 4,
+        "name": "review",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "user_thumbnail",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "user_id",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Int2",
+        "Int2",
+        "Text",
+        "Int8",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "a8a73098e3063249baf032adf8176bf7815df55d03fc993da67bad4f5bfefb0f"
+}

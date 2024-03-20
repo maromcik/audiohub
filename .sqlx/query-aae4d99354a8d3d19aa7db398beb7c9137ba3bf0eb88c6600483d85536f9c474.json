@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                a.id,\n                a.name,\n                a.thumbnail,\n                u.name AS author_name,\n                g.name AS genre_name,\n                g.color AS genre_color\n            FROM\n                \"Audiobook\" AS a\n                    INNER JOIN\n                \"User\" AS u ON u.id = a.author_id\n                    INNER JOIN\n                \"Genre\" AS g ON a.genre_id = g.id\n            WHERE\n                a.deleted_at IS NULL AND a.id = ANY($1)\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "thumbnail",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "author_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "genre_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "genre_color",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "aae4d99354a8d3d19aa7db398beb7c9137ba3bf0eb88c6600483d85536f9c474"
+}

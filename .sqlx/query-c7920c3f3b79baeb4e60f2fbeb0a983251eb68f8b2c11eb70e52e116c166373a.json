@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT rating AS stars, COUNT(*) AS star_count\n            FROM \"Rating\"\n            WHERE audiobook_id = $1 AND deleted_at IS NULL\n            GROUP BY rating\n            ORDER BY rating\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "stars",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 1,
+        "name": "star_count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "c7920c3f3b79baeb4e60f2fbeb0a983251eb68f8b2c11eb70e52e116c166373a"
+}

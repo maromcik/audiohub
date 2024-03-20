@@ -1,0 +1,42 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO \"Active_Audiobook\" (user_id, audiobook_id, playback_position)\n            VALUES ($1, $2, $3)\n            RETURNING *\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "audiobook_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "playback_position",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 3,
+        "name": "edited_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Float8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "b80ff589c97ee44ade16e0ef8669fc3e30d4a8ed58df948baad326cc6d01fb11"
+}

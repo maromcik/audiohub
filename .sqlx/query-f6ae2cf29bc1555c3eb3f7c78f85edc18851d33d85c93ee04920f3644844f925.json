@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE \"Audiobook\"\n            SET overall_rating = COALESCE((\n                SELECT round(AVG(R.Rating), 2)\n                FROM \"Rating\" R\n                WHERE R.audiobook_id = $1 AND R.deleted_at IS NULL\n            ), 0)\n            WHERE id = $1\n\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f6ae2cf29bc1555c3eb3f7c78f85edc18851d33d85c93ee04920f3644844f925"
+}

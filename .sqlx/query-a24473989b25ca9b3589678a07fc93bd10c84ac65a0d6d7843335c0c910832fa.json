@@ -1,0 +1,42 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE \"Active_Audiobook\"\n            SET\n                playback_position = $1,\n                edited_at = current_timestamp\n            WHERE user_id = $2 AND audiobook_id = $3\n            RETURNING *\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "audiobook_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "playback_position",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 3,
+        "name": "edited_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Float8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "a24473989b25ca9b3589678a07fc93bd10c84ac65a0d6d7843335c0c910832fa"
+}

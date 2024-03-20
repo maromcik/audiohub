@@ -1,0 +1,71 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT A.id as book_id, A.file_path AS path, A.thumbnail as thumbnail,\n                    A.name AS name, ACT.playback_position AS playback_position,\n                    B.edited_at IS NOT NULL AS is_liked, U.id as author_id,\n                    U.name AS author_name, U.surname As author_surname\n                FROM \"Active_Audiobook\" ACT\n                    LEFT JOIN \"Audiobook\" A ON ACT.audiobook_id = A.id\n                    LEFT JOIN \"User\" U ON A.author_id = U.id\n                    LEFT JOIN \"Bookmark\" B ON A.id = B.audiobook_id\n                WHERE ACT.user_id = $1 AND ACT.audiobook_id = $2\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "book_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "path",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "thumbnail",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "playback_position",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 5,
+        "name": "is_liked",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 6,
+        "name": "author_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 7,
+        "name": "author_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "author_surname",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      null,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "f0d50b606c0c92657876d73a7f2e5bcd99e3b5c7a8f04ab8a0411c65e3bce5a8"
+}

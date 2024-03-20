@@ -1,0 +1,68 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT * FROM \"Rating\"\n            WHERE\n                (audiobook_id = $1 OR $1 IS NULL)\n                AND (user_id = $2 OR $2 IS NULL)\n                AND (rating >= $3 OR $3 IS NULL)\n                AND (rating <= $4 OR $4 IS NULL)\n                AND (review = $5 OR $5 IS NULL)\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "audiobook_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "rating",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 4,
+        "name": "review",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "edited_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "deleted_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Int2",
+        "Int2",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "787f75e5b28b26d9d4d77b3ddca1ebca65a5920435c0b3e2b1d91b9b80cd1c4f"
+}

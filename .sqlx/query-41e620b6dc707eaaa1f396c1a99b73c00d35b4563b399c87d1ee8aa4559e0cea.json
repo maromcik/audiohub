@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT overall_rating\n            FROM \"Audiobook\"\n            WHERE id=$1 AND deleted_at IS NULL\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "overall_rating",
+        "type_info": "Float8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "41e620b6dc707eaaa1f396c1a99b73c00d35b4563b399c87d1ee8aa4559e0cea"
+}

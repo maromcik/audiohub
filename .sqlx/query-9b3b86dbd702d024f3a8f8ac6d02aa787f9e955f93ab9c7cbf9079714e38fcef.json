@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                c.id,\n                c.name,\n                c.audiobook_id,\n                c.position,\n                c.created_at,\n                c.edited_at,\n                c.deleted_at,\n                a.name AS audiobook_name,\n                a.author_id\n            FROM\n                \"Chapter\" AS c\n                    INNER JOIN\n                \"Audiobook\" AS a ON c.audiobook_id = a.id\n            WHERE\n                c.deleted_at IS NULL\n                AND c.audiobook_id = $1\n            ORDER BY\n                c.position\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "audiobook_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "position",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 4,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 5,
+        "name": "edited_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "deleted_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "audiobook_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "author_id",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "9b3b86dbd702d024f3a8f8ac6d02aa787f9e955f93ab9c7cbf9079714e38fcef"
+}

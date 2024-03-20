@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO \"Active_Audiobook\" (user_id, audiobook_id, playback_position)\n            VALUES ($1, $2, 0)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1e40d75e84df110cb6d0d000d5d10eb1750d16cb11577a78880d8849252b9f11"
+}

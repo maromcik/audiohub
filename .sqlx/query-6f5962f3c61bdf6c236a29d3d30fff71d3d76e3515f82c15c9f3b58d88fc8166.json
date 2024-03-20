@@ -1,0 +1,106 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO \"Audiobook\" (name, author_id, genre_id, file_path, length, thumbnail, description)\n            VALUES ($1, $2, $3, $4, $5, $6, $7)\n            RETURNING *\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "genre_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "author_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "file_path",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "length",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 6,
+        "name": "thumbnail",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "stream_count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 9,
+        "name": "like_count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 10,
+        "name": "overall_rating",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 11,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 12,
+        "name": "edited_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 13,
+        "name": "deleted_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8",
+        "Int8",
+        "Text",
+        "Float8",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "6f5962f3c61bdf6c236a29d3d30fff71d3d76e3515f82c15c9f3b58d88fc8166"
+}
