@@ -29,8 +29,8 @@ services:
       - ./static/:/var/www/static:z
       - ./media/:/var/www/media:z
     ports:
-      - "8080:80"
-      - "9443:443"
+      - "80:80"
+      - "443:443"
   audiohub-ai-svc:
     build: ./recommender-server
     container_name: audiohub-ai
