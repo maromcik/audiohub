@@ -36,11 +36,11 @@ spec:
           value: "true"
         resources:
           requests:
-            memory: "3Gi"
+            memory: "2Gi"
             cpu: "1"
           limits:
-            memory: "6Gi"
-            cpu: "2"
+            memory: "3Gi"
+            cpu: "1"
       volumes:
       - name: audiohub-media
         persistentVolumeClaim:
