@@ -65,6 +65,7 @@ impl From<BackendError> for AppError {
             | BackendErrorKind::AudiobookUpdateParametersEmpty
             | BackendErrorKind::ChapterUpdateParametersEmpty
             | BackendErrorKind::RatingUpdateParametersEmpty
+            | BackendErrorKind::GenreUpdateParametersEmpty
             | BackendErrorKind::AudiobookDeleted
             | BackendErrorKind::ChapterDeleted
             | BackendErrorKind::GenreDeleted
@@ -86,11 +87,6 @@ impl From<BackendError> for AppError {
             | BackendErrorKind::UserPasswordVerificationFailed => {
                 Self::new(AppErrorKind::Unauthorized, value.to_string().as_str())
             }
-
-            _ => Self::new(
-                AppErrorKind::InternalServerError,
-                value.to_string().as_str(),
-            ),
         }
     }
 }
